@@ -709,7 +709,7 @@
                     </div>
                     <div class="setting-item">
                         <label for="inputSize">Model Input Size:</label>
-                        <input type="number" id="inputSize" value="256" min="64" max="512" step="64">
+                        <input type="number" id="inputSize" value="512" min="64" max="512" step="64">
                     </div>
                     <div class="setting-item">
                         <label for="enablePostProcessing">Enable Post-Processing:</label>
@@ -843,7 +843,7 @@
             constructor() {
                 this.session = null;
                 this.modelLoaded = false;
-                this.inputSize = 256;
+                this.inputSize = 512;
                 this.tileSize = 512;
                 this.overlap = 64;
                 this.modelPath = MODEL_URL;
@@ -969,8 +969,9 @@
                 const outputCtx = outputCanvas.getContext('2d', {
                     willReadFrequently: true
                 });
-                outputCtx.fillStyle = 'black';
-                outputCtx.fillRect(0, 0, originalWidth, originalHeight);
+                
+                // Initialize with transparent or average, but for simplicity, draw original first for non-processed areas
+                outputCtx.drawImage(image, 0, 0);
                 
                 // For small images, process without tiling
                 if (originalWidth <= this.tileSize && originalHeight <= this.tileSize) {
@@ -1139,37 +1140,41 @@
                 const outputImageData = outputCtx.getImageData(tile.x, tile.y, tile.width, tile.height);
                 const outputData = outputImageData.data;
                 
-                // Create a simple feathering mask for better blending
-                const featherSize = Math.min(this.overlap, 16); // Limit feather size
+                // Create a smoother feathering mask using cosine for better blending
+                const featherSize = Math.min(this.overlap, 32); // Increased limit for smoother blend
                 
                 for (let ty = 0; ty < tile.height; ty++) {
                     for (let tx = 0; tx < tile.width; tx++) {
                         const pixelIdx = (ty * tile.width + tx) * 4;
                         
-                        // Calculate blend factor based on distance from edges
+                        // Calculate blend factor based on distance from edges with cosine smoothing
                         let blendFactor = 1.0;
                         
                         // Left edge
                         if (tile.x > 0 && tx < featherSize) {
-                            blendFactor *= tx / featherSize;
+                            const normalizedDist = tx / featherSize;
+                            blendFactor *= 0.5 * (1 - Math.cos(Math.PI * normalizedDist));
                         }
                         
                         // Top edge
                         if (tile.y > 0 && ty < featherSize) {
-                            blendFactor *= ty / featherSize;
+                            const normalizedDist = ty / featherSize;
+                            blendFactor *= 0.5 * (1 - Math.cos(Math.PI * normalizedDist));
                         }
                         
                         // Right edge
                         if (tile.x + tile.width < canvasWidth && tx >= tile.width - featherSize) {
-                            blendFactor *= (tile.width - tx) / featherSize;
+                            const normalizedDist = (tile.width - tx) / featherSize;
+                            blendFactor *= 0.5 * (1 - Math.cos(Math.PI * normalizedDist));
                         }
                         
                         // Bottom edge
                         if (tile.y + tile.height < canvasHeight && ty >= tile.height - featherSize) {
-                            blendFactor *= (tile.height - ty) / featherSize;
+                            const normalizedDist = (tile.height - ty) / featherSize;
+                            blendFactor *= 0.5 * (1 - Math.cos(Math.PI * normalizedDist));
                         }
                         
-                        // Apply theblend factor
+                        // Apply the blend factor
                         outputData[pixelIdx] = Math.round(outputData[pixelIdx] * (1 - blendFactor) + tileData[pixelIdx] * blendFactor);
                         outputData[pixelIdx + 1] = Math.round(outputData[pixelIdx + 1] * (1 - blendFactor) + tileData[pixelIdx + 1] * blendFactor);
                         outputData[pixelIdx + 2] = Math.round(outputData[pixelIdx + 2] * (1 - blendFactor) + tileData[pixelIdx + 2] * blendFactor);
@@ -1182,8 +1187,8 @@
             async postProcess(canvas) {
                 const ctx = canvas.getContext('2d');
                 
-                // Apply a slight blur to reduce artifacts
-                ctx.filter = 'blur(0.5px)';
+                // Apply a very slight blur to reduce tiling artifacts
+                ctx.filter = 'blur(0.3px)';
                 const tempCanvas = document.createElement('canvas');
                 tempCanvas.width = canvas.width;
                 tempCanvas.height = canvas.height;
@@ -1192,14 +1197,65 @@
                 ctx.drawImage(tempCanvas, 0, 0);
                 ctx.filter = 'none';
                 
-                // Apply a slight sharpening to restore details
+                // Apply improved unsharp mask for sharpening
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const filteredImageData = this.applyConvolution(imageData, [
-                    0, -0.25, 0,
-                    -0.25, 2, -0.25,
-                    0, -0.25, 0
-                ]);
-                ctx.putImageData(filteredImageData, 0, 0);
+                
+                // First, apply a gaussian blur for the mask
+                const blurredData = this.applyGaussianBlur(imageData, 1.5);
+                
+                // Then, apply unsharp mask
+                const sharpenedData = this.applyUnsharpMask(imageData, blurredData, 1.5, 0.6);
+                
+                ctx.putImageData(sharpenedData, 0, 0);
+            }
+            
+            applyGaussianBlur(imageData, radius) {
+                // Simple 3x3 gaussian approximation
+                const kernel = [
+                    1/16, 2/16, 1/16,
+                    2/16, 4/16, 2/16,
+                    1/16, 2/16, 1/16
+                ];
+                return this.applyConvolution(imageData, kernel);
+            }
+            
+            applyUnsharpMask(originalData, blurredData, amount, threshold) {
+                const width = originalData.width;
+                const height = originalData.height;
+                const output = new ImageData(width, height);
+                const outputData = output.data;
+                const origData = originalData.data;
+                const blurData = blurredData.data;
+                
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+                        
+                        let rOrig = origData[idx];
+                        let gOrig = origData[idx + 1];
+                        let bOrig = origData[idx + 2];
+                        
+                        let rBlur = blurData[idx];
+                        let gBlur = blurData[idx + 1];
+                        let bBlur = blurData[idx + 2];
+                        
+                        let rDiff = rOrig - rBlur;
+                        let gDiff = gOrig - gBlur;
+                        let bDiff = bOrig - bBlur;
+                        
+                        // Apply threshold
+                        if (Math.abs(rDiff) > threshold) rOrig += rDiff * amount;
+                        if (Math.abs(gDiff) > threshold) gOrig += gDiff * amount;
+                        if (Math.abs(bDiff) > threshold) bOrig += bDiff * amount;
+                        
+                        outputData[idx] = Math.min(255, Math.max(0, rOrig));
+                        outputData[idx + 1] = Math.min(255, Math.max(0, gOrig));
+                        outputData[idx + 2] = Math.min(255, Math.max(0, bOrig));
+                        outputData[idx + 3] = origData[idx + 3];
+                    }
+                }
+                
+                return output;
             }
             
             applyConvolution(imageData, kernel) {
@@ -1284,12 +1340,7 @@
                         let g = data[width * height + pixelIndex];
                         let b = data[width * height * 2 + pixelIndex];
 
-                        // Check if values are in [-1, 1] range and normalize to [0, 1]
-                        // If the model outputs values in [-1, 1] range, uncomment these lines:
-                        // r = (r + 1) / 2;
-                        // g = (g + 1) / 2;
-                        // b = (b + 1) / 2;
-
+                        // Assume model outputs in [0,1] range, but clamp just in case
                         r = Math.max(0, Math.min(1, r));
                         g = Math.max(0, Math.min(1, g));
                         b = Math.max(0, Math.min(1, b));
@@ -1784,16 +1835,16 @@
             imageManager = new ImageManager();
             uiController = new UIController(remover, imageManager);
             
-            // Set better default values for tiling
+            // Set better default values for tiling and quality
             document.getElementById('tileSize').value = 512;
             document.getElementById('overlap').value = 64;
-            document.getElementById('inputSize').value = 256;
+            document.getElementById('inputSize').value = 512;
             document.getElementById('enablePostProcessing').checked = true;
             
             // Update the remover with these values
             remover.tileSize = 512;
             remover.overlap = 64;
-            remover.inputSize = 256;
+            remover.inputSize = 512;
             remover.enablePostProcessing = true;
             
             // Progress update function
