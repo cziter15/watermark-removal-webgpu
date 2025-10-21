@@ -28,7 +28,7 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: var(--background-color);
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
@@ -183,6 +183,9 @@
             transition: all 0.2s ease;
             margin: 10px 5px;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .btn:hover:not(:disabled) {
@@ -749,8 +752,8 @@
             </div>
             
             <div class="navigation">
-                <button class="btn btn-secondary" id="clearBtn">Clear All</button>
-                <button class="btn" id="nextBtn" disabled>Process Images</button>
+                <button class="btn btn-secondary" id="clearBtn">🗑️ Clear All</button>
+                <button class="btn" id="nextBtn" disabled>⚙️ Process Images</button>
             </div>
         </div>
         
@@ -764,8 +767,8 @@
             <div class="processing-list" id="processingList"></div>
             
             <div class="navigation">
-                <button class="btn btn-secondary" id="backBtn">Back</button>
-                <button class="btn" id="downloadAllBtn" disabled>Download All Results</button>
+                <button class="btn btn-secondary" id="backBtn">⬅️ Back</button>
+                <button class="btn" id="downloadAllBtn" disabled>⬇️ Download All Results</button>
             </div>
         </div>
 
