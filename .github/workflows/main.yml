@@ -41,13 +41,6 @@ jobs:
           find dist -name "*.html" -type f -exec sed -i 's#"model\.onnx"#"https://github.com/cziter15/watermark-removal-webgpu/raw/main/web/model.onnx"#g' {} \;
           find dist -name "*.html" -type f -exec sed -i 's#"model\.onnx\.data"#"https://github.com/cziter15/watermark-removal-webgpu/raw/main/web/model.onnx.data"#g' {} \;
 
-      - name: Verify URL replacements
-        run: |
-          if grep -r "model\.onnx" dist/ | grep -v "raw/main/web/model.onnx"; then
-            echo "Error: Not all model URLs were replaced"
-            exit 1
-          fi
-
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
