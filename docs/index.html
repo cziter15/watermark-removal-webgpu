@@ -534,7 +534,7 @@
                 this.inputSize = 256; // Model's expected input size
                 this.tileSize = 256; // Process in tiles for large images
                 this.overlap = 32; // Overlap between tiles to avoid seams
-                this.modelPath = 'model.onnx';
+                this.modelPath = window.location.href + '/model.onnx';
                 this.executionProvider = null;
             }
 
