@@ -20,29 +20,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          lfs: true
 
-      - name: Verify web directory exists
-        run: |
-          if [ ! -d "web" ]; then
-            echo "Error: web directory not found"
-            exit 1
-          fi
-          if [ -z "$(ls -A web)" ]; then
-            echo "Error: web directory is empty"
-            exit 1
-          fi
-
-      - name: Prepare deployment directory
-        run: |
-          mkdir -p dist
-          cp -r web/. dist/
-          find dist -name "*.html" -type f -exec sed -i 's#--MODEL--DATA--URL--HERE--#https://api.cors.lol/?url=https%3A%2F%2Fgithub.com%2Fcziter15%2Fwatermark-removal-webgpu%2Fraw%2Frefs%2Fheads%2Fmain%2Fweb%2Fmodel.onnx.data#g' {} +
-          find dist -name "*.html" -type f -exec sed -i 's#--MODEL--URL--HERE--#https://api.cors.lol/?url=https%3A%2F%2Fgithub.com%2Fcziter15%2Fwatermark-removal-webgpu%2Fraw%2Frefs%2Fheads%2Fmain%2Fweb%2Fmodel.onnx#g' {} +
-               
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
