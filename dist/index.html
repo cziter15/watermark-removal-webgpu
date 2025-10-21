@@ -743,14 +743,6 @@
                 <div class="processing-stats" id="processingStats">0/0 processed</div>
             </div>
             
-            <div class="upload-area" id="uploadArea2">
-                <p>Drop more images here or click to select</p>
-                <p style="font-size: 12px; color: #8b949e; margin-top: 5px;">Supports JPG, PNG (multiple selection enabled)</p>
-                <input type="file" id="fileInput2" accept="image/*" multiple>
-            </div>
-            
-            <div class="image-list" id="imageList2"></div>
-            
             <div class="processing-list" id="processingList"></div>
             
             <div class="navigation">
@@ -1411,11 +1403,8 @@
                 this.uploadSection = document.getElementById('uploadSection');
                 this.processingSection = document.getElementById('processingSection');
                 this.uploadArea = document.getElementById('uploadArea');
-                this.uploadArea2 = document.getElementById('uploadArea2');
                 this.fileInput = document.getElementById('fileInput');
-                this.fileInput2 = document.getElementById('fileInput2');
                 this.imageList = document.getElementById('imageList');
-                this.imageList2 = document.getElementById('imageList2');
                 this.processingList = document.getElementById('processingList');
                 this.nextBtn = document.getElementById('nextBtn');
                 this.backBtn = document.getElementById('backBtn');
@@ -1443,24 +1432,6 @@
                     this.handleFiles(e.dataTransfer.files);
                 });
                 this.fileInput.addEventListener('change', (e) => {
-                    this.handleFiles(e.target.files);
-                });
-
-                // Second upload area
-                this.uploadArea2.addEventListener('click', () => this.fileInput2.click());
-                this.uploadArea2.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    this.uploadArea2.classList.add('drag-over');
-                });
-                this.uploadArea2.addEventListener('dragleave', () => {
-                    this.uploadArea2.classList.remove('drag-over');
-                });
-                this.uploadArea2.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    this.uploadArea2.classList.remove('drag-over');
-                    this.handleFiles(e.dataTransfer.files);
-                });
-                this.fileInput2.addEventListener('change', (e) => {
                     this.handleFiles(e.target.files);
                 });
 
@@ -1500,16 +1471,8 @@
                     this.remover.enablePostProcessing = this.enablePostProcessingInput.checked;
                 });
 
-                // Close button clicks for both lists
+                // Close button clicks
                 this.imageList.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('close-btn')) {
-                        const thumbnail = e.target.closest('.thumbnail');
-                        if (thumbnail) {
-                            this.removeImage(thumbnail.dataset.id);
-                        }
-                    }
-                });
-                this.imageList2.addEventListener('click', (e) => {
                     if (e.target.classList.contains('close-btn')) {
                         const thumbnail = e.target.closest('.thumbnail');
                         if (thumbnail) {
@@ -1527,7 +1490,6 @@
             }
             
             attachDragAndDrop() {
-                // Only attach to upload image list for reordering
                 this.imageList.addEventListener('dragstart', (e) => {
                     const thumbnail = e.target.closest('.thumbnail');
                     if (thumbnail) {
@@ -1588,30 +1550,20 @@
                 }
                 this.renderImageList();
                 this.updateNextButton();
-                if (this.processingSection.style.display === 'block') {
-                    setTimeout(() => {
-                        this.processImages();
-                    }, 500);
-                }
             }
             
             renderImageList() {
                 const images = this.imageManager.getImages();
-                const uploadHtml = images.length === 0 ? '' : images.map(image => `
+                if (images.length === 0) {
+                    this.imageList.innerHTML = '';
+                    return;
+                }
+                this.imageList.innerHTML = images.map(image => `
                     <div class="thumbnail" draggable="true" data-id="${image.id}">
                         <img src="${image.dataUrl}" alt="${image.name}">
                         <span class="close-btn">×</span>
                     </div>
                 `).join('');
-                this.imageList.innerHTML = uploadHtml;
-
-                const processingHtml = images.length === 0 ? '' : images.map(image => `
-                    <div class="thumbnail" draggable="false" data-id="${image.id}">
-                        <img src="${image.dataUrl}" alt="${image.name}">
-                        <span class="close-btn">×</span>
-                    </div>
-                `).join('');
-                this.imageList2.innerHTML = processingHtml;
             }
             
             renderProcessingList() {
@@ -1717,7 +1669,6 @@
                 this.processingSection.style.display = 'block';
                 
                 this.renderProcessingList();
-                this.renderImageList();
                 this.processImages();
             }
             
