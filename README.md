@@ -1,5 +1,5 @@
 # 🌊 Watermark Removal (WebGPU)
-[![GitHub Pages](https://github.com/cziter15/watermark-removal-webgpu/actions/workflows/pages.yml/badge.svg)](https://cziter15.github.io/watermark-removal-webgpu/) [![Lines of Code](https://img.shields.io/endpoint?color=blue&url=https://ghloc.vercel.app/api/cziter15/watermark-removal-webgpu/badge?filter=.html$,.js$,.wgsl$)](https://github.com/cziter15/watermark-removal-webgpu)
+[![GitHub Pages](https://github.com/cziter15/watermark-removal-webgpu/actions/workflows/main.yml/badge.svg)](https://cziter15.github.io/watermark-removal-webgpu/) [![Lines of Code](https://img.shields.io/endpoint?color=blue&url=https://ghloc.vercel.app/api/cziter15/watermark-removal-webgpu/badge?filter=.html$,.js$,.wgsl$)](https://github.com/cziter15/watermark-removal-webgpu)
 
 > **Watermark Removal (WebGPU)** is a lightweight, client-side image restoration tool that removes watermarks while preserving image quality.  
 > The core is a neural-network image-to-image model (encoder–decoder with skip connections) exported to ONNX and executed in the browser on WebGPU.
@@ -9,8 +9,6 @@
     <img src="https://img.shields.io/badge/OPEN%20ON%20GITHUB%20PAGES-0078D7?style=for-the-badge&logo=github&logoColor=white" alt="Open on GitHub Pages">
   </a>
 </p>
-
-<img src="./public/header.png" alt="header" />
 
 ## ✨ What it is
 - A neural-network image processing model built to remove watermarks while keeping fine details.
@@ -79,5 +77,6 @@ graph TD
 - "WebGPU not available": ensure browser supports WebGPU and enable required flags if necessary.
 - Model load/run errors: check browser console for ONNX runtime messages and verify model input shapes and pre-processing.
 - Memory issues on large images: downscale input before running the model.
+
 
 Enjoy experimenting with ONNX on WebGPU! 🚀
