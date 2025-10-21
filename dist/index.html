@@ -133,6 +133,9 @@
             transition: all 0.3s ease;
             margin-bottom: 30px;
             background-color: rgba(0, 212, 255, 0.05);
+            display: grid;
+            place-items: center;
+            min-height: 200px;
         }
         
         .upload-area:hover {
@@ -147,11 +150,6 @@
         
         input[type="file"] {
             display: none;
-        }
-        
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
         }
         
         .btn {
@@ -546,6 +544,7 @@
             
             .upload-area {
                 padding: 30px 20px;
+                min-height: 150px;
             }
             
             .image-preview {
@@ -583,10 +582,7 @@
             
             .upload-area {
                 padding: 20px 15px;
-            }
-            
-            .upload-icon {
-                font-size: 36px;
+                min-height: 120px;
             }
             
             .btn {
@@ -652,8 +648,7 @@
             </div>
             
             <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📁</div>
-                <p>Select multiple images to process</p>
+                <p>Drop images here or click to select</p>
                 <p style="font-size: 12px; color: #8b949e; margin-top: 5px;">Supports JPG, PNG (multiple selection enabled)</p>
                 <input type="file" id="fileInput" accept="image/*" multiple>
             </div>
