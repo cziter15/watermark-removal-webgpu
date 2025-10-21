@@ -20,6 +20,17 @@ jobs:
         with:
           lfs: false  # not needed, we skip downloading large LFS files
 
+      - name: Create empty gh-pages branch (if missing)
+        run: |
+          if ! git ls-remote --exit-code origin gh-pages; then
+            git checkout --orphan gh-pages
+            git rm -rf .
+            echo "# GitHub Pages branch" > README.md
+            git add README.md
+            git commit -m "Initial empty gh-pages branch"
+            git push origin gh-pages
+          fi
+
       - name: Prepare web directory
         run: |
           cd web
