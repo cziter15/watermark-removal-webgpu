@@ -893,21 +893,25 @@
                 outputCtx.putImageData(outputImageData, tile.x, tile.y);
             }
             imageDataToTensor(imageData) {
-                const {
-                    width,
-                    height,
-                    data
-                } = imageData;
+                const { width, height, data } = imageData;
+                // 3 channels only: RGB (no alpha)
                 const tensorData = new Float32Array(3 * width * height);
+
+                // Convert RGBA to RGB, normalize to [0, 1]
+                // Format: [1, 3, H, W]
                 for (let i = 0; i < height; i++) {
                     for (let j = 0; j < width; j++) {
                         const pixelIndex = i * width + j;
-                        const dataIndex = pixelIndex * 4;
-                        tensorData[pixelIndex] = data[dataIndex] / 255.0;
-                        tensorData[width * height + pixelIndex] = data[dataIndex + 1] / 255.0;
-                        tensorData[width * height * 2 + pixelIndex] = data[dataIndex + 2] / 255.0;
+                        const dataIndex = pixelIndex * 4; // RGBA has 4 values per pixel
+
+                        // Extract RGB only (skip alpha at dataIndex + 3)
+                        tensorData[pixelIndex] = data[dataIndex] / 255.0;                    // R
+                        tensorData[width * height + pixelIndex] = data[dataIndex + 1] / 255.0; // G
+                        tensorData[width * height * 2 + pixelIndex] = data[dataIndex + 2] / 255.0; // B
                     }
                 }
+
+                debugLog(`Input tensor: [1, 3, ${height}, ${width}]`);
                 return new ort.Tensor('float32', tensorData, [1, 3, height, width]);
             }
 
@@ -920,39 +924,41 @@
                 
                 const [batch, channels, height, width] = dims;
                 
-                debugLog(`tensorToImageData - dims: [batch=${batch}, channels=${channels}, height=${height}, width=${width}]`);
+                debugLog(`Output tensor: [${batch}, ${channels}, ${height}, ${width}]`);
                 
                 if (batch !== 1 || channels !== 3) {
                     throw new Error(`Unexpected tensor shape: [${batch}, ${channels}, ${height}, ${width}]. Expected [1, 3, H, W]`);
                 }
                 
                 const data = tensor.data;
+                // Create RGBA image data for canvas
                 const imageData = new ImageData(width, height);
                 const pixelData = imageData.data;
 
-                // Convert [1, 3, H, W] to RGBA
+                // Convert [1, 3, H, W] to RGBA (add alpha channel)
                 for (let i = 0; i < height; i++) {
                     for (let j = 0; j < width; j++) {
                         const pixelIndex = i * width + j;
-                        const dataIndex = pixelIndex * 4;
+                        const dataIndex = pixelIndex * 4; // RGBA has 4 values per pixel
 
-                        // Get RGB values from tensor
+                        // Get RGB values from tensor (3 channels)
                         let r = data[pixelIndex];                              // R channel
                         let g = data[width * height + pixelIndex];             // G channel
                         let b = data[width * height * 2 + pixelIndex];         // B channel
 
-                        // Clamp to [0, 1]
+                        // Clamp to [0, 1] range
                         r = Math.max(0, Math.min(1, r));
                         g = Math.max(0, Math.min(1, g));
                         b = Math.max(0, Math.min(1, b));
 
-                        // Convert to [0, 255]
-                        pixelData[dataIndex] = Math.round(r * 255);
-                        pixelData[dataIndex + 1] = Math.round(g * 255);
-                        pixelData[dataIndex + 2] = Math.round(b * 255);
-                        pixelData[dataIndex + 3] = 255; // Alpha channel
+                        // Convert to [0, 255] and set RGBA
+                        pixelData[dataIndex] = Math.round(r * 255);     // R
+                        pixelData[dataIndex + 1] = Math.round(g * 255); // G
+                        pixelData[dataIndex + 2] = Math.round(b * 255); // B
+                        pixelData[dataIndex + 3] = 255;                 // A (always opaque)
                     }
                 }
+
                 return imageData;
             }
         }
