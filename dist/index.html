@@ -693,7 +693,7 @@
                 browserVersion = ua.match(/Version\/(\d+)/)[1];
             } else if (ua.indexOf("Edg") > -1) {
                 browserName = "Edge";
-                browserVersion = ua.match(/Edg\/(\d+)/)[1];
+                browserVersion = ua.match(/Edg}/(\d+)/)[1];
             }
             
             return {
@@ -950,7 +950,7 @@
                 const canvas = document.createElement('canvas');
                 canvas.width = this.inputSize;
                 canvas.height = this.inputSize;
-                const ctx = canvas.getContext('2d');
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
                 
                 // Resize image to model input size
                 ctx.imageSmoothingEnabled = true;
@@ -996,6 +996,10 @@
                 outputCanvas.height = originalHeight;
                 const outputCtx = outputCanvas.getContext('2d');
                 
+                // Fill with black background first
+                outputCtx.fillStyle = 'black';
+                outputCtx.fillRect(0, 0, originalWidth, originalHeight);
+                
                 // Draw resized output
                 const tempCanvas = document.createElement('canvas');
                 tempCanvas.width = this.inputSize;
@@ -1007,6 +1011,10 @@
                 outputCtx.imageSmoothingEnabled = true;
                 outputCtx.imageSmoothingQuality = 'high';
                 outputCtx.drawImage(tempCanvas, 0, 0, originalWidth, originalHeight);
+                
+                // Debug: Check if canvas has content
+                const checkData = outputCtx.getImageData(0, 0, 1, 1).data;
+                debugLog(`Output canvas sample pixel: [${checkData[0]}, ${checkData[1]}, ${checkData[2]}, ${checkData[3]}]`);
                 
                 if (progressCallback) progressCallback(100, 'Complete!');
                 
@@ -1021,13 +1029,17 @@
                 const outputCanvas = document.createElement('canvas');
                 outputCanvas.width = originalWidth;
                 outputCanvas.height = originalHeight;
-                const outputCtx = outputCanvas.getContext('2d');
+                const outputCtx = outputCanvas.getContext('2d', { willReadFrequently: true });
+
+                // Fill with black background first
+                outputCtx.fillStyle = 'black';
+                outputCtx.fillRect(0, 0, originalWidth, originalHeight);
 
                 // Create weight maps for blending
                 const weightCanvas = document.createElement('canvas');
                 weightCanvas.width = originalWidth;
                 weightCanvas.height = originalHeight;
-                const weightCtx = weightCanvas.getContext('2d');
+                const weightCtx = weightCanvas.getContext('2d', { willReadFrequently: true });
                 const weightData = weightCtx.createImageData(originalWidth, originalHeight);
                 
                 // Initialize weight data to zeros
@@ -1068,7 +1080,7 @@
                         const tileCanvas = document.createElement('canvas');
                         tileCanvas.width = this.tileSize; // Always use model input size
                         tileCanvas.height = this.tileSize;
-                        const tileCtx = tileCanvas.getContext('2d');
+                        const tileCtx = tileCanvas.getContext('2d', { willReadFrequently: true });
                         
                         // Fill with black for padding (if tile is at edge and smaller than tileSize)
                         tileCtx.fillStyle = 'black';
@@ -1084,7 +1096,7 @@
                         const tileWeightCanvas = document.createElement('canvas');
                         tileWeightCanvas.width = tileWidth;
                         tileWeightCanvas.height = tileHeight;
-                        const tileWeightCtx = tileWeightCanvas.getContext('2d');
+                        const tileWeightCtx = tileWeightCanvas.getContext('2d', { willReadFrequently: true });
                         const tileWeightData = tileWeightCtx.createImageData(tileWidth, tileHeight);
                         
                         // Calculate weights based on distance from edges
@@ -1117,7 +1129,7 @@
                         }
                         
                         // Get the processed tile data (only the actual tile area, not the padding)
-                        const processedTileData = processedTileCanvas.getContext('2d').getImageData(0, 0, tileWidth, tileHeight);
+                        const processedTileData = processedTileCanvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, tileWidth, tileHeight);
                         
                         // Blend the tile with the output canvas
                         const outputData = outputCtx.getImageData(x, y, tileWidth, tileHeight);
@@ -1151,12 +1163,16 @@
                     }
                 }
 
+                // Debug: Check if final canvas has content
+                const finalCheckData = outputCtx.getImageData(0, 0, 1, 1).data;
+                debugLog(`Final canvas sample pixel: [${finalCheckData[0]}, ${finalCheckData[1]}, ${finalCheckData[2]}, ${finalCheckData[3]}]`);
+
                 return outputCanvas;
             }
 
             async processTile(tileCanvas) {
                 // The tileCanvas is already at the model input size (tileSize x tileSize)
-                const tileCtx = tileCanvas.getContext('2d');
+                const tileCtx = tileCanvas.getContext('2d', { willReadFrequently: true });
                 const imageData = tileCtx.getImageData(0, 0, this.tileSize, this.tileSize);
                 
                 // Convert to tensor and run inference
@@ -1191,6 +1207,10 @@
                 outputCanvas.height = this.tileSize;
                 const outputCtx = outputCanvas.getContext('2d');
                 outputCtx.putImageData(outputImageData, 0, 0);
+                
+                // Debug: Check if tile canvas has content
+                const tileCheckData = outputCtx.getImageData(0, 0, 1, 1).data;
+                debugLog(`Tile canvas sample pixel: [${tileCheckData[0]}, ${tileCheckData[1]}, ${tileCheckData[2]}, ${tileCheckData[3]}]`);
                 
                 return outputCanvas;
             }
@@ -1247,7 +1267,7 @@
                         pixelData[dataIndex] = Math.round(r * 255);
                         pixelData[dataIndex + 1] = Math.round(g * 255);
                         pixelData[dataIndex + 2] = Math.round(b * 255);
-                        pixelData[dataIndex + 3] = 255; // Alpha
+                        pixelData[dataIndex + 3] = 255; // Alpha - ensure it's fully opaque
                     }
                 }
                 
@@ -1520,6 +1540,32 @@
                 this.processingList.innerHTML = images.map(image => {
                     const processedImage = processedImages.find(img => img.id === image.id);
                     
+                    // Check if the processed image has actual content
+                    let processedImageHtml = '';
+                    if (processedImage) {
+                        // Test if canvas has content
+                        const ctx = processedImage.canvas.getContext('2d');
+                        const imageData = ctx.getImageData(0, 0, 1, 1);
+                        const hasContent = imageData.data[0] !== 0 || imageData.data[1] !== 0 || imageData.data[2] !== 0;
+                        
+                        if (hasContent) {
+                            processedImageHtml = `<img class="preview-img" src="${processedImage.canvas.toDataURL()}" alt="Processed">`;
+                        } else {
+                            processedImageHtml = `
+                                <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                                    <span style="color: var(--text-secondary);">Empty result</span>
+                                    <span style="color: var(--error-color); font-size: 12px; margin-top: 5px;">Canvas is blank</span>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        processedImageHtml = `
+                            <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center;">
+                                <span style="color: var(--text-secondary);">Processing...</span>
+                            </div>
+                        `;
+                    }
+                    
                     return `
                         <div class="image-item">
                             <div class="image-header">
@@ -1533,12 +1579,7 @@
                                 </div>
                                 <div class="preview-box">
                                     <div class="preview-title">Processed</div>
-                                    ${processedImage ? 
-                                        `<img class="preview-img" src="${processedImage.canvas.toDataURL()}" alt="Processed">` :
-                                        `<div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center;">
-                                            <span style="color: var(--text-secondary);">Processing...</span>
-                                        </div>`
-                                    }
+                                    ${processedImageHtml}
                                 </div>
                             </div>
                             <div class="progress-container">
