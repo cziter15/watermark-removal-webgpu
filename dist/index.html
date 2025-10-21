@@ -7,8 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.0/dist/ort.all.min.js"></script>
     <style>
         :root {
-            --primary-color: #00d4ff;
-            --secondary-color: #00ffff;
+            --primary-color: #007acc;
+            --secondary-color: #0099dd;
             --background-color: #000000;
             --surface-color: #0d1117;
             --card-color: #161b22;
@@ -291,6 +291,12 @@
             object-fit: contain;
             border-radius: 8px;
             background-color: var(--background-color);
+            cursor: zoom-in;
+            transition: transform 0.2s ease;
+        }
+        
+        .preview-img:hover {
+            transform: scale(1.02);
         }
         
         .progress-container {
@@ -538,6 +544,42 @@
             color: var(--error-color);
         }
         
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+        }
+        
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 1200px;
+            max-height: 80%;
+            object-fit: contain;
+        }
+        
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: var(--primary-color);
+        }
+        
         /* Copyright */
         .copyright {
             text-align: center;
@@ -597,6 +639,10 @@
             
             .setting-item {
                 padding: 10px 15px;
+            }
+            
+            .modal-content {
+                width: 95%;
             }
         }
         
@@ -712,6 +758,12 @@
                 <button class="btn" id="downloadAllBtn" disabled>Download All Results</button>
             </div>
         </div>
+
+        <!-- Modal for Enlarged Images -->
+        <div id="imageModal" class="modal">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <img class="modal-content" id="modalImg" onclick="closeModal()">
+        </div>
     </div>
     
     <!-- Copyright -->
@@ -734,6 +786,25 @@
                 content.classList.add('expanded');
                 toggle.classList.add('expanded');
                 toggle.textContent = '▲';
+            }
+        }
+
+        // Modal functions
+        function openModal(src) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImg');
+            modal.style.display = 'block';
+            modalImg.src = src;
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
             }
         }
 
@@ -1446,6 +1517,13 @@
                         }
                     }
                 });
+
+                // Modal close on escape
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        closeModal();
+                    }
+                });
             }
             
             attachDragAndDrop() {
@@ -1555,7 +1633,7 @@
                     let progressMsg = 'Waiting to process...';
                     if (image.status === 'error') {
                         processedImageHtml = `
-                            <div class="preview-img" style="background-color: var(--error-color); opacity: 0.2; display: flex; align-items: center; justify-content: center;">
+                            <div class="preview-img" style="background-color: var(--error-color); opacity: 0.2; display: flex; align-items: center; justify-content: center; cursor: not-allowed;">
                                 <span style="color: white;">Error</span>
                             </div>
                         `;
@@ -1566,10 +1644,11 @@
                         const imageData = ctx.getImageData(0, 0, 1, 1);
                         const hasContent = imageData.data[0] !== 0 || imageData.data[1] !== 0 || imageData.data[2] !== 0;
                         if (hasContent) {
-                            processedImageHtml = `<img class="preview-img" src="${processedImage.canvas.toDataURL()}" alt="Processed">`;
+                            const processedDataUrl = processedImage.canvas.toDataURL();
+                            processedImageHtml = `<img class="preview-img" src="${processedDataUrl}" alt="Processed" onclick="openModal('${processedDataUrl}')">`;
                         } else {
                             processedImageHtml = `
-                                <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                                <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: not-allowed;">
                                     <span style="color: var(--text-secondary);">Processing result</span>
                                 </div>
                             `;
@@ -1578,7 +1657,7 @@
                         progressMsg = 'Completed';
                     } else {
                         processedImageHtml = `
-                            <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center;">
+                            <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center; cursor: not-allowed;">
                                 <span style="color: var(--text-secondary);">Processing...</span>
                             </div>
                         `;
@@ -1595,7 +1674,7 @@
                             <div class="image-preview">
                                 <div class="preview-box">
                                     <div class="preview-title">Original</div>
-                                    <img class="preview-img" src="${image.dataUrl}" alt="Original">
+                                    <img class="preview-img" src="${image.dataUrl}" alt="Original" onclick="openModal('${image.dataUrl}')">
                                 </div>
                                 <div class="preview-box">
                                     <div class="preview-title">Processed</div>
