@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ONNX Watermark Remover</title>
-    <!-- Use the full ONNX Runtime Web build that includes all backends -->
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.0/dist/ort.all.min.js"></script>
     <style>
         :root {
@@ -433,6 +432,31 @@
             color: var(--error-color);
         }
         
+        /* Debug Panel */
+        .debug-panel {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .debug-panel h3 {
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .debug-log {
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+        }
+        
         /* Responsive improvements */
         @media (max-width: 768px) {
             .container {
@@ -532,6 +556,11 @@
                 </div>
             </div>
             
+            <div class="debug-panel" id="debugPanel" style="display: none;">
+                <h3>Debug Information</h3>
+                <div class="debug-log" id="debugLog"></div>
+            </div>
+            
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📁</div>
                 <p>Click to upload or drag & drop images</p>
@@ -567,6 +596,16 @@
         // Define constants for model URLs
         const MODEL_URL = 'model.onnx';
         const MODEL_DATA_URL = 'model.onnx.data';
+        
+        // Debug logging function
+        function debugLog(message) {
+            console.log(message);
+            const debugLog = document.getElementById('debugLog');
+            if (debugLog) {
+                debugLog.textContent += message + '\n';
+                debugLog.scrollTop = debugLog.scrollHeight;
+            }
+        }
         
         // Check for WebGPU support
         async function checkWebGPUSupport() {
@@ -693,16 +732,20 @@
                 this.modelPath = MODEL_URL;
                 this.modelDataPath = MODEL_DATA_URL;
                 this.executionProvider = null;
+                this.debugMode = true; // Enable debug mode
             }
 
             async loadModel(modelPath, modelDataPath) {
                 try {
+                    debugLog("Loading model...");
+                    
                     // Fetch the model file
                     const modelResponse = await fetch(modelPath);
                     if (!modelResponse.ok) {
                         throw new Error(`Failed to fetch model: ${modelResponse.statusText}`);
                     }
                     const modelBuffer = await modelResponse.arrayBuffer();
+                    debugLog(`Model loaded, size: ${modelBuffer.byteLength} bytes`);
                     
                     // Try to fetch external data file if it exists
                     let externalDataBuffer = null;
@@ -713,12 +756,12 @@
                         if (dataResponse.ok) {
                             externalDataBuffer = await dataResponse.arrayBuffer();
                             externalDataLoaded = true;
-                            console.log('External data file loaded successfully');
+                            debugLog("External data file loaded successfully");
                         } else {
-                            console.warn(`External data file not found: ${dataResponse.statusText}`);
+                            debugLog(`External data file not found: ${dataResponse.statusText}`);
                         }
                     } catch (e) {
-                        console.warn('Error loading external data file:', e);
+                        debugLog(`Error loading external data file: ${e.message}`);
                     }
                     
                     // Create session options with multiple execution providers
@@ -737,12 +780,28 @@
                     }
                     
                     // Load the model with automatic backend selection
+                    debugLog("Creating inference session...");
                     const session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
                     
                     // Get input shape information
                     const inputNames = session.inputNames;
-                    console.log('Model inputs:', inputNames);
-                    console.log('Model outputs:', session.outputNames);
+                    const outputNames = session.outputNames;
+                    debugLog(`Model inputs: ${JSON.stringify(inputNames)}`);
+                    debugLog(`Model outputs: ${JSON.stringify(outputNames)}`);
+                    
+                    // Check input tensor info
+                    if (inputNames.length > 0) {
+                        const inputTensor = session.inputNames[0];
+                        const inputInfo = session.inputMetadata[inputTensor];
+                        debugLog(`Input tensor info: ${JSON.stringify(inputInfo)}`);
+                    }
+                    
+                    // Check output tensor info
+                    if (outputNames.length > 0) {
+                        const outputTensor = session.outputNames[0];
+                        const outputInfo = session.outputMetadata[outputTensor];
+                        debugLog(`Output tensor info: ${JSON.stringify(outputInfo)}`);
+                    }
                     
                     // Determine which execution provider was used
                     if (session.handler) {
@@ -750,6 +809,7 @@
                     } else {
                         this.executionProvider = 'unknown';
                     }
+                    debugLog(`Using execution provider: ${this.executionProvider}`);
                     
                     this.session = session;
                     this.modelLoaded = true;
@@ -758,13 +818,14 @@
                     
                     return true;
                 } catch (error) {
+                    debugLog(`Model loading error: ${error.message}`);
                     console.error('Model loading error:', error);
                     
                     // Check if this is an external data error
                     if (error.message.includes('external data') || error.message.includes('Deserialize tensor')) {
                         // Try loading without external data
                         try {
-                            console.log('Attempting to load model without external data...');
+                            debugLog("Attempting to load model without external data...");
                             
                             const sessionOptions = {
                                 executionProviders: ['webgpu', 'wasm', 'cpu']
@@ -778,6 +839,7 @@
                             } else {
                                 this.executionProvider = 'unknown';
                             }
+                            debugLog(`Using execution provider (without external data): ${this.executionProvider}`);
                             
                             this.session = session;
                             this.modelLoaded = true;
@@ -786,6 +848,7 @@
                             
                             return true;
                         } catch (e2) {
+                            debugLog(`Alternative loading failed: ${e2.message}`);
                             console.error('Alternative loading failed:', e2);
                         }
                     }
@@ -802,6 +865,8 @@
                 const originalWidth = image.width;
                 const originalHeight = image.height;
 
+                debugLog(`Processing image: ${originalWidth}x${originalHeight}`);
+
                 // Validate image size
                 if (originalWidth < 64 || originalHeight < 64) {
                     throw new Error('Image is too small. Minimum size is 64x64 pixels.');
@@ -809,8 +874,10 @@
 
                 // For large images, process in tiles to maintain quality
                 if (originalWidth > this.tileSize || originalHeight > this.tileSize) {
+                    debugLog("Using tiled processing");
                     return await this.processTiled(image, progressCallback);
                 } else {
+                    debugLog("Using single processing");
                     return await this.processSingle(image, progressCallback);
                 }
             }
@@ -837,6 +904,7 @@
                 
                 // Convert to tensor format [1, 3, H, W] with normalization
                 const inputTensor = this.imageDataToTensor(imageData);
+                debugLog(`Input tensor shape: [${inputTensor.dims.join(', ')}]`);
                 
                 // Run inference
                 const feeds = {};
@@ -848,6 +916,17 @@
                 // Get output tensor
                 const outputName = this.session.outputNames[0];
                 const outputTensor = results[outputName];
+                debugLog(`Output tensor shape: [${outputTensor.dims.join(', ')}]`);
+                
+                // Log some sample values from the output tensor
+                if (this.debugMode && outputTensor.data && outputTensor.data.length > 0) {
+                    const sampleSize = Math.min(10, outputTensor.data.length);
+                    let sampleValues = [];
+                    for (let i = 0; i < sampleSize; i++) {
+                        sampleValues.push(outputTensor.data[i].toFixed(4));
+                    }
+                    debugLog(`Sample output values: [${sampleValues.join(', ')}]`);
+                }
                 
                 // Convert tensor back to image
                 const outputImageData = this.tensorToImageData(outputTensor);
@@ -911,6 +990,8 @@
                         tileCount++;
                     }
                 }
+                
+                debugLog(`Processing ${tileCount} tiles`);
 
                 // Process each tile
                 for (let y = 0; y < originalHeight; y += step) {
@@ -921,6 +1002,8 @@
                         // Calculate tile dimensions (should be tileSize x tileSize, but might be less at edges)
                         const tileWidth = Math.min(this.tileSize, originalWidth - x);
                         const tileHeight = Math.min(this.tileSize, originalHeight - y);
+
+                        debugLog(`Processing tile at (${x}, ${y}), size: ${tileWidth}x${tileHeight}`);
 
                         // Extract tile from original image
                         const tileCanvas = document.createElement('canvas');
@@ -1019,6 +1102,8 @@
                 
                 // Convert to tensor and run inference
                 const inputTensor = this.imageDataToTensor(imageData);
+                debugLog(`Tile input tensor shape: [${inputTensor.dims.join(', ')}]`);
+                
                 const feeds = {};
                 feeds[this.session.inputNames[0]] = inputTensor;
                 const results = await this.session.run(feeds);
@@ -1026,6 +1111,18 @@
                 // Get output tensor
                 const outputName = this.session.outputNames[0];
                 const outputTensor = results[outputName];
+                debugLog(`Tile output tensor shape: [${outputTensor.dims.join(', ')}]`);
+                
+                // Log some sample values from the output tensor
+                if (this.debugMode && outputTensor.data && outputTensor.data.length > 0) {
+                    const sampleSize = Math.min(10, outputTensor.data.length);
+                    let sampleValues = [];
+                    for (let i = 0; i < sampleSize; i++) {
+                        sampleValues.push(outputTensor.data[i].toFixed(4));
+                    }
+                    debugLog(`Tile sample output values: [${sampleValues.join(', ')}]`);
+                }
+                
                 const outputImageData = this.tensorToImageData(outputTensor);
                 
                 // Create output canvas
@@ -1065,6 +1162,8 @@
                 const [batch, channels, height, width] = tensor.dims;
                 const data = tensor.data;
                 
+                debugLog(`Converting tensor to image data: [${batch}, ${channels}, ${height}, ${width}]`);
+                
                 const imageData = new ImageData(width, height);
                 const pixelData = imageData.data;
                 
@@ -1074,12 +1173,33 @@
                         const pixelIndex = i * width + j;
                         const dataIndex = pixelIndex * 4;
                         
+                        // Get RGB values from tensor and clamp to [0, 1]
+                        let r = data[pixelIndex];
+                        let g = data[width * height + pixelIndex];
+                        let b = data[width * height * 2 + pixelIndex];
+                        
+                        // Debug: Log if values are outside expected range
+                        if (this.debugMode && (r < 0 || r > 1 || g < 0 || g > 1 || b < 0 || b > 1)) {
+                            debugLog(`Warning: Tensor values outside [0,1] range at (${i},${j}): r=${r}, g=${g}, b=${b}`);
+                        }
+                        
                         // Clamp values to [0, 1] and convert to [0, 255]
-                        pixelData[dataIndex] = Math.max(0, Math.min(255, data[pixelIndex] * 255));
-                        pixelData[dataIndex + 1] = Math.max(0, Math.min(255, data[width * height + pixelIndex] * 255));
-                        pixelData[dataIndex + 2] = Math.max(0, Math.min(255, data[width * height * 2 + pixelIndex] * 255));
+                        pixelData[dataIndex] = Math.max(0, Math.min(255, Math.round(r * 255)));
+                        pixelData[dataIndex + 1] = Math.max(0, Math.min(255, Math.round(g * 255)));
+                        pixelData[dataIndex + 2] = Math.max(0, Math.min(255, Math.round(b * 255)));
                         pixelData[dataIndex + 3] = 255; // Alpha
                     }
+                }
+                
+                // Debug: Log some sample pixel values
+                if (this.debugMode) {
+                    const sampleSize = Math.min(10, pixelData.length / 4);
+                    let samplePixels = [];
+                    for (let i = 0; i < sampleSize; i++) {
+                        const idx = i * 4;
+                        samplePixels.push(`[${pixelData[idx]}, ${pixelData[idx+1]}, ${pixelData[idx+2]}]`);
+                    }
+                    debugLog(`Sample pixel values: [${samplePixels.join(', ')}]`);
                 }
                 
                 return imageData;
@@ -1204,6 +1324,8 @@
                 this.inputSizeInput = document.getElementById('inputSize');
                 
                 this.processingStats = document.getElementById('processingStats');
+                this.debugPanel = document.getElementById('debugPanel');
+                this.debugLog = document.getElementById('debugLog');
             }
 
             attachEventListeners() {
@@ -1272,6 +1394,11 @@
             }
 
             async handleFiles(files) {
+                // Clear debug log when new files are added
+                if (this.debugLog) {
+                    this.debugLog.textContent = '';
+                }
+                
                 for (let i = 0; i < files.length; i++) {
                     try {
                         const image = await this.imageManager.addImage(files[i]);
@@ -1492,6 +1619,9 @@
             remover = new ONNXWatermarkRemover();
             imageManager = new ImageManager();
             uiController = new UIController(remover, imageManager);
+            
+            // Show debug panel
+            document.getElementById('debugPanel').style.display = 'block';
             
             // Load model
             const success = await remover.loadModel(MODEL_URL, MODEL_DATA_URL);
