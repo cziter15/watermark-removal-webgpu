@@ -19,136 +19,741 @@
             --warning-color: #fbbf24;
             --info-color: #60a5fa;
         }
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{
-            font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;
-            background:var(--background-color);color:var(--text-primary);min-height:100vh;
-            display:flex;flex-direction:column;justify-content:center;align-items:center;
-            padding:20px;line-height:1.6
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .container{
-            background:var(--surface-color);border-radius:20px;
-            box-shadow:0 20px 60px rgba(0,0,0,.5);padding:30px;max-width:1200px;width:100%;
-            border:1px solid rgba(255,255,255,.1);margin-bottom:20px
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            line-height: 1.6;
         }
-        h1{margin-bottom:10px;font-size:28px;text-align:center}
-        .subtitle{margin-bottom:30px;font-size:16px;text-align:center;color:var(--text-secondary)}
-        .loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center}
-        .loading-icon{font-size:64px;margin-bottom:20px;animation:pulse 2s infinite}
-        @keyframes pulse{0%{transform:scale(1);opacity:.8}50%{transform:scale(1.1);opacity:1}100%{transform:scale(1);opacity:.8}}
-        .loading-text{font-size:20px;margin-bottom:10px}
-        .loading-subtext{color:var(--text-secondary);font-size:14px}
-        .loading-bar{width:100%;height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:30px;overflow:hidden}
-        .loading-progress{height:100%;width:0%;background:linear-gradient(90deg,var(--primary-color) 0%,var(--secondary-color) 100%);border-radius:3px;animation:loading 3s infinite}
-        @keyframes loading{0%{width:0%}50%{width:70%}100%{width:100%}}
-        .upload-section{display:none}
-        .upload-area{border:3px dashed var(--primary-color);border-radius:15px;padding:40px;text-align:center;cursor:pointer;transition:all .3s ease;margin-bottom:30px;background:rgba(99,102,241,.1)}
-        .upload-area:hover{border-color:var(--secondary-color);background:rgba(139,92,246,.1)}
-        .upload-area.drag-over{background:rgba(139,92,246,.2);border-color:var(--secondary-color)}
-        input[type=file]{display:none}
-        .upload-icon{font-size:48px;margin-bottom:10px}
-        .btn{
-            background:linear-gradient(135deg,var(--primary-color) 0%,var(--secondary-color) 100%);
-            color:#fff;border:none;padding:12px 30px;border-radius:25px;font-size:16px;cursor:pointer;
-            transition:all .2s ease;margin:10px 5px;font-weight:500
+        
+        .container {
+            background-color: var(--surface-color);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
         }
-        .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 5px 15px rgba(99,102,241,.4)}
-        .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-        .btn-secondary{background:var(--card-color)}
-        .image-list{margin-top:30px}
-        .image-item{background:var(--card-color);border-radius:15px;padding:20px;margin-bottom:20px;border:1px solid rgba(255,255,255,.1)}
-        .image-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px}
-        .image-name{font-weight:500;font-size:16px;word-break:break-all;flex:1;min-width:200px}
-        .image-size{font-size:14px;color:var(--text-secondary)}
-        .image-preview{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px}
-        .preview-box{text-align:center}
-        .preview-title{font-size:14px;color:var(--text-secondary);margin-bottom:8px}
-        .preview-img{width:100%;height:150px;object-fit:contain;border-radius:8px;background:var(--background-color)}
-        .progress-container{width:100%;height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;margin-top:10px}
-        .progress-bar{height:100%;background:linear-gradient(90deg,var(--primary-color) 0%,var(--secondary-color) 100%);width:0;transition:width .3s ease;border-radius:4px}
-        .progress-text{display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-top:5px}
-        .status{padding:8px 12px;border-radius:8px;font-size:14px;display:inline-block;margin-top:10px}
-        .status.pending{background:rgba(251,191,36,.2);color:var(--warning-color)}
-        .status.processing{background:rgba(96,165,250,.2);color:var(--info-color)}
-        .status.completed{background:rgba(74,222,128,.2);color:var(--accent-color)}
-        .status.error{background:rgba(248,113,113,.2);color:var(--error-color)}
-        .processing-section{display:none}
-        .processing-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-        .processing-title{font-size:20px;font-weight:500}
-        .processing-stats{font-size:14px;color:var(--text-secondary)}
-        .empty-state{text-align:center;padding:40px 20px;color:var(--text-secondary)}
-        .empty-icon{font-size:48px;margin-bottom:15px;opacity:.5}
-        .settings-panel{background:var(--card-color);border-radius:10px;padding:20px;margin-bottom:20px;border:1px solid rgba(255,255,255,.1)}
-        .settings-panel h3{margin-bottom:15px;font-size:16px}
-        .setting-item{margin-bottom:15px}
-        .setting-item label{display:block;margin-bottom:5px;font-size:14px;color:var(--text-secondary)}
-        .setting-item input{width:100%;padding:10px;border:1px solid rgba(255,255,255,.2);border-radius:5px;background:var(--surface-color);color:var(--text-primary)}
-        .setting-item input[type=range]{padding:5px 0}
-        .setting-item span{margin-left:10px;color:var(--text-primary)}
-        .execution-info{background:rgba(96,165,250,.1);border-left:4px solid var(--info-color);padding:15px;border-radius:0 10px 10px 0;margin-bottom:20px;font-size:14px}
-        .execution-info h4{margin-bottom:8px;color:var(--info-color)}
-        .execution-info p{margin-bottom:5px;color:var(--text-primary)}
-        .provider-badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:12px;font-weight:bold;margin-right:5px}
-        .provider-badge.webgpu{background:var(--accent-color);color:#fff}
-        .provider-badge.wasm{background:var(--warning-color);color:#fff}
-        .provider-badge.cpu{background:#64748b;color:#fff}
-        .navigation{display:flex;justify-content:space-between;margin-top:30px;gap:10px}
-        .error-message{background:rgba(248,113,113,.2);border-left:4px solid var(--error-color);padding:15px;border-radius:0 10px 10px 0;margin-bottom:20px;font-size:14px;color:var(--error-color)}
-        .debug-panel{background:var(--card-color);border-radius:10px;padding:20px;margin-bottom:20px;border:1px solid rgba(255,255,255,.1);max-height:600px;overflow-y:auto;display:none}
-        .debug-panel h3{margin-bottom:15px;font-size:16px;position:sticky;top:0;background:var(--card-color);padding:10px 0;z-index:10}
-        .debug-log{display:flex;flex-direction:column;gap:20px}
-        .debug-image-section{border:2px solid rgba(96,165,250,.3);border-radius:10px;padding:15px;background:rgba(15,23,42,.5)}
-        .debug-image-header{background:linear-gradient(135deg,rgba(99,102,241,.2) 0%,rgba(139,92,246,.2) 100%);border-radius:8px;padding:15px;margin-bottom:15px;border-left:4px solid var(--info-color)}
-        .debug-image-title{font-size:18px;font-weight:bold;color:var(--info-color);margin-bottom:12px;display:flex;align-items:center;gap:10px}
-        .debug-image-title::before{content:"🖼️";font-size:24px}
-        .debug-image-info{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-        .debug-info-item{font-size:12px;color:var(--text-secondary);background:rgba(15,23,42,.5);padding:6px 10px;border-radius:5px}
-        .debug-info-item strong{color:var(--text-primary);min-width:60px;display:inline-block}
-        .debug-tiles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:15px}
-        .debug-tile{background:var(--surface-color);border-radius:8px;padding:12px;border:1px solid rgba(255,255,255,.1);transition:all .3s ease;overflow:hidden}
-        .debug-tile:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(99,102,241,.3);border-color:var(--primary-color)}
-        .debug-tile-header{font-size:12px;font-weight:bold;color:var(--text-primary);margin-bottom:10px;text-align:center;padding:6px;background:rgba(99,102,241,.1);border-radius:5px}
-        .debug-tile-content{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-        .debug-image-container{text-align:center}
-        .debug-image-label{font-size:10px;font-weight:bold;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
-        .debug-image-before .debug-image-label{color:var(--accent-color)}
-        .debug-image-after .debug-image-label{color:var(--secondary-color)}
-        .debug-image{width:100%;height:90px;object-fit:cover;border-radius:5px;cursor:pointer;transition:all .2s ease;background:var(--background-color)}
-        .debug-image:hover{transform:scale(1.05);box-shadow:0 4px 12px rgba(0,0,0,.4)}
-        .debug-image-before .debug-image{border:2px solid var(--accent-color)}
-        .debug-image-after .debug-image{border:2px solid var(--secondary-color)}
-        .debug-tile-info{font-size:10px;color:var(--text-secondary);background:rgba(15,23,42,.7);padding:8px;border-radius:5px}
-        .debug-tile-info div{margin-bottom:4px;display:flex;justify-content:space-between}
-        .debug-tile-info div:last-child{margin-bottom:0}
-        .debug-tile-info strong{color:var(--text-primary)}
-        .debug-panel::-webkit-scrollbar{width:10px}
-        .debug-panel::-webkit-scrollbar-track{background:rgba(255,255,255,.05);border-radius:10px}
-        .debug-panel::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--primary-color) 0%,var(--secondary-color) 100%);border-radius:10px}
-        .debug-panel::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--secondary-color) 0%,var(--primary-color) 100%)}
-        .copyright{text-align:center;margin-top:20px;font-size:14px;color:var(--text-secondary)}
-        .copyright a{color:var(--primary-color);text-decoration:none;transition:color .2s ease}
-        .copyright a:hover{color:var(--secondary-color);text-decoration:underline}
-        @media(max-width:768px){.container{padding:20px}h1{font-size:24px}.subtitle{font-size:14px}.upload-area{padding:30px 20px}.image-preview{grid-template-columns:1fr}.btn{padding:10px 20px;font-size:14px;margin:5px}.settings-panel{padding:15px}.debug-tiles-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}.debug-panel{max-height:400px}}
-        @media(max-width:480px){.container{padding:15px}h1{font-size:20px}.upload-area{padding:20px 15px}.upload-icon{font-size:36px}.btn{padding:8px 16px;font-size:13px}.navigation{flex-direction:column}.debug-tiles-grid{grid-template-columns:1fr}.debug-tile-content{grid-template-columns:1fr}}
+        
+        h1 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        /* Loading Screen */
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .loading-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+        
+        .loading-text {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .loading-subtext {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .loading-bar {
+            width: 100%;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 30px;
+            overflow: hidden;
+        }
+        
+        .loading-progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-radius: 3px;
+            animation: loading 3s infinite;
+        }
+        
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+        
+        /* Upload Section */
+        .upload-section {
+            display: none;
+        }
+        
+        .upload-area {
+            border: 3px dashed var(--primary-color);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+        
+        .upload-area:hover {
+            border-color: var(--secondary-color);
+            background-color: rgba(139, 92, 246, 0.1);
+        }
+        
+        .upload-area.drag-over {
+            background-color: rgba(139, 92, 246, 0.2);
+            border-color: var(--secondary-color);
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 10px 5px;
+            font-weight: 500;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: var(--card-color);
+        }
+        
+        /* Image List */
+        .image-list {
+            margin-top: 30px;
+        }
+        
+        .image-item {
+            background-color: var(--card-color);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .image-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .image-name {
+            font-weight: 500;
+            font-size: 16px;
+            color: var(--text-primary);
+            word-break: break-all;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .image-size {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .image-preview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .preview-box {
+            text-align: center;
+        }
+        
+        .preview-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .preview-img {
+            width: 100%;
+            height: 150px;
+            object-fit: contain;
+            border-radius: 8px;
+            background-color: var(--background-color);
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+        
+        .status {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .status.pending {
+            background-color: rgba(251, 191, 36, 0.2);
+            color: var(--warning-color);
+        }
+        
+        .status.processing {
+            background-color: rgba(96, 165, 250, 0.2);
+            color: var(--info-color);
+        }
+        
+        .status.completed {
+            background-color: rgba(74, 222, 128, 0.2);
+            color: var(--accent-color);
+        }
+        
+        .status.error {
+            background-color: rgba(248, 113, 113, 0.2);
+            color: var(--error-color);
+        }
+        
+        /* Processing Section */
+        .processing-section {
+            display: none;
+        }
+        
+        .processing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .processing-title {
+            font-size: 20px;
+            font-weight: 500;
+        }
+        
+        .processing-stats {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        /* Settings Panel */
+        .settings-panel {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .settings-panel h3 {
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+        
+        .setting-item {
+            margin-bottom: 15px;
+        }
+        
+        .setting-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .setting-item input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+        
+        .setting-item input[type="range"] {
+            padding: 5px 0;
+        }
+        
+        .setting-item span {
+            display: inline-block;
+            margin-left: 10px;
+            color: var(--text-primary);
+        }
+        
+        /* Execution Info */
+        .execution-info {
+            background-color: rgba(96, 165, 250, 0.1);
+            border-left: 4px solid var(--info-color);
+            padding: 15px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .execution-info h4 {
+            margin-bottom: 8px;
+            color: var(--info-color);
+        }
+        
+        .execution-info p {
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+        
+        .execution-info .provider-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .provider-badge.webgpu {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .provider-badge.wasm {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .provider-badge.cpu {
+            background-color: #64748b;
+            color: white;
+        }
+        
+        /* Navigation */
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 10px;
+        }
+        
+        /* Error Message */
+        .error-message {
+            background-color: rgba(248, 113, 113, 0.2);
+            border-left: 4px solid var(--error-color);
+            padding: 15px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--error-color);
+        }
+        
+        /* Debug Panel */
+        .debug-panel {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .debug-panel h3 {
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            font-size: 16px;
+            position: sticky;
+            top: 0;
+            background-color: var(--card-color);
+            padding: 10px 0;
+            z-index: 10;
+        }
+
+        .debug-log {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .debug-image-section {
+            border: 2px solid rgba(96, 165, 250, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            background-color: rgba(15, 23, 42, 0.5);
+        }
+
+        .debug-image-header {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--info-color);
+        }
+
+        .debug-image-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--info-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .debug-image-title::before {
+            content: "🖼️";
+            font-size: 24px;
+        }
+
+        .debug-image-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .debug-info-item {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background-color: rgba(15, 23, 42, 0.5);
+            padding: 6px 10px;
+            border-radius: 5px;
+        }
+
+        .debug-info-item strong {
+            color: var(--text-primary);
+            display: inline-block;
+            min-width: 60px;
+        }
+
+        .debug-tiles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .debug-tile {
+            background-color: var(--surface-color);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .debug-tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+            border-color: var(--primary-color);
+        }
+
+        .debug-tile-header {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            text-align: center;
+            padding: 6px;
+            background-color: rgba(99, 102, 241, 0.1);
+            border-radius: 5px;
+        }
+
+        .debug-tile-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .debug-image-container {
+            text-align: center;
+        }
+
+        .debug-image-label {
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .debug-image-before .debug-image-label {
+            color: var(--accent-color);
+        }
+
+        .debug-image-after .debug-image-label {
+            color: var(--secondary-color);
+        }
+
+        .debug-image {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: var(--background-color);
+        }
+
+        .debug-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .debug-image-before .debug-image {
+            border: 2px solid var(--accent-color);
+        }
+
+        .debug-image-after .debug-image {
+            border: 2px solid var(--secondary-color);
+        }
+
+        .debug-tile-info {
+            font-size: 10px;
+            color: var(--text-secondary);
+            background-color: rgba(15, 23, 42, 0.7);
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .debug-tile-info div {
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .debug-tile-info div:last-child {
+            margin-bottom: 0;
+        }
+
+        .debug-tile-info strong {
+            color: var(--text-primary);
+        }
+
+        /* Scrollbar styling */
+        .debug-panel::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .debug-panel::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .debug-panel::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-radius: 10px;
+        }
+
+        .debug-panel::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+        }
+        
+        /* Copyright */
+        .copyright {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .copyright a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .copyright a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+        
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+            }
+            
+            .upload-area {
+                padding: 30px 20px;
+            }
+            
+            .image-preview {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+                margin: 5px;
+            }
+            
+            .settings-panel {
+                padding: 15px;
+            }
+            
+            .debug-tiles-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            }
+            
+            .debug-panel {
+                max-height: 400px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .upload-area {
+                padding: 20px 15px;
+            }
+            
+            .upload-icon {
+                font-size: 36px;
+            }
+            
+            .btn {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            
+            .navigation {
+                flex-direction: column;
+            }
+            
+            .debug-tiles-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .debug-tile-content {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎨 ks-unwatermarker</h1>
         <p class="subtitle">Upload images to remove watermarks using AI</p>
-
+        
         <!-- Loading Screen -->
         <div class="loading-screen" id="loadingScreen">
             <div class="loading-icon">⏳</div>
             <div class="loading-text">Loading AI Model</div>
             <div class="loading-subtext">This may take a moment...</div>
-            <div class="loading-bar"><div class="loading-progress"></div></div>
-            <div class="execution-info" id="executionInfo" style="margin-top:30px;width:100%">
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <div class="execution-info" id="executionInfo" style="margin-top: 30px; width: 100%;">
                 <h4>Execution Provider Information</h4>
                 <p id="providerStatus">Detecting available execution providers...</p>
             </div>
         </div>
-
+        
         <!-- Upload Section -->
         <div class="upload-section" id="uploadSection">
             <div class="settings-panel">
@@ -170,419 +775,1134 @@
                     <input type="checkbox" id="enablePostProcessing" checked>
                 </div>
             </div>
-
-            <div class="debug-panel" id="debugPanel" style="display:none">
+            
+            <div class="debug-panel" id="debugPanel" style="display: none;">
                 <h3>🔍 Debug Information</h3>
                 <div class="debug-log" id="debugLog"></div>
             </div>
-
+            
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📁</div>
                 <p>Click to upload or drag & drop images</p>
-                <p style="font-size:12px;color:#94a3b8;margin-top:5px">Supports JPG, PNG</p>
+                <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">Supports JPG, PNG</p>
                 <input type="file" id="fileInput" accept="image/*" multiple>
             </div>
-
+            
             <div class="image-list" id="imageList"></div>
-
+            
             <div class="navigation">
                 <button class="btn btn-secondary" id="clearBtn">Clear All</button>
                 <button class="btn" id="nextBtn" disabled>Next</button>
             </div>
         </div>
-
+        
         <!-- Processing Section -->
         <div class="processing-section" id="processingSection">
             <div class="processing-header">
                 <div class="processing-title">Processing Images</div>
                 <div class="processing-stats" id="processingStats">0/0 completed</div>
             </div>
+            
             <div class="image-list" id="processingList"></div>
+            
             <div class="navigation">
                 <button class="btn btn-secondary" id="backBtn">Back</button>
                 <button class="btn" id="downloadAllBtn" disabled>Download All</button>
             </div>
         </div>
     </div>
-
+    
+    <!-- Copyright -->
     <div class="copyright">
         © <a href="https://github.com/cziter15" target="_blank" rel="noopener noreferrer">K. STREHLAU</a>
     </div>
 
     <script>
+        // Define constants for model URLs
         const MODEL_URL = 'model.onnx';
         const MODEL_DATA_URL = 'model.onnx.data';
-        function logDebug(m){console.log(m)}
-        async function checkWebGPUSupport(){
-            const r={supported:false,error:null,details:{}};
-            try{if(!navigator.gpu){r.error='navigator.gpu not found';return r}
-            const a=await navigator.gpu.requestAdapter();if(!a){r.error='No GPU adapter';return r}
-            if(typeof a.requestAdapterInfo==='function')try{r.details.adapter=await a.requestAdapterInfo()}catch{}
-            const d=await a.requestDevice();if(!d){r.error='Failed to create GPU device';return r}
-            r.supported=true;return r}catch(e){r.error=`WebGPU: ${e.message}`;return r}}
-        async function updateExecutionProviderStatus(){
-            const ps=document.getElementById('providerStatus'),w=await checkWebGPUSupport(),g=!!(document.createElement('canvas').getContext('webgl')||document.createElement('canvas').getContext('experimental-webgl'));
-            let h='Available: ';
-            if(w.supported)h+='<span class="provider-badge webgpu">WebGPU</span> ';
-            if(g)h+='<span class="provider-badge wasm">WASM</span> ';
-            h+='<span class="provider-badge cpu">CPU</span>';
-            if(w.supported){h+='<p style="margin-top:8px;color:#4ade80;font-weight:bold">✓ WebGPU ready</p>'}else{h+='<p style="margin-top:8px;color:#fbbf24;font-weight:bold">⚠ WebGPU unavailable</p>'}
-            ps.innerHTML=h}
-        class ONNXWatermarkRemover{
-            constructor(){
-                this.session=null;this.modelLoaded=false;this.inputSize=256;this.tileSize=512;this.overlap=64;
-                this.modelPath=MODEL_URL;this.modelDataPath=MODEL_DATA_URL;this.executionProvider=null;this.currentImageDebugId=null;this.enablePostProcessing=true}
-            async loadModel(mp,mdp){
-                try{logDebug('Loading model…');const mr=await fetch(mp);if(!mr.ok)throw new Error(mr.statusText);
-                const mb=await mr.arrayBuffer();let edb=null;
-                try{const dr=await fetch(mdp);if(dr.ok)edb=await dr.arrayBuffer()}catch{}
-                const so={executionProviders:['webgpu','wasm','cpu']};if(edb)so.externalData=[{data:edb,path:'model.onnx.data'}];
-                const s=await ort.InferenceSession.create(mb,so);
-                this.executionProvider=s.handler?.backendName||'unknown';this.session=s;this.modelLoaded=true;return true}catch(e){console.error(e);return false}}
-            async processImage(img,pcb,name='Unknown'){
-                if(!this.modelLoaded)throw new Error('Model not loaded');
-                const{width:w,height:h}=img;if(w<64||h<64)throw new Error('Image too small (min 64×64)');
-                logDebug(`Processing ${name} (${w}×${h})`);
-                return this.processTiled(img,pcb,name)}
-            async processTiled(src,pcb,name){
-                const{width:ow,height:oh}=src;
-                const out=document.createElement('canvas');out.width=ow;out.height=oh;
-                const octx=out.getContext('2d',{willReadFrequently:true});octx.fillRect(0,0,ow,oh);
-                // whole-image shortcut for small inputs
-                if(ow<=this.tileSize&&oh<=this.tileSize){logDebug('Small image – no tiling');const pc=await this.processWholeImage(src,pcb,name);octx.drawImage(pc,0,0);if(pcb)pcb(100,'Processing complete');return out}
-                const step=this.tileSize-this.overlap,tiles=[];
-                for(let y=0;y<oh;y+=step)for(let x=0;x<ow;x+=step)tiles.push({x,y,w:Math.min(this.tileSize,ow-x),h:Math.min(this.tileSize,oh-y)});
-                logDebug(`${tiles.length} tiles (size=${this.tileSize}, overlap=${this.overlap})`);
-                // debug panel
-                const dlog=document.getElementById('debugLog');
-                if(dlog){
-                    const sec=document.createElement('div');sec.className='debug-image-section';this.currentImageDebugId='debug-'+Date.now();sec.id=this.currentImageDebugId;
-                    sec.innerHTML=`<div class="debug-image-header"><div class="debug-image-title">${name}</div><div class="debug-image-info">
-                        <div class="debug-info-item"><strong>Dimensions:</strong> ${ow}×${oh}</div>
-                        <div class="debug-info-item"><strong>Tile Size:</strong> ${this.tileSize}</div>
-                        <div class="debug-info-item"><strong>Overlap:</strong> ${this.overlap}</div>
-                        <div class="debug-info-item"><strong>Tiles:</strong> ${tiles.length}</div>
-                        <div class="debug-info-item"><strong>Model Input:</strong> ${this.inputSize}</div>
-                        <div class="debug-info-item"><strong>Provider:</strong> ${this.executionProvider.toUpperCase()}</div>
-                    </div></div><div class="debug-tiles-grid" id="${this.currentImageDebugId}-tiles"></div>`;
-                    dlog.appendChild(sec);sec.scrollIntoView({behavior:'smooth',block:'start'})
+        
+        // Debug logging function
+        function logDebug(message) {
+            console.log(message);
+        }
+        
+        // Check for WebGPU support
+        async function checkWebGPUSupport() {
+            const result = {
+                supported: false,
+                error: null,
+                details: {}
+            };
+            try {
+                if (!navigator.gpu) {
+                    result.error = 'navigator.gpu not found - WebGPU is not supported in this browser';
+                    return result;
                 }
-                for(let i=0;i<tiles.length;i++){
-                    await new Promise(r=>setTimeout(r,5));
-                    try{const pt=await this.processTile(src,tiles[i],i);this.blendTile(octx,pt,tiles[i],ow,oh)}catch(e){logDebug(`Tile ${i} error: ${e.message}`)}
-                    const p=Math.round(((i+1)/tiles.length)*100);if(pcb)pcb(p,`Tile ${i+1}/${tiles.length} (${this.executionProvider.toUpperCase()})…`)
+                const adapter = await navigator.gpu.requestAdapter();
+                if (!adapter) {
+                    result.error = 'No GPU adapter found - your graphics card may not support WebGPU';
+                    return result;
                 }
-                if(this.enablePostProcessing){if(pcb)pcb(95,'Post-processing…');await this.postProcess(out)}
-                return out
-            }
-            async processWholeImage(src,pcb,name){
-                const dlog=document.getElementById('debugLog');
-                if(dlog){
-                    const sec=document.createElement('div');sec.className='debug-image-section';this.currentImageDebugId='debug-'+Date.now();sec.id=this.currentImageDebugId;
-                    sec.innerHTML=`<div class="debug-image-header"><div class="debug-image-title">${name}</div><div class="debug-image-info">
-                        <div class="debug-info-item"><strong>Dimensions:</strong> ${src.width}×${src.height}</div>
-                        <div class="debug-info-item"><strong>Processing:</strong> Whole Image</div>
-                        <div class="debug-info-item"><strong>Model Input:</strong> ${this.inputSize}</div>
-                        <div class="debug-info-item"><strong>Provider:</strong> ${this.executionProvider.toUpperCase()}</div>
-                    </div></div><div class="debug-tiles-grid" id="${this.currentImageDebugId}-tiles"></div>`;
-                    dlog.appendChild(sec);sec.scrollIntoView({behavior:'smooth',block:'start'})
-                }
-                const beforeCvs=document.createElement('canvas');beforeCvs.width=src.width;beforeCvs.height=src.height;
-                const bctx=beforeCvs.getContext('2d');bctx.drawImage(src,0,0);
-                const before64=beforeCvs.toDataURL('image/png');
-                const inCvs=document.createElement('canvas');inCvs.width=this.inputSize;inCvs.height=this.inputSize;
-                const ictx=inCvs.getContext('2d');ictx.imageSmoothingEnabled=true;ictx.imageSmoothingQuality='high';
-                ictx.drawImage(beforeCvs,0,0,src.width,src.height,0,0,this.inputSize,this.inputSize);
-                const iData=ictx.getImageData(0,0,this.inputSize,this.inputSize);
-                const inT=this.imageDataToTensor(iData);
-                const feeds={};feeds[this.session.inputNames[0]]=inT;
-                const res=await this.session.run(feeds);
-                const outT=res[this.session.outputNames[0]];
-                const outImgData=this.tensorToImageData(outT);
-                const modelCvs=document.createElement('canvas');modelCvs.width=this.inputSize;modelCvs.height=this.inputSize;
-                modelCvs.getContext('2d').putImageData(outImgData,0,0);
-                const outCvs=document.createElement('canvas');outCvs.width=src.width;outCvs.height=src.height;
-                const octx=outCvs.getContext('2d');octx.imageSmoothingEnabled=true;octx.imageSmoothingQuality='high';
-                octx.drawImage(modelCvs,0,0,this.inputSize,this.inputSize,0,0,src.width,src.height);
-                const after64=outCvs.toDataURL('image/png');
-                const grid=document.getElementById(this.currentImageDebugId+'-tiles');
-                if(grid){
-                    const tile=document.createElement('div');tile.className='debug-tile';
-                    tile.innerHTML=`
-                        <div class="debug-tile-header">Whole Image</div>
-                        <div class="debug-tile-content">
-                            <div class="debug-image-container debug-image-before"><div class="debug-image-label">Before</div><img class="debug-image" src="${before64}" onclick="window.open('${before64}','_blank')"></div>
-                            <div class="debug-image-container debug-image-after"><div class="debug-image-label">After</div><img class="debug-image" src="${after64}" onclick="window.open('${after64}','_blank')"></div>
-                        </div>
-                        <div class="debug-tile-info">
-                            <div><strong>Size:</strong> <span>${src.width}×${src.height}</span></div>
-                            <div><strong>Input:</strong> <span>${inT.dims.join('×')}</span></div>
-                            <div><strong>Output:</strong> <span>${outT.dims.join('×')}</span></div>
-                        </div>`;
-                    grid.appendChild(tile)
-                }
-                return outCvs
-            }
-            async processTile(src,tile,idx){
-                const tCvs=document.createElement('canvas');tCvs.width=tile.w;tCvs.height=tile.h;
-                const tctx=tCvs.getContext('2d');tctx.drawImage(src,tile.x,tile.y,tile.w,tile.h,0,0,tile.w,tile.h);
-                const before64=tCvs.toDataURL('image/png');
-                const inCvs=document.createElement('canvas');inCvs.width=this.inputSize;inCvs.height=this.inputSize;
-                const ictx=inCvs.getContext('2d');ictx.filter='blur(0.5px)';
-                ictx.drawImage(tCvs,0,0,tile.w,tile.h,0,0,this.inputSize,this.inputSize);ictx.filter='none';
-                const iData=ictx.getImageData(0,0,this.inputSize,this.inputSize);
-                const inT=this.imageDataToTensor(iData);
-                const feeds={};feeds[this.session.inputNames[0]]=inT;
-                const res=await this.session.run(feeds);
-                const outT=res[this.session.outputNames[0]];
-                const outImgData=this.tensorToImageData(outT);
-                const mCvs=document.createElement('canvas');mCvs.width=this.inputSize;mCvs.height=this.inputSize;
-                mCvs.getContext('2d').putImageData(outImgData,0,0);
-                const oCvs=document.createElement('canvas');oCvs.width=tile.w;oCvs.height=tile.h;
-                const octx=oCvs.getContext('2d');octx.filter='blur(0.3px)';
-                octx.drawImage(mCvs,0,0,this.inputSize,this.inputSize,0,0,tile.w,tile.h);octx.filter='none';
-                const after64=oCvs.toDataURL('image/png');
-                const grid=document.getElementById(this.currentImageDebugId+'-tiles');
-                if(grid){
-                    const tileDiv=document.createElement('div');tileDiv.className='debug-tile';
-                    tileDiv.innerHTML=`
-                        <div class="debug-tile-header">Tile #${idx+1} (${tile.x},${tile.y})</div>
-                        <div class="debug-tile-content">
-                            <div class="debug-image-container debug-image-before"><div class="debug-image-label">Before</div><img class="debug-image" src="${before64}" onclick="window.open('${before64}','_blank')"></div>
-                            <div class="debug-image-container debug-image-after"><div class="debug-image-label">After</div><img class="debug-image" src="${after64}" onclick="window.open('${after64}','_blank')"></div>
-                        </div>
-                        <div class="debug-tile-info">
-                            <div><strong>Size:</strong> <span>${tile.w}×${tile.h}</span></div>
-                            <div><strong>Input:</strong> <span>${inT.dims.join('×')}</span></div>
-                            <div><strong>Output:</strong> <span>${outT.dims.join('×')}</span></div>
-                        </div>`;
-                    grid.appendChild(tileDiv)
-                }
-                return oCvs
-            }
-            blendTile(octx,tileCanvas,tile,ow,oh){
-                const tctx=tileCanvas.getContext('2d',{willReadFrequently:true});
-                const tID=tctx.getImageData(0,0,tile.w,tile.h),tD=tID.data;
-                const oID=octx.getImageData(tile.x,tile.y,tile.w,tile.h),oD=oID.data;
-                const fs=Math.min(this.overlap,16);
-                for(let ty=0;ty<tile.h;ty++){
-                    for(let tx=0;tx<tile.w;tx++){
-                        const p=(ty*tile.w+tx)*4;let bf=1;
-                        if(tile.x>0&&tx<fs)bf*=tx/fs;
-                        if(tile.y>0&&ty<fs)bf*=ty/fs;
-                        if(tile.x+tile.w<ow&&tx>=tile.w-fs)bf*=(tile.w-tx)/fs;
-                        if(tile.y+tile.h<oh&&ty>=tile.h-fs)bf*=(tile.h-ty)/fs;
-                        oD[p]=Math.round(oD[p]*(1-bf)+tD[p]*bf);
-                        oD[p+1]=Math.round(oD[p+1]*(1-bf)+tD[p+1]*bf);
-                        oD[p+2]=Math.round(oD[p+2]*(1-bf)+tD[p+2]*bf);
-                        oD[p+3]=255
+                if (typeof adapter.requestAdapterInfo === 'function') {
+                    try {
+                        const adapterInfo = await adapter.requestAdapterInfo();
+                        result.details.adapter = adapterInfo;
+                    } catch (e) {
+                        console.log('Adapter info not available:', e);
                     }
                 }
-                octx.putImageData(oID,tile.x,tile.y)
+                const device = await adapter.requestDevice();
+                if (!device) {
+                    result.error = 'Failed to create GPU device - your graphics drivers may be outdated';
+                    return result;
+                }
+                result.supported = true;
+                return result;
+            } catch (e) {
+                result.error = `WebGPU error: ${e.message}`;
+                return result;
             }
-            async postProcess(cvs){
-                const ctx=cvs.getContext('2d');
-                ctx.filter='blur(0.5px)';const temp=document.createElement('canvas');temp.width=cvs.width;temp.height=cvs.height;
-                temp.getContext('2d').drawImage(cvs,0,0);ctx.filter='none';ctx.drawImage(temp,0,0);
-                const id=ctx.getImageData(0,0,cvs.width,cvs.height);
-                ctx.putImageData(this.applyConvolution(id,[0,-0.25,0,-0.25,2,-0.25,0,-0.25,0]),0,0)
+        }
+        
+        // Update execution provider status
+        async function updateExecutionProviderStatus() {
+            const providerStatus = document.getElementById('providerStatus');
+            const webgpuResult = await checkWebGPUSupport();
+            const webglSupported = !!document.createElement('canvas').getContext('webgl') || !!document.createElement('canvas').getContext('experimental-webgl');
+            let statusHTML = 'Available execution providers: ';
+            if (webgpuResult.supported) {
+                statusHTML += '<span class="provider-badge webgpu">WebGPU (Recommended)</span> ';
             }
-            applyConvolution(iD,k){
-                const w=iD.width,h=iD.height,d=iD.data,o=new ImageData(w,h),od=o.data;
-                const ks=Math.sqrt(k.length),hk=Math.floor(ks/2);
-                for(let y=0;y<h;y++){
-                    for(let x=0;x<w;x++){
-                        let r=0,g=0,b=0;
-                        for(let ky=0;ky<ks;ky++){
-                            for(let kx=0;kx<ks;kx++){
-                                const px=Math.min(w-1,Math.max(0,x+kx-hk)),py=Math.min(h-1,Math.max(0,y+ky-hk));
-                                const idx=(py*w+px)*4,wt=k[ky*ks+kx];
-                                r+=d[idx]*wt;g+=d[idx+1]*wt;b+=d[idx+2]*wt
+            if (webglSupported) {
+                statusHTML += '<span class="provider-badge wasm">WASM</span> ';
+            }
+            statusHTML += '<span class="provider-badge cpu">CPU</span>';
+            if (webgpuResult.supported) {
+                statusHTML += '<p style="margin-top: 8px; color: #4ade80; font-weight: bold;">✓ WebGPU is available - this will provide the best performance!</p>';
+                if (webgpuResult.details.adapter) {
+                    const adapter = webgpuResult.details.adapter;
+                    let gpuInfo = '';
+                    if (adapter.vendor) gpuInfo += `Vendor: ${adapter.vendor} `;
+                    if (adapter.device) gpuInfo += `Device: ${adapter.device} `;
+                    if (adapter.description) gpuInfo += `Description: ${adapter.description}`;
+                    if (gpuInfo) {
+                        statusHTML += `<p style="font-size: 12px; color: #cbd5e1;">GPU: ${gpuInfo}</p>`;
+                    }
+                }
+            } else {
+                statusHTML += '<p style="margin-top: 8px; color: #fbbf24; font-weight: bold;">⚠ WebGPU not available - falling back to WASM/CPU</p>';
+                if (webgpuResult.error) {
+                    statusHTML += `<p style="font-size: 12px; color: #f87171;">Reason: ${webgpuResult.error}</p>`;
+                }
+            }
+            providerStatus.innerHTML = statusHTML;
+        }
+        
+        class ONNXWatermarkRemover {
+            constructor() {
+                this.session = null;
+                this.modelLoaded = false;
+                this.inputSize = 256;
+                this.tileSize = 512;
+                this.overlap = 64;
+                this.modelPath = MODEL_URL;
+                this.modelDataPath = MODEL_DATA_URL;
+                this.executionProvider = null;
+                this.currentImageDebugId = null;
+                this.enablePostProcessing = true;
+            }
+            
+            async loadModel(modelPath, modelDataPath) {
+                try {
+                    logDebug("Loading model...");
+                    const modelResponse = await fetch(modelPath);
+                    if (!modelResponse.ok) {
+                        throw new Error(`Failed to fetch model: ${modelResponse.statusText}`);
+                    }
+                    const modelBuffer = await modelResponse.arrayBuffer();
+                    logDebug(`Model loaded, size: ${modelBuffer.byteLength} bytes`);
+                    let externalDataBuffer = null;
+                    let externalDataLoaded = false;
+                    try {
+                        const dataResponse = await fetch(modelDataPath);
+                        if (dataResponse.ok) {
+                            externalDataBuffer = await dataResponse.arrayBuffer();
+                            externalDataLoaded = true;
+                            logDebug("External data file loaded successfully");
+                        } else {
+                            logDebug(`External data file not found: ${dataResponse.statusText}`);
+                        }
+                    } catch (e) {
+                        logDebug(`External data file not found (optional): ${e.message}`);
+                    }
+                    const sessionOptions = {
+                        executionProviders: ['webgpu', 'wasm', 'cpu']
+                    };
+                    if (externalDataLoaded && externalDataBuffer) {
+                        sessionOptions.externalData = [{
+                            data: externalDataBuffer,
+                            path: 'model.onnx.data'
+                        }];
+                    }
+                    logDebug("Creating inference session...");
+                    const session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
+                    const inputNames = session.inputNames;
+                    const outputNames = session.outputNames;
+                    logDebug(`Model inputs: ${JSON.stringify(inputNames)}`);
+                    logDebug(`Model outputs: ${JSON.stringify(outputNames)}`);
+                    if (session.handler) {
+                        this.executionProvider = session.handler.backendName || 'unknown';
+                    } else {
+                        this.executionProvider = 'unknown';
+                    }
+                    logDebug(`Using execution provider: ${this.executionProvider}`);
+                    this.session = session;
+                    this.modelLoaded = true;
+                    this.modelPath = modelPath;
+                    this.modelDataPath = modelDataPath;
+                    return true;
+                } catch (error) {
+                    logDebug(`Model loading error: ${error.message}`);
+                    console.error('Model loading error:', error);
+                    return false;
+                }
+            }
+            
+            async processImage(image, progressCallback, imageName = "Unknown") {
+                if (!this.modelLoaded) {
+                    throw new Error('Model not loaded');
+                }
+                const originalWidth = image.width;
+                const originalHeight = image.height;
+                logDebug(`Processing image: ${imageName} (${originalWidth}x${originalHeight})`);
+                if (originalWidth < 64 || originalHeight < 64) {
+                    throw new Error('Image is too small. Minimum size is 64x64 pixels.');
+                }
+                return await this.processTiled(image, progressCallback, imageName);
+            }
+            
+            async processTiled(image, progressCallback, imageName) {
+                const originalWidth = image.width;
+                const originalHeight = image.height;
+                const outputCanvas = document.createElement('canvas');
+                outputCanvas.width = originalWidth;
+                outputCanvas.height = originalHeight;
+                const outputCtx = outputCanvas.getContext('2d', {
+                    willReadFrequently: true
+                });
+                outputCtx.fillStyle = 'black';
+                outputCtx.fillRect(0, 0, originalWidth, originalHeight);
+                
+                // For small images, process without tiling
+                if (originalWidth <= this.tileSize && originalHeight <= this.tileSize) {
+                    logDebug("Processing small image without tiling");
+                    const processedTile = await this.processWholeImage(image, progressCallback, imageName);
+                    outputCtx.drawImage(processedTile, 0, 0);
+                    if (progressCallback) {
+                        progressCallback(100, "Processing complete");
+                    }
+                    return outputCanvas;
+                }
+                
+                // Calculate tiles
+                const step = this.tileSize - this.overlap;
+                const tiles = [];
+                for (let y = 0; y < originalHeight; y += step) {
+                    for (let x = 0; x < originalWidth; x += step) {
+                        const tileWidth = Math.min(this.tileSize, originalWidth - x);
+                        const tileHeight = Math.min(this.tileSize, originalHeight - y);
+                        tiles.push({
+                            x,
+                            y,
+                            width: tileWidth,
+                            height: tileHeight
+                        });
+                    }
+                }
+                logDebug(`Processing ${tiles.length} tiles (size=${this.tileSize}, overlap=${this.overlap})`);
+                
+                // Create debug section for this image
+                const debugLogElement = document.getElementById('debugLog');
+                if (debugLogElement) {
+                    const imageSection = document.createElement('div');
+                    imageSection.className = 'debug-image-section';
+                    this.currentImageDebugId = 'debug-section-' + Date.now();
+                    imageSection.id = this.currentImageDebugId;
+                    
+                    const imageHeader = document.createElement('div');
+                    imageHeader.className = 'debug-image-header';
+                    imageHeader.innerHTML = `
+                        <div class="debug-image-title">${imageName}</div>
+                        <div class="debug-image-info">
+                            <div class="debug-info-item"><strong>Dimensions:</strong> ${originalWidth}x${originalHeight}px</div>
+                            <div class="debug-info-item"><strong>Tile Size:</strong> ${this.tileSize}px</div>
+                            <div class="debug-info-item"><strong>Overlap:</strong> ${this.overlap}px</div>
+                            <div class="debug-info-item"><strong>Total Tiles:</strong> ${tiles.length}</div>
+                            <div class="debug-info-item"><strong>Model Input:</strong> ${this.inputSize}px</div>
+                            <div class="debug-info-item"><strong>Provider:</strong> ${this.executionProvider.toUpperCase()}</div>
+                        </div>
+                    `;
+                    imageSection.appendChild(imageHeader);
+                    
+                    // Create tiles grid container
+                    const tilesGrid = document.createElement('div');
+                    tilesGrid.className = 'debug-tiles-grid';
+                    tilesGrid.id = this.currentImageDebugId + '-tiles';
+                    imageSection.appendChild(tilesGrid);
+                    
+                    debugLogElement.appendChild(imageSection);
+                    
+                    // Scroll to the new section
+                    setTimeout(() => {
+                        imageSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                }
+                
+                // Process each tile
+                for (let i = 0; i < tiles.length; i++) {
+                    const tile = tiles[i];
+                    await new Promise(resolve => setTimeout(resolve, 5));
+                    try {
+                        const processedTile = await this.processTile(image, tile, i);
+                        this.blendTile(outputCtx, processedTile, tile, originalWidth, originalHeight);
+                    } catch (error) {
+                        logDebug(`Error processing tile ${i}: ${error.message}`);
+                    }
+                    const progress = Math.round(((i + 1) / tiles.length) * 100);
+                    if (progressCallback) {
+                        progressCallback(progress, `Processing tile ${i + 1}/${tiles.length} (${this.executionProvider.toUpperCase()})...`);
+                    }
+                }
+                
+                // Apply post-processing if enabled
+                if (this.enablePostProcessing) {
+                    if (progressCallback) {
+                        progressCallback(95, "Applying post-processing...");
+                    }
+                    await this.postProcess(outputCanvas);
+                }
+                
+                return outputCanvas;
+            }
+            
+            async processWholeImage(image, progressCallback, imageName) {
+                // Create debug section for this image
+                const debugLogElement = document.getElementById('debugLog');
+                if (debugLogElement) {
+                    const imageSection = document.createElement('div');
+                    imageSection.className = 'debug-image-section';
+                    this.currentImageDebugId = 'debug-section-' + Date.now();
+                    imageSection.id = this.currentImageDebugId;
+                    
+                    const imageHeader = document.createElement('div');
+                    imageHeader.className = 'debug-image-header';
+                    imageHeader.innerHTML = `
+                        <div class="debug-image-title">${imageName}</div>
+                        <div class="debug-image-info">
+                            <div class="debug-info-item"><strong>Dimensions:</strong> ${image.width}x${image.height}px</div>
+                            <div class="debug-info-item"><strong>Processing:</strong> Whole Image</div>
+                            <div class="debug-info-item"><strong>Model Input:</strong> ${this.inputSize}px</div>
+                            <div class="debug-info-item"><strong>Provider:</strong> ${this.executionProvider.toUpperCase()}</div>
+                        </div>
+                    `;
+                    imageSection.appendChild(imageHeader);
+                    
+                    // Create tiles grid container
+                    const tilesGrid = document.createElement('div');
+                    tilesGrid.className = 'debug-tiles-grid';
+                    tilesGrid.id = this.currentImageDebugId + '-tiles';
+                    imageSection.appendChild(tilesGrid);
+                    
+                    debugLogElement.appendChild(imageSection);
+                    
+                    // Scroll to the new section
+                    setTimeout(() => {
+                        imageSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                }
+                
+                // Extract the whole image
+                const tileCanvas = document.createElement('canvas');
+                tileCanvas.width = image.width;
+                tileCanvas.height = image.height;
+                const tileCtx = tileCanvas.getContext('2d');
+                tileCtx.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width, image.height);
+
+                const beforeBase64 = tileCanvas.toDataURL('image/png');
+
+                // Resize to model input size
+                const inputCanvas = document.createElement('canvas');
+                inputCanvas.width = this.inputSize;
+                inputCanvas.height = this.inputSize;
+                const inputCtx = inputCanvas.getContext('2d');
+                
+                inputCtx.imageSmoothingEnabled = true;
+                inputCtx.imageSmoothingQuality = 'high';
+                inputCtx.drawImage(tileCanvas, 0, 0, image.width, image.height, 
+                                0, 0, this.inputSize, this.inputSize);
+
+                const imageData = inputCtx.getImageData(0, 0, this.inputSize, this.inputSize);
+                const inputTensor = this.imageDataToTensor(imageData);
+
+                // Run inference
+                const feeds = {};
+                feeds[this.session.inputNames[0]] = inputTensor;
+                const results = await this.session.run(feeds);
+
+                const outputTensor = results[this.session.outputNames[0]];
+                const outputImageData = this.tensorToImageData(outputTensor);
+
+                // Create output canvas at model size
+                const outputModelCanvas = document.createElement('canvas');
+                outputModelCanvas.width = this.inputSize;
+                outputModelCanvas.height = this.inputSize;
+                const outputModelCtx = outputModelCanvas.getContext('2d');
+                outputModelCtx.putImageData(outputImageData, 0, 0);
+
+                // Resize back to original size
+                const outputTileCanvas = document.createElement('canvas');
+                outputTileCanvas.width = image.width;
+                outputTileCanvas.height = image.height;
+                const outputTileCtx = outputTileCanvas.getContext('2d');
+                
+                outputTileCtx.imageSmoothingEnabled = true;
+                outputTileCtx.imageSmoothingQuality = 'high';
+                outputTileCtx.drawImage(outputModelCanvas, 0, 0, this.inputSize, this.inputSize,
+                                    0, 0, image.width, image.height);
+
+                const afterBase64 = outputTileCanvas.toDataURL('image/png');
+
+                // Display images in debug panel
+                const tilesGrid = document.getElementById(this.currentImageDebugId + '-tiles');
+                if (tilesGrid) {
+                    const tileDebug = document.createElement('div');
+                    tileDebug.className = 'debug-tile';
+                    
+                    // Get tensor shapes for display
+                    const inputShape = inputTensor.dims.join('×');
+                    const outputShape = outputTensor.dims.join('×');
+                    
+                    tileDebug.innerHTML = `
+                        <div class="debug-tile-header">Whole Image Processing</div>
+                        <div class="debug-tile-content">
+                            <div class="debug-image-container debug-image-before">
+                                <div class="debug-image-label">Before</div>
+                                <img class="debug-image" src="${beforeBase64}" alt="Before" title="Click to open in new tab" onclick="window.open('${beforeBase64}', '_blank')">
+                            </div>
+                            <div class="debug-image-container debug-image-after">
+                                <div class="debug-image-label">After</div>
+                                <img class="debug-image" src="${afterBase64}" alt="After" title="Click to open in new tab" onclick="window.open('${afterBase64}', '_blank')">
+                            </div>
+                        </div>
+                        <div class="debug-tile-info">
+                            <div><strong>Size:</strong> <span>${image.width}×${image.height}</span></div>
+                            <div><strong>Input:</strong> <span>${inputShape}</span></div>
+                            <div><strong>Output:</strong> <span>${outputShape}</span></div>
+                        </div>
+                    `;
+                    tilesGrid.appendChild(tileDebug);
+                }
+
+                return outputTileCanvas;
+            }
+            
+            async processTile(sourceImage, tile, index) {
+                // Extract tile region
+                const tileCanvas = document.createElement('canvas');
+                tileCanvas.width = tile.width;
+                tileCanvas.height = tile.height;
+                const tileCtx = tileCanvas.getContext('2d');
+                tileCtx.drawImage(sourceImage, tile.x, tile.y, tile.width, tile.height, 
+                                0, 0, tile.width, tile.height);
+
+                const beforeBase64 = tileCanvas.toDataURL('image/png');
+
+                // Resize to model input size
+                const inputCanvas = document.createElement('canvas');
+                inputCanvas.width = this.inputSize;
+                inputCanvas.height = this.inputSize;
+                const inputCtx = inputCanvas.getContext('2d');
+                
+                inputCtx.imageSmoothingEnabled = true;
+                inputCtx.imageSmoothingQuality = 'high';
+                inputCtx.drawImage(tileCanvas, 0, 0, tile.width, tile.height, 
+                                0, 0, this.inputSize, this.inputSize);
+
+                const imageData = inputCtx.getImageData(0, 0, this.inputSize, this.inputSize);
+                const inputTensor = this.imageDataToTensor(imageData);
+
+                // Run inference
+                const feeds = {};
+                feeds[this.session.inputNames[0]] = inputTensor;
+                const results = await this.session.run(feeds);
+
+                const outputTensor = results[this.session.outputNames[0]];
+                const outputImageData = this.tensorToImageData(outputTensor);
+
+                // Create output canvas at model size
+                const outputModelCanvas = document.createElement('canvas');
+                outputModelCanvas.width = this.inputSize;
+                outputModelCanvas.height = this.inputSize;
+                const outputModelCtx = outputModelCanvas.getContext('2d');
+                outputModelCtx.putImageData(outputImageData, 0, 0);
+
+                // Resize back to original tile size
+                const outputTileCanvas = document.createElement('canvas');
+                outputTileCanvas.width = tile.width;
+                outputTileCanvas.height = tile.height;
+                const outputTileCtx = outputTileCanvas.getContext('2d');
+                
+                outputTileCtx.imageSmoothingEnabled = true;
+                outputTileCtx.imageSmoothingQuality = 'high';
+                outputTileCtx.drawImage(outputModelCanvas, 0, 0, this.inputSize, this.inputSize,
+                                    0, 0, tile.width, tile.height);
+
+                const afterBase64 = outputTileCanvas.toDataURL('image/png');
+
+                // Display images in debug panel
+                const tilesGrid = document.getElementById(this.currentImageDebugId + '-tiles');
+                if (tilesGrid) {
+                    const tileDebug = document.createElement('div');
+                    tileDebug.className = 'debug-tile';
+                    
+                    // Get tensor shapes for display
+                    const inputShape = inputTensor.dims.join('×');
+                    const outputShape = outputTensor.dims.join('×');
+                    
+                    tileDebug.innerHTML = `
+                        <div class="debug-tile-header">Tile #${index + 1} - (${tile.x}, ${tile.y})</div>
+                        <div class="debug-tile-content">
+                            <div class="debug-image-container debug-image-before">
+                                <div class="debug-image-label">Before</div>
+                                <img class="debug-image" src="${beforeBase64}" alt="Before" title="Click to open in new tab" onclick="window.open('${beforeBase64}', '_blank')">
+                            </div>
+                            <div class="debug-image-container debug-image-after">
+                                <div class="debug-image-label">After</div>
+                                <img class="debug-image" src="${afterBase64}" alt="After" title="Click to open in new tab" onclick="window.open('${afterBase64}', '_blank')">
+                            </div>
+                        </div>
+                        <div class="debug-tile-info">
+                            <div><strong>Size:</strong> <span>${tile.width}×${tile.height}</span></div>
+                            <div><strong>Input:</strong> <span>${inputShape}</span></div>
+                            <div><strong>Output:</strong> <span>${outputShape}</span></div>
+                        </div>
+                    `;
+                    tilesGrid.appendChild(tileDebug);
+                }
+
+                return outputTileCanvas;
+            }
+            
+            blendTile(outputCtx, tileCanvas, tile, canvasWidth, canvasHeight) {
+                const tileCtx = tileCanvas.getContext('2d', {
+                    willReadFrequently: true
+                });
+                const tileImageData = tileCtx.getImageData(0, 0, tile.width, tile.height);
+                const tileData = tileImageData.data;
+                const outputImageData = outputCtx.getImageData(tile.x, tile.y, tile.width, tile.height);
+                const outputData = outputImageData.data;
+                
+                // Create a simple feathering mask for better blending
+                const featherSize = Math.min(this.overlap, 16); // Limit feather size
+                
+                for (let ty = 0; ty < tile.height; ty++) {
+                    for (let tx = 0; tx < tile.width; tx++) {
+                        const pixelIdx = (ty * tile.width + tx) * 4;
+                        
+                        // Calculate blend factor based on distance from edges
+                        let blendFactor = 1.0;
+                        
+                        // Left edge
+                        if (tile.x > 0 && tx < featherSize) {
+                            blendFactor *= tx / featherSize;
+                        }
+                        
+                        // Top edge
+                        if (tile.y > 0 && ty < featherSize) {
+                            blendFactor *= ty / featherSize;
+                        }
+                        
+                        // Right edge
+                        if (tile.x + tile.width < canvasWidth && tx >= tile.width - featherSize) {
+                            blendFactor *= (tile.width - tx) / featherSize;
+                        }
+                        
+                        // Bottom edge
+                        if (tile.y + tile.height < canvasHeight && ty >= tile.height - featherSize) {
+                            blendFactor *= (tile.height - ty) / featherSize;
+                        }
+                        
+                        // Apply the blend factor
+                        outputData[pixelIdx] = Math.round(outputData[pixelIdx] * (1 - blendFactor) + tileData[pixelIdx] * blendFactor);
+                        outputData[pixelIdx + 1] = Math.round(outputData[pixelIdx + 1] * (1 - blendFactor) + tileData[pixelIdx + 1] * blendFactor);
+                        outputData[pixelIdx + 2] = Math.round(outputData[pixelIdx + 2] * (1 - blendFactor) + tileData[pixelIdx + 2] * blendFactor);
+                        outputData[pixelIdx + 3] = 255;
+                    }
+                }
+                outputCtx.putImageData(outputImageData, tile.x, tile.y);
+            }
+            
+            async postProcess(canvas) {
+                const ctx = canvas.getContext('2d');
+                
+                // Apply a slight blur to reduce artifacts
+                ctx.filter = 'blur(0.5px)';
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.drawImage(canvas, 0, 0);
+                ctx.drawImage(tempCanvas, 0, 0);
+                ctx.filter = 'none';
+                
+                // Apply a slight sharpening to restore details
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const filteredImageData = this.applyConvolution(imageData, [
+                    0, -0.25, 0,
+                    -0.25, 2, -0.25,
+                    0, -0.25, 0
+                ]);
+                ctx.putImageData(filteredImageData, 0, 0);
+            }
+            
+            applyConvolution(imageData, kernel) {
+                const width = imageData.width;
+                const height = imageData.height;
+                const data = imageData.data;
+                const output = new ImageData(width, height);
+                const outputData = output.data;
+                
+                const kernelSize = Math.sqrt(kernel.length);
+                const halfKernel = Math.floor(kernelSize / 2);
+                
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        let r = 0, g = 0, b = 0;
+                        
+                        for (let ky = 0; ky < kernelSize; ky++) {
+                            for (let kx = 0; kx < kernelSize; kx++) {
+                                const px = Math.min(width - 1, Math.max(0, x + kx - halfKernel));
+                                const py = Math.min(height - 1, Math.max(0, y + ky - halfKernel));
+                                const idx = (py * width + px) * 4;
+                                const weight = kernel[ky * kernelSize + kx];
+                                
+                                r += data[idx] * weight;
+                                g += data[idx + 1] * weight;
+                                b += data[idx + 2] * weight;
                             }
                         }
-                        const idx=(y*w+x)*4;
-                        od[idx]=Math.min(255,Math.max(0,r));
-                        od[idx+1]=Math.min(255,Math.max(0,g));
-                        od[idx+2]=Math.min(255,Math.max(0,b));
-                        od[idx+3]=d[idx+3]
+                        
+                        const idx = (y * width + x) * 4;
+                        outputData[idx] = Math.min(255, Math.max(0, r));
+                        outputData[idx + 1] = Math.min(255, Math.max(0, g));
+                        outputData[idx + 2] = Math.min(255, Math.max(0, b));
+                        outputData[idx + 3] = data[idx + 3];
                     }
                 }
-                return o
+                
+                return output;
             }
-            imageDataToTensor(iD){
-                const{w,w:data}=iD;
-                const t=new Float32Array(3*w*h);
-                for(let i=0;i<h;i++){
-                    for(let j=0;j<w;j++){
-                        const p=i*w+j,dx=p*4;
-                        t[p]=data[dx]/255;
-                        t[w*h+p]=data[dx+1]/255;
-                        t[w*h*2+p]=data[dx+2]/255
+            
+            imageDataToTensor(imageData) {
+                const { width, height, data } = imageData;
+                const tensorData = new Float32Array(3 * width * height);
+
+                for (let i = 0; i < height; i++) {
+                    for (let j = 0; j < width; j++) {
+                        const pixelIndex = i * width + j;
+                        const dataIndex = pixelIndex * 4;
+
+                        tensorData[pixelIndex] = data[dataIndex] / 255.0;
+                        tensorData[width * height + pixelIndex] = data[dataIndex + 1] / 255.0;
+                        tensorData[width * height * 2 + pixelIndex] = data[dataIndex + 2] / 255.0;
                     }
                 }
-                return new ort.Tensor('float32',t,[1,3,h,w])
+
+                return new ort.Tensor('float32', tensorData, [1, 3, height, width]);
             }
-            tensorToImageData(tensor){
-                const[d,b,c,h,w]=tensor.dims;
-                if(b!==1||c!==3)throw new Error(`Bad shape [${b},${c},${h},${w}]`);
-                const src=tensor.data,img=new ImageData(w,h),dst=img.data;
-                for(let i=0;i<h;i++){
-                    for(let j=0;j<w;j++){
-                        const p=i*w+j,dx=p*4;
-                        let r=src[p],g=src[w*h+p],b=src[w*h*2+p];
-                        // if model outputs [-1,1] uncomment next 3 lines
-                        // r=(r+1)/2; g=(g+1)/2; b=(b+1)/2;
-                        r=Math.max(0,Math.min(1,r));
-                        g=Math.max(0,Math.min(1,g));
-                        b=Math.max(0,Math.min(1,b));
-                        dst[dx]=Math.round(r*255);
-                        dst[dx+1]=Math.round(g*255);
-                        dst[dx+2]=Math.round(b*255);
-                        dst[dx+3]=255
+
+            tensorToImageData(tensor) {
+                const dims = tensor.dims;
+                
+                if (dims.length !== 4) {
+                    throw new Error(`Expected 4D tensor, got ${dims.length}D: [${dims.join(', ')}]`);
+                }
+                
+                const [batch, channels, height, width] = dims;
+                
+                if (batch !== 1 || channels !== 3) {
+                    throw new Error(`Unexpected tensor shape: [${batch}, ${channels}, ${height}, ${width}]. Expected [1, 3, H, W]`);
+                }
+                
+                const data = tensor.data;
+                const imageData = new ImageData(width, height);
+                const pixelData = imageData.data;
+
+                for (let i = 0; i < height; i++) {
+                    for (let j = 0; j < width; j++) {
+                        const pixelIndex = i * width + j;
+                        const dataIndex = pixelIndex * 4;
+
+                        let r = data[pixelIndex];
+                        let g = data[width * height + pixelIndex];
+                        let b = data[width * height * 2 + pixelIndex];
+
+                        // Check if values are in [-1, 1] range and normalize to [0, 1]
+                        // If the model outputs values in [-1, 1] range, uncomment these lines:
+                        // r = (r + 1) / 2;
+                        // g = (g + 1) / 2;
+                        // b = (b + 1) / 2;
+
+                        r = Math.max(0, Math.min(1, r));
+                        g = Math.max(0, Math.min(1, g));
+                        b = Math.max(0, Math.min(1, b));
+
+                        pixelData[dataIndex] = Math.round(r * 255);
+                        pixelData[dataIndex + 1] = Math.round(g * 255);
+                        pixelData[dataIndex + 2] = Math.round(b * 255);
+                        pixelData[dataIndex + 3] = 255;
                     }
                 }
-                return img
+
+                return imageData;
             }
         }
 
-        class ImageManager{
-            constructor(){this.images=[];this.processed=[]}
-            addImage(file){return new Promise((res,rej)=>{
-                if(!file.type.match('image.*'))return rej('Not an image');
-                if(file.size>20e6)return rej('>20 MB');
-                const r=new FileReader();r.onload=e=>{
-                    const img=new Image();img.onload=()=>{
-                        const o={id:Date.now()+Math.random(),file,name:file.name,size:file.size,width:img.width,height:img.height,image:img,dataUrl:e.target.result,status:'pending'};
-                        this.images.push(o);res(o)
-                    };img.onerror=()=>rej('Bad image');img.src=e.target.result
-                };r.onerror=()=>rej('Read failed');r.readAsDataURL(file)
-            })}
-            removeImage(id){this.images=this.images.filter(i=>i.id!==id)}
-            clearAll(){this.images=[];this.processed=[]}
-            getImages(){return this.images}
-            getProcessedImages(){return this.processed}
-            updateImageStatus(id,st){const i=this.images.find(x=>x.id===id);if(i)i.status=st}
-            addProcessedImage(id,cvs){const o=this.images.find(x=>x.id===id);if(o)this.processed.push({id,name:o.name,canvas:cvs,status:'completed'})}
-        }
-
-        class UIController{
-            constructor(r,im){this.remover=r;this.im=im;this.init();this.attach()}
-            init(){
-                this.load=document.getElementById('loadingScreen');
-                this.up=document.getElementById('uploadSection');
-                this.pr=document.getElementById('processingSection');
-                this.area=document.getElementById('uploadArea');
-                this.fIn=document.getElementById('fileInput');
-                this.list=document.getElementById('imageList');
-                this.pList=document.getElementById('processingList');
-                this.nBtn=document.getElementById('nextBtn');
-                this.bBtn=document.getElementById('backBtn');
-                this.cBtn=document.getElementById('clearBtn');
-                this.dBtn=document.getElementById('downloadAllBtn');
-                this.tSize=document.getElementById('tileSize');
-                this.ov=document.getElementById('overlap');
-                this.inSize=document.getElementById('inputSize');
-                this.post=document.getElementById('enablePostProcessing');
-                this.stats=document.getElementById('processingStats');
-                this.dPan=document.getElementById('debugPanel');
-                this.dLog=document.getElementById('debugLog')
+        // Image management
+        class ImageManager {
+            constructor() {
+                this.images = [];
+                this.processedImages = [];
             }
-            attach(){
-                this.area.onclick=()=>this.fIn.click();
-                this.area.ondragover=e=>{e.preventDefault();this.area.classList.add('drag-over')};
-                this.area.ondragleave=()=>this.area.classList.remove('drag-over');
-                this.area.ondrop=e=>{e.preventDefault();this.area.classList.remove('drag-over');this.handleFiles(e.dataTransfer.files)};
-                this.fIn.onchange=e=>this.handleFiles(e.target.files);
-                this.nBtn.onclick=()=>this.showProcessing();
-                this.bBtn.onclick=()=>this.showUpload();
-                this.cBtn.onclick=()=>{this.im.clearAll();this.render();this.updateNext();if(this.dLog)this.dLog.innerHTML=''};
-                this.dBtn.onclick=()=>this.downloadAll();
-                this.tSize.onchange=()=>{const v=parseInt(this.tSize.value);if(v>=64&&v<=1024)this.remover.tileSize=v};
-                this.ov.onchange=()=>{const v=parseInt(this.ov.value);if(v>=0&&v<=128)this.remover.overlap=v};
-                this.inSize.onchange=()=>{const v=parseInt(this.inSize.value);if(v>=64&&v<=512)this.remover.inputSize=v};
-                this.post.onchange=()=>this.remover.enablePostProcessing=this.post.checked
+            
+            addImage(file) {
+                return new Promise((resolve, reject) => {
+                    if (!file.type.match('image.*')) {
+                        reject(new Error('Please upload an image file (JPEG, PNG, etc.)'));
+                        return;
+                    }
+                    if (file.size > 20 * 1024 * 1024) {
+                        reject(new Error('File is too large. Please upload an image smaller than 20MB.'));
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const imageObj = {
+                                id: Date.now() + Math.random(),
+                                file: file,
+                                name: file.name,
+                                size: file.size,
+                                width: img.width,
+                                height: img.height,
+                                image: img,
+                                dataUrl: e.target.result,
+                                status: 'pending'
+                            };
+                            this.images.push(imageObj);
+                            resolve(imageObj);
+                        };
+                        img.onerror = () => {
+                            reject(new Error('Failed to load image. Please try another file.'));
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.onerror = () => {
+                        reject(new Error('Failed to read file. Please try again.'));
+                    };
+                    reader.readAsDataURL(file);
+                });
             }
-            async handleFiles(fs){for(const f of fs)try{await this.im.addImage(f);this.render();this.updateNext()}catch(e){alert(e.message)}}
-            render(){
-                const imgs=this.im.getImages();
-                if(!imgs.length){this.list.innerHTML='';return}
-                this.list.innerHTML=imgs.map(i=>`<div class="image-item">
-                    <div class="image-header"><div class="image-name">${i.name}</div><div class="image-size">${this.fmt(i.size)}</div><button class="btn btn-secondary" style="padding:5px 10px;font-size:12px" onclick="ui.removeImage(${i.id})">Remove</button></div>
-                    <div class="image-preview"><div class="preview-box"><div class="preview-title">Original</div><img class="preview-img" src="${i.dataUrl}"></div><div class="preview-box"><div class="preview-title">Processed</div><div class="preview-img" style="background:var(--background-color);display:flex;align-items:center;justify-content:center"><span style="color:var(--text-secondary)">Not processed yet</span></div></div></div>
-                    <div class="status ${i.status}">${this.stxt(i.status)}</div>
-                </div>`).join('')
+            
+            removeImage(id) {
+                this.images = this.images.filter(img => img.id !== id);
             }
-            renderProcessing(){
-                const imgs=this.im.getImages(),proc=this.im.getProcessedImages();
-                if(!imgs.length){this.pList.innerHTML='<div class="empty-state"><div class="empty-icon">📷</div><p>No images to process</p></div>';return}
-                this.pList.innerHTML=imgs.map(i=>{
-                    const p=proc.find(x=>x.id===i.id);
-                    let ph='';
-                    if(p){
-                        const ctx=p.canvas.getContext('2d');
-                        const id=ctx.getImageData(0,0,1,1);
-                        const has=id.data[0]||id.data[1]||id.data[2];
-                        ph=has?`<img class="preview-img" src="${p.canvas.toDataURL()}">`:'<div class="preview-img" style="background:var(--background-color);display:flex;align-items:center;justify-content:center;flex-direction:column"><span style="color:var(--text-secondary)">Processing result</span></div>'
-                    }else{ph='<div class="preview-img" style="background:var(--background-color);display:flex;align-items:center;justify-content:center"><span style="color:var(--text-secondary)">Processing…</span></div>'}
-                    return`<div class="image-item">
-                        <div class="image-header"><div class="image-name">${i.name}</div><div class="image-size">${this.fmt(i.size)}</div></div>
-                        <div class="image-preview"><div class="preview-box"><div class="preview-title">Original</div><img class="preview-img" src="${i.dataUrl}"></div><div class="preview-box"><div class="preview-title">Processed</div>${ph}</div></div>
-                        <div class="progress-container"><div class="progress-bar" id="progress-${i.id}" style="width:${p?'100%':'0%'}"></div></div>
-                        <div class="progress-text"><span id="progress-text-${i.id}">${p?'Completed':'Waiting to process…'}</span><span>${p?'100%':'0%'}</span></div>
-                        <div class="status ${i.status}">${this.stxt(i.status)}</div>
-                    </div>`
-                }).join('')
+            
+            clearAll() {
+                this.images = [];
+                this.processedImages = [];
             }
-            removeImage(id){this.im.removeImage(id);this.render();this.updateNext()}
-            updateNext(){this.nBtn.disabled=!this.im.getImages().length}
-            showUpload(){this.up.style.display='block';this.pr.style.display='none'}
-            showProcessing(){
-                this.up.style.display='none';this.pr.style.display='block';
-                if(this.dLog)this.dLog.innerHTML='';
-                if(this.dPan)this.dPan.style.display='block';
-                this.renderProcessing();this.processImages()
+            
+            getImages() {
+                return this.images;
             }
-            async processImages(){
-                const imgs=this.im.getImages();let done=0;this.updateStats(done,imgs.length);
-                for(const i of imgs){
-                    try{
-                        this.im.updateImageStatus(i.id,'processing');this.renderProcessing();
-                        const bar=document.getElementById(`progress-${i.id}`),txt=document.getElementById(`progress-text-${i.id}`);
-                        const cvs=await this.remover.processImage(i.image,(p,m)=>{
-                            if(bar)bar.style.width=p+'%';if(txt)txt.textContent=m;const pc=txt.nextElementSibling;if(pc)pc.textContent=p+'%'
-                        },i.name);
-                        this.im.addProcessedImage(i.id,cvs);this.im.updateImageStatus(i.id,'completed');done++;
-                        this.updateStats(done,imgs.length);this.renderProcessing();if(done===imgs.length)this.dBtn.disabled=false
-                    }catch(e){console.error(e);this.im.updateImageStatus(i.id,'error');this.renderProcessing();done++;this.updateStats(done,imgs.length)}
+            
+            getProcessedImages() {
+                return this.processedImages;
+            }
+            
+            updateImageStatus(id, status) {
+                const image = this.images.find(img => img.id === id);
+                if (image) {
+                    image.status = status;
                 }
             }
-            updateStats(c,t){this.stats.textContent=`${c}/${t} completed`}
-            downloadAll(){
-                const p=this.im.getProcessedImages();if(!p.length)return;
-                p.forEach((img,i)=>setTimeout(()=>img.canvas.toBlob(b=>{
-                    const u=URL.createObjectURL(b),a=document.createElement('a');
-                    a.download=img.name.replace(/\.[^.]+$/,'')+'_watermark_removed.png';a.href=u;a.click();URL.revokeObjectURL(u)
-                },'image/png',1),i*100))
+            
+            addProcessedImage(id, canvas) {
+                const originalImage = this.images.find(img => img.id === id);
+                if (originalImage) {
+                    this.processedImages.push({
+                        id: id,
+                        name: originalImage.name,
+                        canvas: canvas,
+                        status: 'completed'
+                    });
+                }
             }
-            fmt(b){return b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':Math.round(b/1048576*10)/10+' MB'}
-            stxt(s){return{pending:'⏳ Pending',processing:'⚙️ Processing…',completed:'✅ Completed',error:'❌ Error'}[s]||s}
         }
-
-        let ui,remover,im;
-        async function init(){
+        
+        // UI Controller
+        class UIController {
+            constructor(remover, imageManager) {
+                this.remover = remover;
+                this.imageManager = imageManager;
+                this.initializeElements();
+                this.attachEventListeners();
+            }
+            
+            initializeElements() {
+                this.loadingScreen = document.getElementById('loadingScreen');
+                this.uploadSection = document.getElementById('uploadSection');
+                this.processingSection = document.getElementById('processingSection');
+                this.uploadArea = document.getElementById('uploadArea');
+                this.fileInput = document.getElementById('fileInput');
+                this.imageList = document.getElementById('imageList');
+                this.processingList = document.getElementById('processingList');
+                this.nextBtn = document.getElementById('nextBtn');
+                this.backBtn = document.getElementById('backBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.downloadAllBtn = document.getElementById('downloadAllBtn');
+                this.tileSizeInput = document.getElementById('tileSize');
+                this.overlapInput = document.getElementById('overlap');
+                this.inputSizeInput = document.getElementById('inputSize');
+                this.enablePostProcessingInput = document.getElementById('enablePostProcessing');
+                this.processingStats = document.getElementById('processingStats');
+                this.debugPanel = document.getElementById('debugPanel');
+                this.debugLog = document.getElementById('debugLog');
+            }
+            
+            attachEventListeners() {
+                this.uploadArea.addEventListener('click', () => this.fileInput.click());
+                this.uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.add('drag-over');
+                });
+                this.uploadArea.addEventListener('dragleave', () => {
+                    this.uploadArea.classList.remove('drag-over');
+                });
+                this.uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.remove('drag-over');
+                    this.handleFiles(e.dataTransfer.files);
+                });
+                this.fileInput.addEventListener('change', (e) => {
+                    this.handleFiles(e.target.files);
+                });
+                this.nextBtn.addEventListener('click', () => {
+                    this.showProcessingSection();
+                });
+                this.backBtn.addEventListener('click', () => {
+                    this.showUploadSection();
+                });
+                this.clearBtn.addEventListener('click', () => {
+                    this.imageManager.clearAll();
+                    this.renderImageList();
+                    this.updateNextButton();
+                    if (this.debugLog) {
+                        this.debugLog.innerHTML = '';
+                    }
+                });
+                this.downloadAllBtn.addEventListener('click', () => {
+                    this.downloadAllImages();
+                });
+                this.tileSizeInput.addEventListener('change', () => {
+                    const value = parseInt(this.tileSizeInput.value);
+                    if (value >= 64 && value <= 1024) {
+                        this.remover.tileSize = value;
+                    }
+                });
+                this.overlapInput.addEventListener('change', () => {
+                    const value = parseInt(this.overlapInput.value);
+                    if (value >= 0 && value <= 128) {
+                        this.remover.overlap = value;
+                    }
+                });
+                this.inputSizeInput.addEventListener('change', () => {
+                    const value = parseInt(this.inputSizeInput.value);
+                    if (value >= 64 && value <= 512) {
+                        this.remover.inputSize = value;
+                    }
+                });
+                this.enablePostProcessingInput.addEventListener('change', () => {
+                    this.remover.enablePostProcessing = this.enablePostProcessingInput.checked;
+                });
+            }
+            
+            async handleFiles(files) {
+                for (let i = 0; i < files.length; i++) {
+                    try {
+                        const image = await this.imageManager.addImage(files[i]);
+                        this.renderImageList();
+                        this.updateNextButton();
+                    } catch (error) {
+                        console.error('Error adding image:', error);
+                        alert(error.message);
+                    }
+                }
+            }
+            
+            renderImageList() {
+                const images = this.imageManager.getImages();
+                if (images.length === 0) {
+                    this.imageList.innerHTML = '';
+                    return;
+                }
+                this.imageList.innerHTML = images.map(image => `
+                    <div class="image-item">
+                        <div class="image-header">
+                            <div class="image-name">${image.name}</div>
+                            <div class="image-size">${this.formatFileSize(image.size)}</div>
+                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="uiController.removeImage(${image.id})">Remove</button>
+                        </div>
+                        <div class="image-preview">
+                            <div class="preview-box">
+                                <div class="preview-title">Original</div>
+                                <img class="preview-img" src="${image.dataUrl}" alt="Original">
+                            </div>
+                            <div class="preview-box">
+                                <div class="preview-title">Processed</div>
+                                <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center;">
+                                    <span style="color: var(--text-secondary);">Not processed yet</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="status ${image.status}">${this.getStatusText(image.status)}</div>
+                    </div>
+                `).join('');
+            }
+            
+            renderProcessingList() {
+                const images = this.imageManager.getImages();
+                const processedImages = this.imageManager.getProcessedImages();
+                if (images.length === 0) {
+                    this.processingList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📷</div>
+                            <p>No images to process</p>
+                        </div>
+                    `;
+                    return;
+                }
+                this.processingList.innerHTML = images.map(image => {
+                    const processedImage = processedImages.find(img => img.id === image.id);
+                    let processedImageHtml = '';
+                    if (processedImage) {
+                        const ctx = processedImage.canvas.getContext('2d');
+                        const imageData = ctx.getImageData(0, 0, 1, 1);
+                        const hasContent = imageData.data[0] !== 0 || imageData.data[1] !== 0 || imageData.data[2] !== 0;
+                        if (hasContent) {
+                            processedImageHtml = `<img class="preview-img" src="${processedImage.canvas.toDataURL()}" alt="Processed">`;
+                        } else {
+                            processedImageHtml = `
+                                <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                                    <span style="color: var(--text-secondary);">Processing result</span>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        processedImageHtml = `
+                            <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center;">
+                                <span style="color: var(--text-secondary);">Processing...</span>
+                            </div>
+                        `;
+                    }
+                    return `
+                        <div class="image-item">
+                            <div class="image-header">
+                                <div class="image-name">${image.name}</div>
+                                <div class="image-size">${this.formatFileSize(image.size)}</div>
+                            </div>
+                            <div class="image-preview">
+                                <div class="preview-box">
+                                    <div class="preview-title">Original</div>
+                                    <img class="preview-img" src="${image.dataUrl}" alt="Original">
+                                </div>
+                                <div class="preview-box">
+                                    <div class="preview-title">Processed</div>
+                                    ${processedImageHtml}
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar" id="progress-${image.id}" style="width: ${processedImage ? '100%' : '0%'}"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span id="progress-text-${image.id}">${processedImage ? 'Completed' : 'Waiting to process...'}</span>
+                                <span>${processedImage ? '100%' : '0%'}</span>
+                            </div>
+                            <div class="status ${image.status}">${this.getStatusText(image.status)}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            removeImage(id) {
+                this.imageManager.removeImage(id);
+                this.renderImageList();
+                this.updateNextButton();
+            }
+            
+            updateNextButton() {
+                this.nextBtn.disabled = this.imageManager.getImages().length === 0;
+            }
+            
+            showUploadSection() {
+                this.uploadSection.style.display = 'block';
+                this.processingSection.style.display = 'none';
+            }
+            
+            showProcessingSection() {
+                this.uploadSection.style.display = 'none';
+                this.processingSection.style.display = 'block';
+                
+                // Clear debug log before starting new processing session
+                if (this.debugLog) {
+                    this.debugLog.innerHTML = '';
+                }
+                
+                // Show debug panel
+                if (this.debugPanel) {
+                    this.debugPanel.style.display = 'block';
+                }
+                
+                this.renderProcessingList();
+                this.processImages();
+            }
+            
+            async processImages() {
+                const images = this.imageManager.getImages();
+                let completedCount = 0;
+                this.updateProcessingStats(completedCount, images.length);
+                for (const image of images) {
+                    try {
+                        this.imageManager.updateImageStatus(image.id, 'processing');
+                        this.renderProcessingList();
+                        const progressBar = document.getElementById(`progress-${image.id}`);
+                        const progressText = document.getElementById(`progress-text-${image.id}`);
+                        const processedCanvas = await this.remover.processImage(image.image, (percent, message) => {
+                            if (progressBar) {
+                                progressBar.style.width = `${percent}%`;
+                            }
+                            if (progressText) {
+                                progressText.textContent = message;
+                            }
+                            const percentElement = progressText.nextElementSibling;
+                            if (percentElement) {
+                                percentElement.textContent = `${percent}%`;
+                            }
+                        }, image.name);
+                        this.imageManager.addProcessedImage(image.id, processedCanvas);
+                        this.imageManager.updateImageStatus(image.id, 'completed');
+                        completedCount++;
+                        this.updateProcessingStats(completedCount, images.length);
+                        this.renderProcessingList();
+                        if (completedCount === images.length) {
+                            this.downloadAllBtn.disabled = false;
+                        }
+                    } catch (error) {
+                        console.error('Error processing image:', error);
+                        this.imageManager.updateImageStatus(image.id, 'error');
+                        this.renderProcessingList();
+                        completedCount++;
+                        this.updateProcessingStats(completedCount, images.length);
+                    }
+                }
+            }
+            
+            updateProcessingStats(completed, total) {
+                this.processingStats.textContent = `${completed}/${total} completed`;
+            }
+            
+            downloadAllImages() {
+                const processedImages = this.imageManager.getProcessedImages();
+                if (processedImages.length === 0) {
+                    return;
+                }
+                processedImages.forEach((image, index) => {
+                    setTimeout(() => {
+                        image.canvas.toBlob((blob) => {
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            const baseName = image.name.split('.').slice(0, -1).join('.');
+                            link.download = `${baseName}_watermark_removed.png`;
+                            link.href = url;
+                            link.click();
+                            URL.revokeObjectURL(url);
+                        }, 'image/png', 1.0);
+                    }, index * 100);
+                });
+            }
+            
+            formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                else if (bytes < 1048576) return Math.round(bytes / 1024) + ' KB';
+                else return Math.round(bytes / 1048576 * 10) / 10 + ' MB';
+            }
+            
+            getStatusText(status) {
+                switch (status) {
+                    case 'pending':
+                        return '⏳ Pending';
+                    case 'processing':
+                        return '⚙️ Processing...';
+                    case 'completed':
+                        return '✅ Completed';
+                    case 'error':
+                        return '❌ Error';
+                    default:
+                        return status;
+                }
+            }
+        }
+        
+        // Initialize the application
+        let remover, imageManager, uiController;
+        async function initialize() {
             await updateExecutionProviderStatus();
-            remover=new ONNXWatermarkRemover();im=new ImageManager();ui=new UIController(remover,im);
-            // improved defaults
-            document.getElementById('tileSize').value=512;
-            document.getElementById('overlap').value=64;
-            document.getElementById('inputSize').value=256;
-            document.getElementById('enablePostProcessing').checked=true;
-            remover.tileSize=512;remover.overlap=64;remover.inputSize=256;remover.enablePostProcessing=true;
-            const ok=await remover.loadModel(MODEL_URL,MODEL_DATA_URL);
-            if(ok){document.getElementById('loadingScreen').style.display='none';document.getElementById('uploadSection').style.display='block'}
-            else{document.getElementById('loadingScreen').innerHTML=`<div class="error-message"><h4>❌ Failed to load model</h4><p>Ensure model.onnx (+ .data) are present.</p></div><button class="btn" onclick="location.reload()">🔄 Retry</button>`}
+            remover = new ONNXWatermarkRemover();
+            imageManager = new ImageManager();
+            uiController = new UIController(remover, imageManager);
+            
+            // Set better default values for tiling
+            document.getElementById('tileSize').value = 512;
+            document.getElementById('overlap').value = 64;
+            document.getElementById('inputSize').value = 256;
+            document.getElementById('enablePostProcessing').checked = true;
+            
+            // Update the remover with these values
+            remover.tileSize = 512;
+            remover.overlap = 64;
+            remover.inputSize = 256;
+            remover.enablePostProcessing = true;
+            
+            const success = await remover.loadModel(MODEL_URL, MODEL_DATA_URL);
+            if (success) {
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('uploadSection').style.display = 'block';
+            } else {
+                const loadingScreen = document.getElementById('loadingScreen');
+                loadingScreen.innerHTML = `
+                    <div class="error-message">
+                        <h4>❌ Failed to load model</h4>
+                        <p>Please check that the model files (model.onnx and model.onnx.data) are in the correct location.</p>
+                        <p>Also ensure your browser supports WebAssembly.</p>
+                    </div>
+                    <button class="btn" onclick="location.reload()">🔄 Retry</button>
+                `;
+            }
         }
-        window.onload=init;
+        window.addEventListener('load', initialize);
     </script>
 </body>
 </html>
