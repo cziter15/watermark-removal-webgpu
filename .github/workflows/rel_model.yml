@@ -1,0 +1,21 @@
+name: Release model
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release-model:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up GitHub CLI
+        uses: cli/cli-action@v3
+
+      - name: Create release
+        id: create_release
+        run: |
+          gh release create v${GITHUB_RUN_NUMBER} \
+            --title "Auto Release $GITHUB_RUN_NUMBER" \
+            --notes "Automated release with model files" \
+            ./web/model.onnx ./web/model.onnx.data
