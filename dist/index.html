@@ -110,13 +110,7 @@
             width: 0%;
             background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             border-radius: 3px;
-            animation: loading 3s infinite;
-        }
-        
-        @keyframes loading {
-            0% { width: 0%; }
-            50% { width: 70%; }
-            100% { width: 100%; }
+            transition: width 0.3s ease;
         }
         
         /* Upload Section */
@@ -217,6 +211,23 @@
             left: 20px;
             right: 20px;
             top: auto;
+            height: 200px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .image-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .image-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .image-list::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 3px;
         }
 
         .upload-area .upload-prompt {
@@ -617,6 +628,7 @@
             .image-list {
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
                 gap: 10px;
+                height: 150px;
             }
             
             .btn {
@@ -664,6 +676,7 @@
             .image-list {
                 grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
                 gap: 8px;
+                height: 120px;
             }
         }
     </style>
@@ -676,10 +689,10 @@
         <!-- Loading Screen -->
         <div class="loading-screen" id="loadingScreen">
             <div class="loading-icon">⏳</div>
-            <div class="loading-text">Loading AI Model</div>
+            <div class="loading-text" id="loadingText">Loading AI Model</div>
             <div class="loading-subtext">This may take a moment...</div>
             <div class="loading-bar">
-                <div class="loading-progress"></div>
+                <div class="loading-progress" id="loadingProgress"></div>
             </div>
         </div>
         
@@ -722,7 +735,7 @@
             
             <div class="navigation">
                 <button class="btn btn-secondary" id="clearBtn">Clear All</button>
-                <button class="btn" id="nextBtn" disabled>Next: Process Images</button>
+                <button class="btn" id="nextBtn" disabled>Process Images</button>
             </div>
         </div>
         
@@ -790,6 +803,44 @@
             }
         }
 
+        // Fetch with progress
+        function fetchWithProgress(url, progressCallback, progressMapper) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.responseType = 'arraybuffer';
+
+                let lastProgress = 0;
+                xhr.addEventListener('progress', (event) => {
+                    if (event.lengthComputable && progressCallback && progressMapper) {
+                        const percent = (event.loaded / event.total) * 100;
+                        // Only update if significant change to avoid jitter
+                        if (Math.abs(percent - lastProgress) > 1) {
+                            progressCallback(progressMapper(percent), `Downloading ${url}...`);
+                            lastProgress = percent;
+                        }
+                    }
+                });
+
+                xhr.addEventListener('load', () => {
+                    if (xhr.status === 200) {
+                        if (progressCallback && progressMapper) {
+                            progressCallback(progressMapper(100), `Downloaded ${url}`);
+                        }
+                        resolve(xhr.response);
+                    } else {
+                        reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+                    }
+                });
+
+                xhr.addEventListener('error', () => {
+                    reject(new Error('Network error'));
+                });
+
+                xhr.send();
+            });
+        }
+
         // Define constants for model URLs
         const MODEL_URL = 'model.onnx';
         const MODEL_DATA_URL = 'model.onnx.data';
@@ -807,29 +858,37 @@
                 this.enablePostProcessing = true;
             }
             
-            async loadModel(modelPath, modelDataPath) {
+            async loadModel(modelPath, modelDataPath, progressCallback) {
                 try {
-                    console.log("Loading model...");
-                    const modelResponse = await fetch(modelPath);
-                    if (!modelResponse.ok) {
-                        throw new Error(`Failed to fetch model: ${modelResponse.statusText}`);
+                    if (progressCallback) {
+                        progressCallback(0, "Starting model load...");
                     }
-                    const modelBuffer = await modelResponse.arrayBuffer();
+                    console.log("Loading model...");
+                    
+                    // Fetch model with progress (0-40%)
+                    const modelBuffer = await fetchWithProgress(modelPath, progressCallback, (p) => p * 0.4);
                     console.log(`Model loaded, size: ${modelBuffer.byteLength} bytes`);
+                    
+                    if (progressCallback) {
+                        progressCallback(40, "Model fetched, loading external data...");
+                    }
+                    
                     let externalDataBuffer = null;
                     let externalDataLoaded = false;
                     try {
-                        const dataResponse = await fetch(modelDataPath);
-                        if (dataResponse.ok) {
-                            externalDataBuffer = await dataResponse.arrayBuffer();
-                            externalDataLoaded = true;
-                            console.log("External data file loaded successfully");
-                        } else {
-                            console.log(`External data file not found: ${dataResponse.statusText}`);
+                        externalDataBuffer = await fetchWithProgress(modelDataPath, progressCallback, (p) => 40 + p * 0.3);
+                        externalDataLoaded = true;
+                        console.log("External data file loaded successfully");
+                        if (progressCallback) {
+                            progressCallback(70, "External data fetched, initializing session...");
                         }
                     } catch (e) {
                         console.log(`External data file not found (optional): ${e.message}`);
+                        if (progressCallback) {
+                            progressCallback(70, "No external data, initializing session...");
+                        }
                     }
+                    
                     const sessionOptions = {
                         executionProviders: ['webgpu', 'wasm', 'cpu']
                     };
@@ -839,26 +898,57 @@
                             path: 'model.onnx.data'
                         }];
                     }
+                    
                     console.log("Creating inference session...");
+                    if (progressCallback) {
+                        progressCallback(75, "Creating inference session...");
+                    }
+                    
+                    // Simulate session creation progress (it's async but no built-in progress)
+                    const sessionStart = Date.now();
                     const session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
+                    const sessionTime = Date.now() - sessionStart;
+                    const sessionProgressIncrement = Math.min(25, sessionTime / 100); // Rough estimate based on time
+                    if (progressCallback) {
+                        progressCallback(75 + sessionProgressIncrement, `Session initialized (${Math.round(sessionTime)}ms)`);
+                    }
+                    
                     const inputNames = session.inputNames;
                     const outputNames = session.outputNames;
                     console.log(`Model inputs: ${JSON.stringify(inputNames)}`);
                     console.log(`Model outputs: ${JSON.stringify(outputNames)}`);
-                    if (session.handler) {
-                        this.executionProvider = session.handler.backendName || 'unknown';
+                    
+                    // Improved provider detection
+                    let detectedProvider = 'unknown';
+                    if (session._backend && session._backend.name) {
+                        detectedProvider = session._backend.name;
+                    } else if (session.handler && session.handler.backendName) {
+                        detectedProvider = session.handler.backendName;
+                    } else if (typeof navigator !== 'undefined' && navigator.gpu && sessionOptions.executionProviders.includes('webgpu')) {
+                        detectedProvider = 'webgpu';
+                    } else if (sessionOptions.executionProviders.includes('wasm')) {
+                        detectedProvider = 'wasm';
                     } else {
-                        this.executionProvider = 'unknown';
+                        detectedProvider = 'cpu';
                     }
+                    this.executionProvider = detectedProvider;
                     console.log(`Using execution provider: ${this.executionProvider}`);
+                    
                     this.session = session;
                     this.modelLoaded = true;
                     this.modelPath = modelPath;
                     this.modelDataPath = modelDataPath;
+                    
+                    if (progressCallback) {
+                        progressCallback(100, "Model loaded successfully!");
+                    }
                     return true;
                 } catch (error) {
                     console.error(`Model loading error: ${error.message}`);
                     console.error('Model loading error:', error);
+                    if (progressCallback) {
+                        progressCallback(0, `Error: ${error.message}`);
+                    }
                     return false;
                 }
             }
@@ -1710,13 +1800,32 @@
             remover.inputSize = 256;
             remover.enablePostProcessing = true;
             
-            const success = await remover.loadModel(MODEL_URL, MODEL_DATA_URL);
+            // Progress update function
+            const loadingProgress = document.getElementById('loadingProgress');
+            const loadingText = document.getElementById('loadingText');
+            const updateProgress = (percent, message) => {
+                loadingProgress.style.width = `${percent}%`;
+                loadingText.textContent = message;
+            };
+            
+            const success = await remover.loadModel(MODEL_URL, MODEL_DATA_URL, updateProgress);
             if (success) {
-                document.getElementById('loadingScreen').style.display = 'none';
-                document.getElementById('uploadSection').style.display = 'block';
-                // Add provider info to copyright
-                const copyright = document.getElementById('copyright');
-                copyright.innerHTML += ` | Using: ${remover.executionProvider.toUpperCase()}`;
+                // Small delay to show 100%
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    document.getElementById('uploadSection').style.display = 'block';
+                    // Improved provider display
+                    const copyright = document.getElementById('copyright');
+                    let providerDisplay = remover.executionProvider;
+                    if (providerDisplay === 'unknown') {
+                        if (typeof navigator !== 'undefined' && navigator.gpu) {
+                            providerDisplay = 'WebGPU';
+                        } else {
+                            providerDisplay = 'WASM/CPU';
+                        }
+                    }
+                    copyright.innerHTML += ` <span style="font-size: 16px;">🚀 Running on: ${providerDisplay}</span>`;
+                }, 500);
             } else {
                 const loadingScreen = document.getElementById('loadingScreen');
                 loadingScreen.innerHTML = `
