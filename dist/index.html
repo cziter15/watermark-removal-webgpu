@@ -62,6 +62,66 @@
             text-align: center;
         }
         
+        /* Loading Screen */
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .loading-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+        
+        .loading-text {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .loading-subtext {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .loading-bar {
+            width: 100%;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 30px;
+            overflow: hidden;
+        }
+        
+        .loading-progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-radius: 3px;
+            animation: loading 3s infinite;
+        }
+        
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+        
+        /* Upload Section */
+        .upload-section {
+            display: none;
+        }
+        
         .upload-area {
             border: 3px dashed var(--primary-color);
             border-radius: 15px;
@@ -116,111 +176,75 @@
             transform: none;
         }
         
-        .image-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        .btn-secondary {
+            background: var(--card-color);
+        }
+        
+        /* Image List */
+        .image-list {
             margin-top: 30px;
         }
         
-        .image-box {
-            text-align: center;
-        }
-        
-        .image-box h3 {
-            color: var(--text-primary);
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-        
-        .image-box img {
-            max-width: 100%;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .image-box canvas {
-            max-width: 100%;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .status {
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            font-size: 14px;
-        }
-        
-        .status.info {
-            background-color: rgba(96, 165, 250, 0.2);
-            color: var(--info-color);
-            border-left: 4px solid var(--info-color);
-        }
-        
-        .status.error {
-            background-color: rgba(248, 113, 113, 0.2);
-            color: var(--error-color);
-            border-left: 4px solid var(--error-color);
-        }
-        
-        .status.success {
-            background-color: rgba(74, 222, 128, 0.2);
-            color: var(--accent-color);
-            border-left: 4px solid var(--accent-color);
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-            margin-left: 10px;
-            vertical-align: middle;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .model-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 15px;
+        .image-item {
             background-color: var(--card-color);
-            border-radius: 10px;
+            border-radius: 15px;
+            padding: 20px;
             margin-bottom: 20px;
-            font-size: 14px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .model-status.loading {
-            color: var(--info-color);
+        .image-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
         
-        .model-status.ready {
-            color: var(--accent-color);
+        .image-name {
+            font-weight: 500;
+            font-size: 16px;
+            color: var(--text-primary);
+            word-break: break-all;
+            max-width: 70%;
         }
         
-        .model-status.error {
-            color: var(--error-color);
+        .image-size {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .image-preview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .preview-box {
+            text-align: center;
+        }
+        
+        .preview-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .preview-img {
+            width: 100%;
+            height: 150px;
+            object-fit: contain;
+            border-radius: 8px;
+            background-color: var(--background-color);
         }
         
         .progress-container {
             width: 100%;
-            height: 20px;
+            height: 8px;
             background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+            border-radius: 4px;
             overflow: hidden;
-            margin: 20px 0;
-            display: none;
-            position: relative;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin-top: 10px;
         }
         
         .progress-bar {
@@ -228,61 +252,92 @@
             background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             width: 0%;
             transition: width 0.3s ease;
-            border-radius: 10px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .progress-bar::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0),
-                rgba(255, 255, 255, 0.4),
-                rgba(255, 255, 255, 0)
-            );
-            animation: shimmer 2s infinite;
-        }
-        
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            border-radius: 4px;
         }
         
         .progress-text {
-            text-align: center;
-            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
             color: var(--text-secondary);
             margin-top: 5px;
         }
         
-        .browser-warning {
-            background-color: rgba(251, 191, 36, 0.2);
-            color: var(--warning-color);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
-            border-left: 4px solid var(--warning-color);
+        .status {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: inline-block;
+            margin-top: 10px;
         }
         
+        .status.pending {
+            background-color: rgba(251, 191, 36, 0.2);
+            color: var(--warning-color);
+        }
+        
+        .status.processing {
+            background-color: rgba(96, 165, 250, 0.2);
+            color: var(--info-color);
+        }
+        
+        .status.completed {
+            background-color: rgba(74, 222, 128, 0.2);
+            color: var(--accent-color);
+        }
+        
+        .status.error {
+            background-color: rgba(248, 113, 113, 0.2);
+            color: var(--error-color);
+        }
+        
+        /* Processing Section */
+        .processing-section {
+            display: none;
+        }
+        
+        .processing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .processing-title {
+            font-size: 20px;
+            font-weight: 500;
+        }
+        
+        .processing-stats {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        /* Settings Panel */
         .settings-panel {
             background-color: var(--card-color);
             border-radius: 10px;
-            padding: 15px;
+            padding: 20px;
             margin-bottom: 20px;
-            display: none;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .settings-panel h3 {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             color: var(--text-primary);
+            font-size: 16px;
         }
         
         .setting-item {
@@ -315,17 +370,7 @@
             color: var(--text-primary);
         }
         
-        .toggle-settings {
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            cursor: pointer;
-            font-size: 14px;
-            margin-bottom: 10px;
-            padding: 5px 0;
-            font-weight: 500;
-        }
-        
+        /* Execution Info */
         .execution-info {
             background-color: rgba(96, 165, 250, 0.1);
             border-left: 4px solid var(--info-color);
@@ -369,48 +414,11 @@
             color: white;
         }
         
-        .troubleshooting {
-            background-color: rgba(251, 191, 36, 0.1);
-            border-left: 4px solid var(--warning-color);
-            padding: 15px;
-            border-radius: 0 10px 10px 0;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        
-        .troubleshooting h4 {
-            margin-bottom: 8px;
-            color: var(--warning-color);
-        }
-        
-        .troubleshooting ol {
-            margin-left: 20px;
-            color: var(--text-primary);
-        }
-        
-        .troubleshooting li {
-            margin-bottom: 8px;
-        }
-        
-        .browser-info {
-            background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 10px;
-            margin-top: 10px;
-            font-family: monospace;
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-        
-        .retry-section {
-            text-align: center;
-            margin-top: 15px;
-        }
-        
-        .retry-section p {
-            margin-bottom: 10px;
-            color: var(--text-secondary);
-            font-size: 14px;
+        /* Navigation */
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
         }
         
         /* Responsive improvements */
@@ -431,9 +439,8 @@
                 padding: 30px 20px;
             }
             
-            .image-container {
+            .image-preview {
                 grid-template-columns: 1fr;
-                gap: 15px;
             }
             
             .btn {
@@ -443,7 +450,7 @@
             }
             
             .settings-panel {
-                padding: 10px;
+                padding: 15px;
             }
         }
         
@@ -468,92 +475,78 @@
                 padding: 8px 16px;
                 font-size: 13px;
             }
+            
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎨 ONNX Watermark Remover</h1>
-        <p class="subtitle">Upload an image to remove watermarks using AI</p>
+        <p class="subtitle">Upload images to remove watermarks using AI</p>
         
-        <div id="browserWarning" class="browser-warning">
-            Your browser may not support all features required for this application. For best results, please use the latest version of Chrome, Firefox, or Edge.
-        </div>
-        
-        <div class="execution-info" id="executionInfo">
-            <h4>Execution Provider Information</h4>
-            <p id="providerStatus">Detecting available execution providers...</p>
-            <div class="browser-info" id="browserInfo"></div>
-        </div>
-        
-        <div class="troubleshooting" id="troubleshooting" style="display: none;">
-            <h4>WebGPU Not Available - Troubleshooting</h4>
-            <p>If WebGPU is not available, follow these steps to enable it:</p>
-            <ol>
-                <li><strong>Chrome/Edge:</strong> Make sure you're using version 113 or newer. WebGPU should be enabled by default.</li>
-                <li><strong>Firefox:</strong> Type <code>about:config</code> in the address bar, search for <code>dom.webgpu.enabled</code>, and set it to <code>true</code>.</li>
-                <li><strong>Safari:</strong> Enable "Experimental Features" in the Develop menu (enable Develop menu in Preferences > Advanced).</li>
-                <li><strong>Update your browser</strong> to the latest version.</li>
-                <li><strong>Update your graphics drivers</strong> to the latest version.</li>
-                <li>Make sure you're accessing this page via <strong>HTTPS</strong> or <strong>localhost</strong> (WebGPU requires a secure context).</li>
-            </ol>
-        </div>
-        
-        <button class="toggle-settings" id="toggleSettings">⚙️ Advanced Settings</button>
-        
-        <div class="settings-panel" id="settingsPanel">
-            <h3>Processing Settings</h3>
-            <div class="setting-item">
-                <label for="tileSize">Tile Size (for large images):</label>
-                <input type="number" id="tileSize" value="512" min="64" max="1024" step="64">
+        <!-- Loading Screen -->
+        <div class="loading-screen" id="loadingScreen">
+            <div class="loading-icon">⏳</div>
+            <div class="loading-text">Loading AI Model</div>
+            <div class="loading-subtext">This may take a moment...</div>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
             </div>
-            <div class="setting-item">
-                <label for="overlap">Tile Overlap (pixels):</label>
-                <input type="number" id="overlap" value="32" min="0" max="64">
-            </div>
-            <div class="setting-item">
-                <label for="inputSize">Model Input Size:</label>
-                <input type="number" id="inputSize" value="256" min="64" max="512" step="64">
+            <div class="execution-info" id="executionInfo" style="margin-top: 30px; width: 100%;">
+                <h4>Execution Provider Information</h4>
+                <p id="providerStatus">Detecting available execution providers...</p>
             </div>
         </div>
         
-        <div id="modelStatus" class="model-status loading">
-            <span class="loading"></span>
-            <span>Loading model...</span>
-        </div>
-        
-        <div id="status"></div>
-        
-        <div class="progress-container" id="progressContainer">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        <div class="progress-text" id="progressText"></div>
-        
-        <div class="upload-area" id="uploadArea">
-            <div class="upload-icon">📁</div>
-            <p>Click to upload or drag & drop an image</p>
-            <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">Supports JPG, PNG</p>
-            <input type="file" id="fileInput" accept="image/*">
-        </div>
-        
-        <div style="text-align: center;">
-            <button class="btn" id="processBtn" disabled>Remove Watermark</button>
-            <button class="btn" id="downloadBtn" disabled>Download Result</button>
-        </div>
-        
-        <div class="retry-section" id="retrySection" style="display: none;">
-            <p>Failed to load the model. This could be due to network issues or model file problems.</p>
-            <button class="btn" id="retryBtn">Retry Model Loading</button>
-        </div>
-        
-        <div class="image-container" id="imageContainer" style="display: none;">
-            <div class="image-box">
-                <h3>Original Image</h3>
-                <img id="originalImg" alt="Original">
+        <!-- Upload Section -->
+        <div class="upload-section" id="uploadSection">
+            <div class="settings-panel">
+                <h3>Processing Settings</h3>
+                <div class="setting-item">
+                    <label for="tileSize">Tile Size (for large images):</label>
+                    <input type="number" id="tileSize" value="512" min="64" max="1024" step="64">
+                </div>
+                <div class="setting-item">
+                    <label for="overlap">Tile Overlap (pixels):</label>
+                    <input type="number" id="overlap" value="32" min="0" max="64">
+                </div>
+                <div class="setting-item">
+                    <label for="inputSize">Model Input Size:</label>
+                    <input type="number" id="inputSize" value="256" min="64" max="512" step="64">
+                </div>
             </div>
-            <div class="image-box">
-                <h3>Processed Image</h3>
-                <canvas id="processedCanvas"></canvas>
+            
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <p>Click to upload or drag & drop images</p>
+                <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">Supports JPG, PNG</p>
+                <input type="file" id="fileInput" accept="image/*" multiple>
+            </div>
+            
+            <div class="image-list" id="imageList"></div>
+            
+            <div class="navigation">
+                <button class="btn btn-secondary" id="clearBtn">Clear All</button>
+                <button class="btn" id="nextBtn" disabled>Next</button>
+            </div>
+        </div>
+        
+        <!-- Processing Section -->
+        <div class="processing-section" id="processingSection">
+            <div class="processing-header">
+                <div class="processing-title">Processing Images</div>
+                <div class="processing-stats" id="processingStats">0/0 completed</div>
+            </div>
+            
+            <div class="image-list" id="processingList"></div>
+            
+            <div class="navigation">
+                <button class="btn btn-secondary" id="backBtn">Back</button>
+                <button class="btn" id="downloadAllBtn" disabled>Download All</button>
             </div>
         </div>
     </div>
@@ -563,20 +556,7 @@
         const MODEL_URL = 'model.onnx';
         const MODEL_DATA_URL = 'model.onnx.data';
         
-        // Check browser compatibility
-        function checkBrowserCompatibility() {
-            const hasWebAssembly = typeof WebAssembly === 'object';
-            const hasWebGL = !!document.createElement('canvas').getContext('webgl') || 
-                           !!document.createElement('canvas').getContext('experimental-webgl');
-            
-            if (!hasWebAssembly || !hasWebGL) {
-                document.getElementById('browserWarning').style.display = 'block';
-                return false;
-            }
-            return true;
-        }
-
-        // Check for WebGPU support with detailed error reporting
+        // Check for WebGPU support
         async function checkWebGPUSupport() {
             const result = {
                 supported: false,
@@ -585,20 +565,17 @@
             };
             
             try {
-                // Check if navigator.gpu exists
                 if (!navigator.gpu) {
                     result.error = 'navigator.gpu not found - WebGPU is not supported in this browser';
                     return result;
                 }
                 
-                // Try to get an adapter
                 const adapter = await navigator.gpu.requestAdapter();
                 if (!adapter) {
                     result.error = 'No GPU adapter found - your graphics card may not support WebGPU';
                     return result;
                 }
                 
-                // Try to get adapter info if available (check if method exists)
                 if (typeof adapter.requestAdapterInfo === 'function') {
                     try {
                         const adapterInfo = await adapter.requestAdapterInfo();
@@ -608,7 +585,6 @@
                     }
                 }
                 
-                // Try to get a device
                 const device = await adapter.requestDevice();
                 if (!device) {
                     result.error = 'Failed to create GPU device - your graphics drivers may be outdated';
@@ -653,16 +629,6 @@
         // Update execution provider status
         async function updateExecutionProviderStatus() {
             const providerStatus = document.getElementById('providerStatus');
-            const browserInfo = document.getElementById('browserInfo');
-            const troubleshooting = document.getElementById('troubleshooting');
-            
-            // Display browser info
-            const browser = getBrowserInfo();
-            browserInfo.innerHTML = `
-                Browser: ${browser.name} ${browser.version}<br>
-                User Agent: ${browser.userAgent}<br>
-                Secure Context: ${window.isSecureContext ? 'Yes' : 'No'}
-            `;
             
             // Check WebGPU support
             const webgpuResult = await checkWebGPUSupport();
@@ -684,7 +650,6 @@
             if (webgpuResult.supported) {
                 statusHTML += '<p style="margin-top: 8px; color: #4ade80; font-weight: bold;">✓ WebGPU is available - this will provide the best performance!</p>';
                 
-                // Show adapter info if available
                 if (webgpuResult.details.adapter) {
                     const adapter = webgpuResult.details.adapter;
                     let gpuInfo = '';
@@ -701,7 +666,6 @@
                 if (webgpuResult.error) {
                     statusHTML += `<p style="font-size: 12px; color: #f87171;">Reason: ${webgpuResult.error}</p>`;
                 }
-                troubleshooting.style.display = 'block';
             }
             
             providerStatus.innerHTML = statusHTML;
@@ -717,28 +681,16 @@
                 this.modelPath = MODEL_URL;
                 this.modelDataPath = MODEL_DATA_URL;
                 this.executionProvider = null;
-                this.retryCount = 0;
-                this.maxRetries = 3;
             }
 
-            async loadModel(modelPath, modelDataPath, isRetry = false) {
+            async loadModel(modelPath, modelDataPath) {
                 try {
-                    if (!isRetry) {
-                        this.retryCount = 0;
-                        updateModelStatus('loading', `Loading model...`);
-                    } else {
-                        updateModelStatus('loading', `Retrying model load (attempt ${this.retryCount}/${this.maxRetries})...`);
-                    }
-                    
                     // Fetch the model file
                     const modelResponse = await fetch(modelPath);
                     if (!modelResponse.ok) {
                         throw new Error(`Failed to fetch model: ${modelResponse.statusText}`);
                     }
                     const modelBuffer = await modelResponse.arrayBuffer();
-                    
-                    // Wait a moment after getting the model
-                    await new Promise(resolve => setTimeout(resolve, 5000));
                     
                     // Try to fetch external data file if it exists
                     let externalDataBuffer = null;
@@ -767,7 +719,6 @@
                     
                     // If we have external data, add it to the options
                     if (externalDataLoaded && externalDataBuffer) {
-                        // Use the array format for external data
                         sessionOptions.externalData = [
                             {
                                 data: externalDataBuffer,
@@ -780,7 +731,6 @@
                     let session = null;
                     try {
                         if (webgpuResult.supported) {
-                            // Try WebGPU first (browser equivalent of CUDA)
                             console.log('Attempting to load model with WebGPU...');
                             session = await ort.InferenceSession.create(modelBuffer, {
                                 ...sessionOptions,
@@ -796,9 +746,6 @@
                         this.executionProvider = 'wasm';
                     }
                     
-                    // Wait a moment after creating the session
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    
                     // Get input shape information
                     const inputNames = session.inputNames;
                     console.log('Model inputs:', inputNames);
@@ -809,12 +756,6 @@
                     this.modelPath = modelPath;
                     this.modelDataPath = modelDataPath;
                     
-                    if (this.executionProvider === 'webgpu') {
-                        updateModelStatus('ready', '✓ Model loaded with WebGPU acceleration (best performance)');
-                    } else {
-                        updateModelStatus('ready', '✓ Model loaded with WASM backend');
-                    }
-                    
                     return true;
                 } catch (error) {
                     console.error('Model loading error:', error);
@@ -824,7 +765,6 @@
                         // Try loading without external data
                         try {
                             console.log('Attempting to load model without external data...');
-                            updateModelStatus('loading', 'Trying alternative loading method...');
                             
                             const webgpuResult = await checkWebGPUSupport();
                             const sessionOptions = {
@@ -843,28 +783,22 @@
                                 this.executionProvider = 'wasm';
                             }
                             
-                            await new Promise(resolve => setTimeout(resolve, 500));
-                            
                             this.session = session;
                             this.modelLoaded = true;
                             this.modelPath = modelPath;
                             this.modelDataPath = modelDataPath;
                             
-                            updateModelStatus('ready', '✓ Model loaded without external data');
                             return true;
                         } catch (e2) {
                             console.error('Alternative loading failed:', e2);
                         }
                     }
                     
-                    updateModelStatus('error', `✗ Error loading model: ${error.message}`);
-                    showStatus(`Failed to load model. ${error.message}`, 'error');
-                    document.getElementById('retrySection').style.display = 'block';
                     return false;
                 }
             }
 
-            async processImage(image) {
+            async processImage(image, progressCallback) {
                 if (!this.modelLoaded) {
                     throw new Error('Model not loaded');
                 }
@@ -877,25 +811,20 @@
                     throw new Error('Image is too small. Minimum size is 64x64 pixels.');
                 }
 
-                // Show progress bar
-                showProgress(0, 'Preparing image...');
-
                 // For large images, process in tiles to maintain quality
                 if (originalWidth > this.tileSize || originalHeight > this.tileSize) {
-                    showStatus(`Processing large image (${originalWidth}x${originalHeight}) in tiles...`, 'info');
-                    return await this.processTiled(image);
+                    return await this.processTiled(image, progressCallback);
                 } else {
-                    return await this.processSingle(image);
+                    return await this.processSingle(image, progressCallback);
                 }
             }
 
-            async processSingle(image) {
+            async processSingle(image, progressCallback) {
                 const originalWidth = image.width;
                 const originalHeight = image.height;
 
-                showProgress(25, 'Preprocessing image...');
-                await new Promise(resolve => setTimeout(resolve, 50));
-
+                if (progressCallback) progressCallback(25, 'Preprocessing image...');
+                
                 // Create canvas for preprocessing
                 const canvas = document.createElement('canvas');
                 canvas.width = this.inputSize;
@@ -908,8 +837,7 @@
                 ctx.drawImage(image, 0, 0, this.inputSize, this.inputSize);
                 const imageData = ctx.getImageData(0, 0, this.inputSize, this.inputSize);
                 
-                showProgress(50, `Running AI model (${this.executionProvider.toUpperCase()})...`);
-                await new Promise(resolve => setTimeout(resolve, 50));
+                if (progressCallback) progressCallback(50, `Running AI model (${this.executionProvider.toUpperCase()})...`);
                 
                 // Convert to tensor format [1, 3, H, W] with normalization
                 const inputTensor = this.imageDataToTensor(imageData);
@@ -920,8 +848,7 @@
                 
                 const results = await this.session.run(feeds);
                 
-                showProgress(75, 'Postprocessing...');
-                await new Promise(resolve => setTimeout(resolve, 50));
+                if (progressCallback) progressCallback(75, 'Postprocessing...');
                 
                 // Get output tensor
                 const outputName = this.session.outputNames[0];
@@ -948,12 +875,12 @@
                 outputCtx.imageSmoothingQuality = 'high';
                 outputCtx.drawImage(tempCanvas, 0, 0, originalWidth, originalHeight);
                 
-                showProgress(100, 'Complete!');
+                if (progressCallback) progressCallback(100, 'Complete!');
                 
                 return outputCanvas;
             }
 
-            async processTiled(image) {
+            async processTiled(image, progressCallback) {
                 const originalWidth = image.width;
                 const originalHeight = image.height;
 
@@ -1104,7 +1031,7 @@
                         
                         tilesProcessed++;
                         const progress = Math.round((tilesProcessed / tileCount) * 100);
-                        showProgress(progress, `Processing tile ${tilesProcessed}/${tileCount} (${this.executionProvider.toUpperCase()})...`);
+                        if (progressCallback) progressCallback(progress, `Processing tile ${tilesProcessed}/${tileCount} (${this.executionProvider.toUpperCase()})...`);
                     }
                 }
 
@@ -1159,252 +1086,430 @@
             }
         }
 
-        let remover = new ONNXWatermarkRemover();
-        let originalImage = null;
-        let processedCanvas = null;
-
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const processBtn = document.getElementById('processBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const retryBtn = document.getElementById('retryBtn');
-        const originalImg = document.getElementById('originalImg');
-        const processedCanvasEl = document.getElementById('processedCanvas');
-        const imageContainer = document.getElementById('imageContainer');
-        const progressContainer = document.getElementById('progressContainer');
-        const progressBar = document.getElementById('progressBar');
-        const progressText = document.getElementById('progressText');
-        const toggleSettings = document.getElementById('toggleSettings');
-        const settingsPanel = document.getElementById('settingsPanel');
-        const tileSizeInput = document.getElementById('tileSize');
-        const overlapInput = document.getElementById('overlap');
-        const inputSizeInput = document.getElementById('inputSize');
-        const retrySection = document.getElementById('retrySection');
-
-        function showStatus(message, type = 'info') {
-            const statusDiv = document.getElementById('status');
-            statusDiv.className = `status ${type}`;
-            statusDiv.textContent = message;
-            statusDiv.style.display = 'block';
-        }
-
-        function hideStatus() {
-            document.getElementById('status').style.display = 'none';
-        }
-
-        function showProgress(percent, message = '') {
-            progressContainer.style.display = 'block';
-            progressBar.style.width = percent + '%';
-            progressText.textContent = message;
-            progressText.style.display = message ? 'block' : 'none';
-        }
-
-        function hideProgress() {
-            progressContainer.style.display = 'none';
-            progressText.style.display = 'none';
-            progressBar.style.width = '0%';
-        }
-
-        function updateModelStatus(state, message) {
-            const modelStatus = document.getElementById('modelStatus');
-            modelStatus.className = `model-status ${state}`;
-            
-            if (state === 'loading') {
-                modelStatus.innerHTML = `<span class="loading"></span><span>${message}</span>`;
-            } else {
-                modelStatus.innerHTML = `<span>${message}</span>`;
-            }
-        }
-
-        function updateProcessButton() {
-            processBtn.disabled = !(remover.modelLoaded && originalImage);
-        }
-
-        // Toggle settings panel
-        toggleSettings.addEventListener('click', () => {
-            if (settingsPanel.style.display === 'none' || settingsPanel.style.display === '') {
-                settingsPanel.style.display = 'block';
-            } else {
-                settingsPanel.style.display = 'none';
-            }
-        });
-
-        // Apply settings changes
-        tileSizeInput.addEventListener('change', () => {
-            const value = parseInt(tileSizeInput.value);
-            if (value >= 64 && value <= 1024) {
-                remover.tileSize = value;
-            }
-        });
-
-        overlapInput.addEventListener('change', () => {
-            const value = parseInt(overlapInput.value);
-            if (value >= 0 && value <= 64) {
-                remover.overlap = value;
-            }
-        });
-
-        inputSizeInput.addEventListener('change', () => {
-            const value = parseInt(inputSizeInput.value);
-            if (value >= 64 && value <= 512) {
-                remover.inputSize = value;
-            }
-        });
-
-        // Upload handlers
-        uploadArea.addEventListener('click', () => fileInput.click());
-
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('drag-over');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('drag-over');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('drag-over');
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                handleImageUpload(file);
-            }
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                handleImageUpload(file);
-            }
-        });
-
-        function handleImageUpload(file) {
-            // Validate file type
-            if (!file.type.match('image.*')) {
-                showStatus('Please upload an image file (JPEG, PNG, etc.)', 'error');
-                return;
+        // Image management
+        class ImageManager {
+            constructor() {
+                this.images = [];
+                this.processedImages = [];
             }
 
-            // Validate file size (limit to 20MB)
-            if (file.size > 20 * 1024 * 1024) {
-                showStatus('File is too large. Please upload an image smaller than 20MB.', 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    originalImage = img;
-                    originalImg.src = e.target.result;
-                    imageContainer.style.display = 'grid';
-                    downloadBtn.disabled = true;
-                    updateProcessButton();
-                    
-                    // Clear previous result
-                    const ctx = processedCanvasEl.getContext('2d');
-                    ctx.clearRect(0, 0, processedCanvasEl.width, processedCanvasEl.height);
-                    
-                    if (remover.modelLoaded) {
-                        showStatus('Image loaded! Click "Remove Watermark" to process.', 'success');
-                        setTimeout(hideStatus, 2000);
+            addImage(file) {
+                return new Promise((resolve, reject) => {
+                    // Validate file type
+                    if (!file.type.match('image.*')) {
+                        reject(new Error('Please upload an image file (JPEG, PNG, etc.)'));
+                        return;
                     }
-                };
-                img.onerror = () => {
-                    showStatus('Failed to load image. Please try another file.', 'error');
-                };
-                img.src = e.target.result;
-            };
-            reader.onerror = () => {
-                showStatus('Failed to read file. Please try again.', 'error');
-            };
-            reader.readAsDataURL(file);
+
+                    // Validate file size (limit to 20MB)
+                    if (file.size > 20 * 1024 * 1024) {
+                        reject(new Error('File is too large. Please upload an image smaller than 20MB.'));
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const imageObj = {
+                                id: Date.now() + Math.random(),
+                                file: file,
+                                name: file.name,
+                                size: file.size,
+                                width: img.width,
+                                height: img.height,
+                                image: img,
+                                dataUrl: e.target.result,
+                                status: 'pending'
+                            };
+                            
+                            this.images.push(imageObj);
+                            resolve(imageObj);
+                        };
+                        img.onerror = () => {
+                            reject(new Error('Failed to load image. Please try another file.'));
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.onerror = () => {
+                        reject(new Error('Failed to read file. Please try again.'));
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            removeImage(id) {
+                this.images = this.images.filter(img => img.id !== id);
+            }
+
+            clearAll() {
+                this.images = [];
+                this.processedImages = [];
+            }
+
+            getImages() {
+                return this.images;
+            }
+
+            getProcessedImages() {
+                return this.processedImages;
+            }
+
+            updateImageStatus(id, status) {
+                const image = this.images.find(img => img.id === id);
+                if (image) {
+                    image.status = status;
+                }
+            }
+
+            addProcessedImage(id, canvas) {
+                const originalImage = this.images.find(img => img.id === id);
+                if (originalImage) {
+                    this.processedImages.push({
+                        id: id,
+                        name: originalImage.name,
+                        canvas: canvas,
+                        status: 'completed'
+                    });
+                }
+            }
         }
 
-        processBtn.addEventListener('click', async () => {
-            if (!originalImage || !remover.modelLoaded) return;
+        // UI Controller
+        class UIController {
+            constructor(remover, imageManager) {
+                this.remover = remover;
+                this.imageManager = imageManager;
+                this.initializeElements();
+                this.attachEventListeners();
+            }
 
-            processBtn.disabled = true;
-            processBtn.innerHTML = 'Processing<span class="loading"></span>';
-            hideStatus();
-
-            try {
-                processedCanvas = await remover.processImage(originalImage);
+            initializeElements() {
+                this.loadingScreen = document.getElementById('loadingScreen');
+                this.uploadSection = document.getElementById('uploadSection');
+                this.processingSection = document.getElementById('processingSection');
                 
-                // Display result
-                processedCanvasEl.width = processedCanvas.width;
-                processedCanvasEl.height = processedCanvas.height;
-                const ctx = processedCanvasEl.getContext('2d');
-                ctx.drawImage(processedCanvas, 0, 0);
-
-                showStatus('Watermark removed successfully!', 'success');
-                downloadBtn.disabled = false;
-                setTimeout(() => {
-                    hideStatus();
-                    hideProgress();
-                }, 2000);
-            } catch (error) {
-                showStatus(`Error processing image: ${error.message}`, 'error');
-                console.error('Processing error:', error);
-                hideProgress();
-            } finally {
-                processBtn.disabled = false;
-                processBtn.innerHTML = 'Remove Watermark';
-                updateProcessButton();
+                this.uploadArea = document.getElementById('uploadArea');
+                this.fileInput = document.getElementById('fileInput');
+                this.imageList = document.getElementById('imageList');
+                this.processingList = document.getElementById('processingList');
+                
+                this.nextBtn = document.getElementById('nextBtn');
+                this.backBtn = document.getElementById('backBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.downloadAllBtn = document.getElementById('downloadAllBtn');
+                
+                this.tileSizeInput = document.getElementById('tileSize');
+                this.overlapInput = document.getElementById('overlap');
+                this.inputSizeInput = document.getElementById('inputSize');
+                
+                this.processingStats = document.getElementById('processingStats');
             }
-        });
 
-        downloadBtn.addEventListener('click', () => {
-            if (!processedCanvas) return;
-            
-            processedCanvas.toBlob((blob) => {
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.download = 'watermark_removed.png';
-                link.href = url;
-                link.click();
-                URL.revokeObjectURL(url);
-            }, 'image/png', 1.0);
-        });
+            attachEventListeners() {
+                // Upload handlers
+                this.uploadArea.addEventListener('click', () => this.fileInput.click());
 
-        // Retry button for model loading
-        retryBtn.addEventListener('click', async () => {
-            retryBtn.disabled = true;
-            retryBtn.innerHTML = 'Retrying<span class="loading"></span>';
-            
-            remover.retryCount++;
-            const success = await remover.loadModel(remover.modelPath, remover.modelDataPath, true);
-            
-            if (success) {
-                showStatus('Model loaded successfully! You can now process images.', 'success');
-                retrySection.style.display = 'none';
-                updateProcessButton();
-                setTimeout(hideStatus, 2000);
-            } else if (remover.retryCount >= remover.maxRetries) {
-                showStatus('Maximum retry attempts reached. Please check your model files and internet connection.', 'error');
-                retryBtn.innerHTML = 'Retry Model Loading';
-                retryBtn.disabled = false;
-            } else {
-                retryBtn.innerHTML = 'Retry Model Loading';
-                retryBtn.disabled = false;
+                this.uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.add('drag-over');
+                });
+
+                this.uploadArea.addEventListener('dragleave', () => {
+                    this.uploadArea.classList.remove('drag-over');
+                });
+
+                this.uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.remove('drag-over');
+                    this.handleFiles(e.dataTransfer.files);
+                });
+
+                this.fileInput.addEventListener('change', (e) => {
+                    this.handleFiles(e.target.files);
+                });
+
+                // Navigation buttons
+                this.nextBtn.addEventListener('click', () => {
+                    this.showProcessingSection();
+                });
+
+                this.backBtn.addEventListener('click', () => {
+                    this.showUploadSection();
+                });
+
+                this.clearBtn.addEventListener('click', () => {
+                    this.imageManager.clearAll();
+                    this.renderImageList();
+                    this.updateNextButton();
+                });
+
+                this.downloadAllBtn.addEventListener('click', () => {
+                    this.downloadAllImages();
+                });
+
+                // Settings
+                this.tileSizeInput.addEventListener('change', () => {
+                    const value = parseInt(this.tileSizeInput.value);
+                    if (value >= 64 && value <= 1024) {
+                        this.remover.tileSize = value;
+                    }
+                });
+
+                this.overlapInput.addEventListener('change', () => {
+                    const value = parseInt(this.overlapInput.value);
+                    if (value >= 0 && value <= 64) {
+                        this.remover.overlap = value;
+                    }
+                });
+
+                this.inputSizeInput.addEventListener('change', () => {
+                    const value = parseInt(this.inputSizeInput.value);
+                    if (value >= 64 && value <= 512) {
+                        this.remover.inputSize = value;
+                    }
+                });
             }
-        });
 
-        // Load model on page load
+            async handleFiles(files) {
+                for (let i = 0; i < files.length; i++) {
+                    try {
+                        const image = await this.imageManager.addImage(files[i]);
+                        this.renderImageList();
+                        this.updateNextButton();
+                    } catch (error) {
+                        console.error('Error adding image:', error);
+                        alert(error.message);
+                    }
+                }
+            }
+
+            renderImageList() {
+                const images = this.imageManager.getImages();
+                
+                if (images.length === 0) {
+                    this.imageList.innerHTML = '';
+                    return;
+                }
+                
+                this.imageList.innerHTML = images.map(image => `
+                    <div class="image-item">
+                        <div class="image-header">
+                            <div class="image-name">${image.name}</div>
+                            <div class="image-size">${this.formatFileSize(image.size)}</div>
+                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="uiController.removeImage(${image.id})">Remove</button>
+                        </div>
+                        <div class="image-preview">
+                            <div class="preview-box">
+                                <div class="preview-title">Original</div>
+                                <img class="preview-img" src="${image.dataUrl}" alt="Original">
+                            </div>
+                            <div class="preview-box">
+                                <div class="preview-title">Processed</div>
+                                <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center;">
+                                    <span style="color: var(--text-secondary);">Not processed yet</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="status ${image.status}">${this.getStatusText(image.status)}</div>
+                    </div>
+                `).join('');
+            }
+
+            renderProcessingList() {
+                const images = this.imageManager.getImages();
+                const processedImages = this.imageManager.getProcessedImages();
+                
+                if (images.length === 0) {
+                    this.processingList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📷</div>
+                            <p>No images to process</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                this.processingList.innerHTML = images.map(image => {
+                    const processedImage = processedImages.find(img => img.id === image.id);
+                    
+                    return `
+                        <div class="image-item">
+                            <div class="image-header">
+                                <div class="image-name">${image.name}</div>
+                                <div class="image-size">${this.formatFileSize(image.size)}</div>
+                            </div>
+                            <div class="image-preview">
+                                <div class="preview-box">
+                                    <div class="preview-title">Original</div>
+                                    <img class="preview-img" src="${image.dataUrl}" alt="Original">
+                                </div>
+                                <div class="preview-box">
+                                    <div class="preview-title">Processed</div>
+                                    ${processedImage ? 
+                                        `<img class="preview-img" src="${processedImage.canvas.toDataURL()}" alt="Processed">` :
+                                        `<div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center;">
+                                            <span style="color: var(--text-secondary);">Processing...</span>
+                                        </div>`
+                                    }
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar" id="progress-${image.id}" style="width: ${processedImage ? '100%' : '0%'}"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span id="progress-text-${image.id}">${processedImage ? 'Completed' : 'Waiting to process...'}</span>
+                                <span>${processedImage ? '100%' : '0%'}</span>
+                            </div>
+                            <div class="status ${image.status}">${this.getStatusText(image.status)}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            removeImage(id) {
+                this.imageManager.removeImage(id);
+                this.renderImageList();
+                this.updateNextButton();
+            }
+
+            updateNextButton() {
+                this.nextBtn.disabled = this.imageManager.getImages().length === 0;
+            }
+
+            showUploadSection() {
+                this.uploadSection.style.display = 'block';
+                this.processingSection.style.display = 'none';
+            }
+
+            showProcessingSection() {
+                this.uploadSection.style.display = 'none';
+                this.processingSection.style.display = 'block';
+                this.renderProcessingList();
+                this.processImages();
+            }
+
+            async processImages() {
+                const images = this.imageManager.getImages();
+                let completedCount = 0;
+                
+                this.updateProcessingStats(completedCount, images.length);
+                
+                for (const image of images) {
+                    try {
+                        this.imageManager.updateImageStatus(image.id, 'processing');
+                        this.renderProcessingList();
+                        
+                        const progressBar = document.getElementById(`progress-${image.id}`);
+                        const progressText = document.getElementById(`progress-text-${image.id}`);
+                        
+                        const processedCanvas = await this.remover.processImage(image.image, (percent, message) => {
+                            if (progressBar) {
+                                progressBar.style.width = `${percent}%`;
+                            }
+                            if (progressText) {
+                                progressText.textContent = message;
+                            }
+                            const percentElement = progressText.nextElementSibling;
+                            if (percentElement) {
+                                percentElement.textContent = `${percent}%`;
+                            }
+                        });
+                        
+                        this.imageManager.addProcessedImage(image.id, processedCanvas);
+                        this.imageManager.updateImageStatus(image.id, 'completed');
+                        
+                        completedCount++;
+                        this.updateProcessingStats(completedCount, images.length);
+                        this.renderProcessingList();
+                        
+                        // Check if all images are processed
+                        if (completedCount === images.length) {
+                            this.downloadAllBtn.disabled = false;
+                        }
+                    } catch (error) {
+                        console.error('Error processing image:', error);
+                        this.imageManager.updateImageStatus(image.id, 'error');
+                        this.renderProcessingList();
+                        
+                        completedCount++;
+                        this.updateProcessingStats(completedCount, images.length);
+                    }
+                }
+            }
+
+            updateProcessingStats(completed, total) {
+                this.processingStats.textContent = `${completed}/${total} completed`;
+            }
+
+            downloadAllImages() {
+                const processedImages = this.imageManager.getProcessedImages();
+                
+                if (processedImages.length === 0) {
+                    return;
+                }
+                
+                processedImages.forEach(image => {
+                    image.canvas.toBlob((blob) => {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        
+                        // Create a new filename without extension
+                        const baseName = image.name.split('.').slice(0, -1).join('.');
+                        link.download = `${baseName}_watermark_removed.png`;
+                        link.href = url;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                    }, 'image/png', 1.0);
+                });
+            }
+
+            formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                else if (bytes < 1048576) return Math.round(bytes / 1024) + ' KB';
+                else return Math.round(bytes / 1048576 * 10) / 10 + ' MB';
+            }
+
+            getStatusText(status) {
+                switch (status) {
+                    case 'pending': return 'Pending';
+                    case 'processing': return 'Processing...';
+                    case 'completed': return 'Completed';
+                    case 'error': return 'Error';
+                    default: return status;
+                }
+            }
+        }
+
+        // Initialize the application
+        let remover, imageManager, uiController;
+
         async function initialize() {
-            // Check browser compatibility
-            if (!checkBrowserCompatibility()) {
-                showStatus('Your browser may not support all features required for this application.', 'error');
-            }
-
             // Update execution provider status
             await updateExecutionProviderStatus();
-
+            
+            // Create instances
+            remover = new ONNXWatermarkRemover();
+            imageManager = new ImageManager();
+            uiController = new UIController(remover, imageManager);
+            
+            // Load model
             const success = await remover.loadModel(MODEL_URL, MODEL_DATA_URL);
+            
             if (success) {
-                showStatus('Ready! Upload an image to remove watermarks.', 'success');
-                setTimeout(hideStatus, 2000);
+                // Hide loading screen and show upload section
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('uploadSection').style.display = 'block';
+            } else {
+                // Show error message
+                const loadingText = document.querySelector('.loading-text');
+                const loadingSubtext = document.querySelector('.loading-subtext');
+                
+                loadingText.textContent = 'Failed to load model';
+                loadingSubtext.textContent = 'Please check your internet connection and try refreshing the page';
+                
+                // Hide loading animation
+                document.querySelector('.loading-progress').style.display = 'none';
             }
         }
 
