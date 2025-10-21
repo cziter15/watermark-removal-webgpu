@@ -6,237 +6,345 @@
     <title>ONNX Watermark Remover</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.20.0/ort.min.js"></script>
     <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --background-color: #0f172a;
+            --surface-color: #1e293b;
+            --card-color: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --accent-color: #4ade80;
+            --error-color: #f87171;
+            --warning-color: #fbbf24;
+            --info-color: #60a5fa;
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: var(--background-color);
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            line-height: 1.6;
         }
+        
         .container {
-            background: white;
+            background-color: var(--surface-color);
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            padding: 30px;
             max-width: 900px;
             width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        
         h1 {
-            color: #333;
+            color: var(--text-primary);
             margin-bottom: 10px;
             font-size: 28px;
+            text-align: center;
         }
+        
         .subtitle {
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 30px;
-            font-size: 14px;
+            font-size: 16px;
+            text-align: center;
         }
+        
         .upload-area {
-            border: 3px dashed #667eea;
+            border: 3px dashed var(--primary-color);
             border-radius: 15px;
             padding: 40px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-bottom: 30px;
+            background-color: rgba(99, 102, 241, 0.1);
         }
+        
         .upload-area:hover {
-            border-color: #764ba2;
-            background: #f8f9ff;
+            border-color: var(--secondary-color);
+            background-color: rgba(139, 92, 246, 0.1);
         }
+        
         .upload-area.drag-over {
-            background: #f0f0ff;
-            border-color: #764ba2;
+            background-color: rgba(139, 92, 246, 0.2);
+            border-color: var(--secondary-color);
         }
+        
         input[type="file"] {
             display: none;
         }
+        
         .upload-icon {
             font-size: 48px;
             margin-bottom: 10px;
         }
+        
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
             border: none;
             padding: 12px 30px;
             border-radius: 25px;
             font-size: 16px;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: all 0.2s ease;
             margin: 10px 5px;
+            font-weight: 500;
         }
+        
         .btn:hover:not(:disabled) {
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
         }
+        
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
         }
+        
         .image-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin-top: 30px;
         }
+        
         .image-box {
             text-align: center;
         }
+        
         .image-box h3 {
-            color: #333;
+            color: var(--text-primary);
             margin-bottom: 10px;
             font-size: 16px;
         }
+        
         .image-box img {
             max-width: 100%;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
+        
         .image-box canvas {
             max-width: 100%;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
+        
         .status {
             padding: 15px;
             border-radius: 10px;
             margin: 20px 0;
             font-size: 14px;
         }
+        
         .status.info {
-            background: #e3f2fd;
-            color: #1976d2;
+            background-color: rgba(96, 165, 250, 0.2);
+            color: var(--info-color);
+            border-left: 4px solid var(--info-color);
         }
+        
         .status.error {
-            background: #ffebee;
-            color: #c62828;
+            background-color: rgba(248, 113, 113, 0.2);
+            color: var(--error-color);
+            border-left: 4px solid var(--error-color);
         }
+        
         .status.success {
-            background: #e8f5e9;
-            color: #2e7d32;
+            background-color: rgba(74, 222, 128, 0.2);
+            color: var(--accent-color);
+            border-left: 4px solid var(--accent-color);
         }
+        
         .loading {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
             margin-left: 10px;
             vertical-align: middle;
         }
+        
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        
         .model-status {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            padding: 10px;
-            background: #f5f5f5;
+            padding: 15px;
+            background-color: var(--card-color);
             border-radius: 10px;
             margin-bottom: 20px;
             font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        
         .model-status.loading {
-            color: #1976d2;
+            color: var(--info-color);
         }
+        
         .model-status.ready {
-            color: #2e7d32;
+            color: var(--accent-color);
         }
+        
         .model-status.error {
-            color: #c62828;
+            color: var(--error-color);
         }
+        
         .progress-container {
             width: 100%;
-            height: 8px;
-            background: #e0e0e0;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             overflow: hidden;
             margin: 20px 0;
             display: none;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
         }
+        
         .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             width: 0%;
             transition: width 0.3s ease;
             border-radius: 10px;
+            position: relative;
+            overflow: hidden;
         }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0),
+                rgba(255, 255, 255, 0.4),
+                rgba(255, 255, 255, 0)
+            );
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
         .progress-text {
             text-align: center;
             font-size: 14px;
-            color: #666;
+            color: var(--text-secondary);
             margin-top: 5px;
         }
+        
         .browser-warning {
-            background: #fff3cd;
-            color: #856404;
+            background-color: rgba(251, 191, 36, 0.2);
+            color: var(--warning-color);
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
             display: none;
+            border-left: 4px solid var(--warning-color);
         }
+        
         .settings-panel {
-            background: #f8f9fa;
+            background-color: var(--card-color);
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 20px;
             display: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        
         .settings-panel h3 {
             margin-bottom: 10px;
-            color: #333;
+            color: var(--text-primary);
         }
+        
         .setting-item {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
+        
         .setting-item label {
             display: block;
             margin-bottom: 5px;
             font-size: 14px;
-            color: #555;
+            color: var(--text-secondary);
         }
+        
         .setting-item input {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 5px;
+            background-color: var(--surface-color);
+            color: var(--text-primary);
         }
+        
+        .setting-item input[type="range"] {
+            padding: 5px 0;
+        }
+        
+        .setting-item span {
+            display: inline-block;
+            margin-left: 10px;
+            color: var(--text-primary);
+        }
+        
         .toggle-settings {
             background: none;
             border: none;
-            color: #667eea;
+            color: var(--primary-color);
             cursor: pointer;
             font-size: 14px;
             margin-bottom: 10px;
+            padding: 5px 0;
+            font-weight: 500;
         }
+        
         .execution-info {
-            background: #e8f4fd;
-            border-left: 4px solid #2196f3;
+            background-color: rgba(96, 165, 250, 0.1);
+            border-left: 4px solid var(--info-color);
             padding: 15px;
             border-radius: 0 10px 10px 0;
             margin-bottom: 20px;
             font-size: 14px;
         }
+        
         .execution-info h4 {
             margin-bottom: 8px;
-            color: #0d47a1;
+            color: var(--info-color);
         }
+        
         .execution-info p {
             margin-bottom: 5px;
-            color: #333;
+            color: var(--text-primary);
         }
+        
         .execution-info .provider-badge {
             display: inline-block;
             padding: 3px 8px;
@@ -245,49 +353,113 @@
             font-weight: bold;
             margin-right: 5px;
         }
+        
         .provider-badge.webgpu {
-            background: #4caf50;
+            background-color: var(--accent-color);
             color: white;
         }
+        
         .provider-badge.wasm {
-            background: #ff9800;
+            background-color: var(--warning-color);
             color: white;
         }
+        
         .provider-badge.cpu {
-            background: #9e9e9e;
+            background-color: #64748b;
             color: white;
         }
+        
         .troubleshooting {
-            background: #fff8e1;
-            border-left: 4px solid #ffc107;
+            background-color: rgba(251, 191, 36, 0.1);
+            border-left: 4px solid var(--warning-color);
             padding: 15px;
             border-radius: 0 10px 10px 0;
             margin-bottom: 20px;
             font-size: 14px;
         }
+        
         .troubleshooting h4 {
             margin-bottom: 8px;
-            color: #ff6f00;
+            color: var(--warning-color);
         }
+        
         .troubleshooting ol {
             margin-left: 20px;
-            color: #333;
+            color: var(--text-primary);
         }
+        
         .troubleshooting li {
             margin-bottom: 8px;
         }
+        
         .browser-info {
-            background: #f5f5f5;
+            background-color: var(--card-color);
             border-radius: 8px;
             padding: 10px;
             margin-top: 10px;
             font-family: monospace;
             font-size: 12px;
-            color: #333;
+            color: var(--text-secondary);
         }
+        
+        /* Responsive improvements */
         @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+            }
+            
+            .upload-area {
+                padding: 30px 20px;
+            }
+            
             .image-container {
                 grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+                margin: 5px;
+            }
+            
+            .settings-panel {
+                padding: 10px;
+            }
+            
+            .progress-container {
+                height: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .upload-area {
+                padding: 20px 15px;
+            }
+            
+            .upload-icon {
+                font-size: 36px;
+            }
+            
+            .btn {
+                padding: 8px 16px;
+                font-size: 13px;
             }
         }
     </style>
@@ -326,26 +498,23 @@
         <button class="toggle-settings" id="toggleSettings">⚙️ Advanced Settings</button>
         
         <div class="settings-panel" id="settingsPanel">
-            <h3>Model Settings</h3>
-            <div class="setting-item">
-                <label for="modelPath">Model URL:</label>
-                <input type="text" id="modelPath" value="https://api.cors.lol/?url=https%3A%2F%2Fgithub.com%2Fcziter15%2Fwatermark-removal-webgpu%2Fraw%2Frefs%2Fheads%2Fmain%2Fweb%2Fmodel.onnx">
-            </div>
-            <div class="setting-item">
-                <label for="modelDataPath">Model Data URL:</label>
-                <input type="text" id="modelDataPath" value="https://api.cors.lol/?url=https%3A%2F%2Fgithub.com%2Fcziter15%2Fwatermark-removal-webgpu%2Fraw%2Frefs%2Fheads%2Fmain%2Fweb%2Fmodel.onnx.data">
-            </div>
+            <h3>Processing Settings</h3>
             <div class="setting-item">
                 <label for="tileSize">Tile Size (for large images):</label>
                 <input type="number" id="tileSize" value="256" min="64" max="1024">
             </div>
             <div class="setting-item">
                 <label for="overlap">Tile Overlap (pixels):</label>
-                <input type="number" id="overlap" value="32" min="0" max="128">
+                <input type="number" id="overlap" value="8" min="0" max="32">
             </div>
             <div class="setting-item">
                 <label for="inputSize">Model Input Size:</label>
                 <input type="number" id="inputSize" value="256" min="64" max="1024">
+            </div>
+            <div class="setting-item">
+                <label for="strength">Removal Strength:</label>
+                <input type="range" id="strength" min="1" max="10" value="7">
+                <span id="strengthValue">7</span>
             </div>
         </div>
         
@@ -364,7 +533,7 @@
         <div class="upload-area" id="uploadArea">
             <div class="upload-icon">📁</div>
             <p>Click to upload or drag & drop an image</p>
-            <p style="font-size: 12px; color: #999; margin-top: 5px;">Supports JPG, PNG</p>
+            <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">Supports JPG, PNG</p>
             <input type="file" id="fileInput" accept="image/*">
         </div>
         
@@ -387,7 +556,7 @@
     </div>
 
     <script>
-        // Model URLs configuration
+        // Define constants for model URLs
         const MODEL_URL = 'https://api.cors.lol/?url=https%3A%2F%2Fgithub.com%2Fcziter15%2Fwatermark-removal-webgpu%2Fraw%2Frefs%2Fheads%2Fmain%2Fweb%2Fmodel.onnx';
         const MODEL_DATA_URL = 'https://api.cors.lol/?url=https%3A%2F%2Fgithub.com%2Fcziter15%2Fwatermark-removal-webgpu%2Fraw%2Frefs%2Fheads%2Fmain%2Fweb%2Fmodel.onnx.data';
 
@@ -510,7 +679,7 @@
             statusHTML += '<span class="provider-badge cpu">CPU</span>';
             
             if (webgpuResult.supported) {
-                statusHTML += '<p style="margin-top: 8px; color: #4caf50; font-weight: bold;">✓ WebGPU is available - this will provide the best performance!</p>';
+                statusHTML += '<p style="margin-top: 8px; color: #4ade80; font-weight: bold;">✓ WebGPU is available - this will provide the best performance!</p>';
                 
                 // Show adapter info if available
                 if (webgpuResult.details.adapter) {
@@ -521,13 +690,13 @@
                     if (adapter.description) gpuInfo += `Description: ${adapter.description}`;
                     
                     if (gpuInfo) {
-                        statusHTML += `<p style="font-size: 12px; color: #555;">GPU: ${gpuInfo}</p>`;
+                        statusHTML += `<p style="font-size: 12px; color: #cbd5e1;">GPU: ${gpuInfo}</p>`;
                     }
                 }
             } else {
-                statusHTML += '<p style="margin-top: 8px; color: #ff9800; font-weight: bold;">⚠ WebGPU not available - falling back to WASM (slower performance)</p>';
+                statusHTML += '<p style="margin-top: 8px; color: #fbbf24; font-weight: bold;">⚠ WebGPU not available - falling back to WASM (slower performance)</p>';
                 if (webgpuResult.error) {
-                    statusHTML += `<p style="font-size: 12px; color: #d32f2f;">Reason: ${webgpuResult.error}</p>`;
+                    statusHTML += `<p style="font-size: 12px; color: #f87171;">Reason: ${webgpuResult.error}</p>`;
                 }
                 troubleshooting.style.display = 'block';
             }
@@ -541,10 +710,11 @@
                 this.modelLoaded = false;
                 this.inputSize = 256; // Model's expected input size
                 this.tileSize = 256; // Process in tiles for large images
-                this.overlap = 32; // Overlap between tiles to avoid seams
+                this.overlap = 8; // Reduced overlap between tiles
                 this.modelPath = MODEL_URL;
                 this.modelDataPath = MODEL_DATA_URL;
                 this.executionProvider = null;
+                this.strength = 0.7; // Removal strength (0-1)
             }
 
             async loadModel(modelPath, modelDataPath) {
@@ -558,19 +728,16 @@
                     }
                     const modelBuffer = await modelResponse.arrayBuffer();
                     
-                    // Fetch external data file
+                    // Try to fetch external data file if it exists
                     let externalDataBuffer = null;
                     try {
-                        updateModelStatus('loading', `Loading model data...`);
                         const dataResponse = await fetch(modelDataPath);
                         if (dataResponse.ok) {
                             externalDataBuffer = await dataResponse.arrayBuffer();
                             console.log('External data file loaded');
-                        } else {
-                            console.log('External data file not found or failed to load');
                         }
                     } catch (e) {
-                        console.log('Error loading external data file:', e);
+                        console.log('No external data file found or not needed');
                     }
                     
                     // Determine available execution providers
@@ -620,7 +787,7 @@
                 } catch (error) {
                     updateModelStatus('error', `✗ Error loading model: ${error.message}`);
                     console.error('Model loading error:', error);
-                    showStatus(`Failed to load model. Make sure the URLs are accessible.`, 'error');
+                    showStatus(`Failed to load model. Please check your internet connection.`, 'error');
                     document.getElementById('retryBtn').style.display = 'inline-block';
                     return false;
                 }
@@ -691,6 +858,9 @@
                 
                 // Convert tensor back to image
                 const outputImageData = this.tensorToImageData(outputTensor);
+                
+                // Apply strength factor to the output
+                this.applyStrength(outputImageData, imageData);
                 
                 // Create output canvas with original size
                 const outputCanvas = document.createElement('canvas');
@@ -768,6 +938,9 @@
                         const outputTensor = results[outputName];
                         const outputImageData = this.tensorToImageData(outputTensor);
                         
+                        // Apply strength factor to the output
+                        this.applyStrength(outputImageData, tileImageData);
+                        
                         // Create temporary canvas for the processed tile
                         const tempCanvas = document.createElement('canvas');
                         tempCanvas.width = this.inputSize;
@@ -775,37 +948,43 @@
                         const tempCtx = tempCanvas.getContext('2d');
                         tempCtx.putImageData(outputImageData, 0, 0);
                         
-                        // Draw processed tile back to output, scaling to original tile size
-                        outputCtx.imageSmoothingEnabled = true;
-                        outputCtx.imageSmoothingQuality = 'high';
+                        // Scale the processed tile back to original tile dimensions
+                        const scaledTileCanvas = document.createElement('canvas');
+                        scaledTileCanvas.width = tileWidth;
+                        scaledTileCanvas.height = tileHeight;
+                        const scaledTileCtx = scaledTileCanvas.getContext('2d');
+                        scaledTileCtx.imageSmoothingEnabled = true;
+                        scaledTileCtx.imageSmoothingQuality = 'high';
+                        scaledTileCtx.drawImage(tempCanvas, 0, 0, this.inputSize, this.inputSize, 0, 0, tileWidth, tileHeight);
                         
-                        // Apply feathering on overlap regions for smooth blending
-                        if (x > 0 || y > 0) {
-                            outputCtx.save();
+                        // Calculate the region to draw (excluding overlap areas)
+                        const drawX = x + (x > 0 ? this.overlap : 0);
+                        const drawY = y + (y > 0 ? this.overlap : 0);
+                        const drawWidth = tileWidth - ((x > 0 ? this.overlap : 0) + (x + tileWidth < originalWidth ? this.overlap : 0));
+                        const drawHeight = tileHeight - ((y > 0 ? this.overlap : 0) + (y + tileHeight < originalHeight ? this.overlap : 0));
+                        
+                        // Only draw if we have a valid region
+                        if (drawWidth > 0 && drawHeight > 0) {
+                            // Extract the region from the scaled tile
+                            const regionCanvas = document.createElement('canvas');
+                            regionCanvas.width = drawWidth;
+                            regionCanvas.height = drawHeight;
+                            const regionCtx = regionCanvas.getContext('2d');
                             
-                            // Create clipping region with feathered edges
-                            const featherSize = this.overlap / 2;
+                            // Calculate source coordinates in the scaled tile
+                            const sourceX = x > 0 ? this.overlap : 0;
+                            const sourceY = y > 0 ? this.overlap : 0;
                             
-                            if (x > 0 && y > 0) {
-                                // Both edges - use radial gradient
-                                const gradient = outputCtx.createRadialGradient(
-                                    x + featherSize, y + featherSize, 0,
-                                    x + featherSize, y + featherSize, featherSize
-                                );
-                                gradient.addColorStop(0, 'rgba(0,0,0,1)');
-                                gradient.addColorStop(1, 'rgba(0,0,0,0)');
-                                outputCtx.globalCompositeOperation = 'destination-out';
-                                outputCtx.fillStyle = gradient;
-                                outputCtx.fillRect(x, y, featherSize, featherSize);
-                            }
+                            // Draw the region
+                            regionCtx.drawImage(
+                                scaledTileCanvas,
+                                sourceX, sourceY, drawWidth, drawHeight,
+                                0, 0, drawWidth, drawHeight
+                            );
                             
-                            outputCtx.globalCompositeOperation = 'source-over';
-                            outputCtx.globalAlpha = 1.0;
-                            outputCtx.restore();
+                            // Draw the region to the output canvas
+                            outputCtx.drawImage(regionCanvas, drawX, drawY);
                         }
-                        
-                        // Draw processed tile
-                        outputCtx.drawImage(tempCanvas, 0, 0, this.inputSize, this.inputSize, x, y, tileWidth, tileHeight);
                         
                         tilesProcessed++;
                         const progress = Math.round((tilesProcessed / tileCount) * 100);
@@ -862,6 +1041,20 @@
                 
                 return imageData;
             }
+            
+            applyStrength(outputImageData, originalImageData) {
+                const outputData = outputImageData.data;
+                const originalData = originalImageData.data;
+                const strength = this.strength;
+                
+                // Blend between original and output based on strength
+                for (let i = 0; i < outputData.length; i += 4) {
+                    outputData[i] = Math.round(originalData[i] * (1 - strength) + outputData[i] * strength);
+                    outputData[i + 1] = Math.round(originalData[i + 1] * (1 - strength) + outputData[i + 1] * strength);
+                    outputData[i + 2] = Math.round(originalData[i + 2] * (1 - strength) + outputData[i + 2] * strength);
+                    // Alpha remains unchanged
+                }
+            }
         }
 
         let remover = new ONNXWatermarkRemover();
@@ -881,11 +1074,11 @@
         const progressText = document.getElementById('progressText');
         const toggleSettings = document.getElementById('toggleSettings');
         const settingsPanel = document.getElementById('settingsPanel');
-        const modelPathInput = document.getElementById('modelPath');
-        const modelDataPathInput = document.getElementById('modelDataPath');
         const tileSizeInput = document.getElementById('tileSize');
         const overlapInput = document.getElementById('overlap');
         const inputSizeInput = document.getElementById('inputSize');
+        const strengthInput = document.getElementById('strength');
+        const strengthValue = document.getElementById('strengthValue');
 
         function showStatus(message, type = 'info') {
             const statusDiv = document.getElementById('status');
@@ -936,14 +1129,6 @@
         });
 
         // Apply settings changes
-        modelPathInput.addEventListener('change', () => {
-            remover.modelPath = modelPathInput.value;
-        });
-
-        modelDataPathInput.addEventListener('change', () => {
-            remover.modelDataPath = modelDataPathInput.value;
-        });
-
         tileSizeInput.addEventListener('change', () => {
             const value = parseInt(tileSizeInput.value);
             if (value >= 64 && value <= 1024) {
@@ -953,7 +1138,7 @@
 
         overlapInput.addEventListener('change', () => {
             const value = parseInt(overlapInput.value);
-            if (value >= 0 && value <= 128) {
+            if (value >= 0 && value <= 32) {
                 remover.overlap = value;
             }
         });
@@ -963,6 +1148,12 @@
             if (value >= 64 && value <= 1024) {
                 remover.inputSize = value;
             }
+        });
+
+        strengthInput.addEventListener('input', () => {
+            const value = parseInt(strengthInput.value);
+            strengthValue.textContent = value;
+            remover.strength = value / 10; // Convert 1-10 to 0.1-1.0
         });
 
         // Upload handlers
@@ -1109,7 +1300,7 @@
             // Update execution provider status
             await updateExecutionProviderStatus();
 
-            const success = await remover.loadModel(remover.modelPath, remover.modelDataPath);
+            const success = await remover.loadModel(MODEL_URL, MODEL_DATA_URL);
             if (success) {
                 showStatus('Ready! Upload an image to remove watermarks.', 'success');
                 setTimeout(hideStatus, 2000);
