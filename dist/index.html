@@ -448,14 +448,93 @@
         .debug-panel h3 {
             margin-bottom: 15px;
             color: var(--text-primary);
-            font-size: 14px;
+            font-size: 16px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
 
         .debug-log {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
+        }
+
+        .debug-tile {
+            background-color: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid var(--info-color);
+        }
+
+        .debug-tile-header {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--info-color);
+            margin-bottom: 10px;
+        }
+
+        .debug-tile-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .debug-image-container {
+            text-align: center;
+        }
+
+        .debug-image-label {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .debug-image-before .debug-image-label {
+            color: var(--accent-color);
+        }
+
+        .debug-image-after .debug-image-label {
+            color: var(--error-color);
+        }
+
+        .debug-image {
+            width: 100%;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .debug-image:hover {
+            transform: scale(1.05);
+        }
+
+        .debug-image-before .debug-image {
+            border: 2px solid var(--accent-color);
+        }
+
+        .debug-image-after .debug-image {
+            border: 2px solid var(--error-color);
+        }
+
+        .debug-tile-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background-color: rgba(15, 23, 42, 0.7);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .debug-tile-info div {
+            margin-bottom: 5px;
+        }
+
+        .debug-tile-info div:last-child {
+            margin-bottom: 0;
+        }
+
+        .debug-tile-info strong {
+            color: var(--text-primary);
         }
 
         /* Scrollbar styling */
@@ -476,6 +555,7 @@
         .debug-panel::-webkit-scrollbar-thumb:hover {
             background: rgba(99, 102, 241, 0.5);
         }
+        
         /* Copyright */
         .copyright {
             text-align: center;
@@ -525,6 +605,10 @@
             
             .settings-panel {
                 padding: 15px;
+            }
+            
+            .debug-tile-content {
+                grid-template-columns: 1fr;
             }
         }
         
@@ -639,6 +723,7 @@
         // Define constants for model URLs
         const MODEL_URL = 'model.onnx';
         const MODEL_DATA_URL = 'model.onnx.data';
+        
         // Debug logging function
         function debugLog(message) {
             console.log(message);
@@ -648,6 +733,7 @@
                 debugLog.scrollTop = debugLog.scrollHeight;
             }
         }
+        
         // Check for WebGPU support
         async function checkWebGPUSupport() {
             const result = {
@@ -685,6 +771,7 @@
                 return result;
             }
         }
+        
         // Update execution provider status
         async function updateExecutionProviderStatus() {
             const providerStatus = document.getElementById('providerStatus');
@@ -718,6 +805,7 @@
             }
             providerStatus.innerHTML = statusHTML;
         }
+        
         class ONNXWatermarkRemover {
             constructor() {
                 this.session = null;
@@ -729,6 +817,7 @@
                 this.modelDataPath = MODEL_DATA_URL;
                 this.executionProvider = null;
             }
+            
             async loadModel(modelPath, modelDataPath) {
                 try {
                     debugLog("Loading model...");
@@ -784,6 +873,7 @@
                     return false;
                 }
             }
+            
             async processImage(image, progressCallback) {
                 if (!this.modelLoaded) {
                     throw new Error('Model not loaded');
@@ -796,6 +886,7 @@
                 }
                 return await this.processTiled(image, progressCallback);
             }
+            
             async processTiled(image, progressCallback) {
                 const originalWidth = image.width;
                 const originalHeight = image.height;
@@ -838,6 +929,7 @@
                 }
                 return outputCanvas;
             }
+            
             async processTile(sourceImage, tile) {
                 // Extract tile region
                 const tileCanvas = document.createElement('canvas');
@@ -896,26 +988,29 @@
                 const debugElement = document.getElementById('debugLog');
                 if (debugElement) {
                     const tileDebug = document.createElement('div');
-                    tileDebug.style.cssText = `
-                        margin-bottom: 20px;
-                        padding: 10px;
-                        background: rgba(100, 116, 139, 0.2);
-                        border-radius: 8px;
-                        border-left: 4px solid #60a5fa;
-                    `;
+                    tileDebug.className = 'debug-tile';
+                    
+                    // Get tensor shapes for display
+                    const inputShape = JSON.stringify(inputTensor.dims);
+                    const outputShape = JSON.stringify(outputTensor.dims);
+                    
                     tileDebug.innerHTML = `
-                        <div style="font-weight: bold; color: #60a5fa; margin-bottom: 10px; font-size: 13px;">
-                            ${tileName}
+                        <div class="debug-tile-header">${tileName}</div>
+                        <div class="debug-tile-content">
+                            <div class="debug-image-container debug-image-before">
+                                <div class="debug-image-label">BEFORE</div>
+                                <img class="debug-image" src="${beforeBase64}" onclick="window.open('${beforeBase64}', '_blank')">
+                            </div>
+                            <div class="debug-image-container debug-image-after">
+                                <div class="debug-image-label">AFTER</div>
+                                <img class="debug-image" src="${afterBase64}" onclick="window.open('${afterBase64}', '_blank')">
+                            </div>
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <div>
-                                <div style="font-size: 11px; color: #4ade80; margin-bottom: 5px; text-transform: uppercase;">Before</div>
-                                <img src="${beforeBase64}" style="width: 100%; border: 2px solid #4ade80; border-radius: 6px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onclick="window.open('${beforeBase64}', '_blank')">
-                            </div>
-                            <div>
-                                <div style="font-size: 11px; color: #f87171; margin-bottom: 5px; text-transform: uppercase;">After</div>
-                                <img src="${afterBase64}" style="width: 100%; border: 2px solid #f87171; border-radius: 6px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onclick="window.open('${afterBase64}', '_blank')">
-                            </div>
+                        <div class="debug-tile-info">
+                            <div><strong>Tile Position:</strong> (${tile.x}, ${tile.y})</div>
+                            <div><strong>Tile Size:</strong> ${tile.width}x${tile.height}</div>
+                            <div><strong>Input Tensor:</strong> ${inputShape}</div>
+                            <div><strong>Output Tensor:</strong> ${outputShape}</div>
                         </div>
                     `;
                     debugElement.appendChild(tileDebug);
@@ -923,7 +1018,8 @@
                 }
 
                 return outputTileCanvas;
-            }            
+            }
+            
             blendTile(outputCtx, tileCanvas, tile, canvasWidth, canvasHeight) {
                 const tileCtx = tileCanvas.getContext('2d', {
                     willReadFrequently: true
@@ -959,6 +1055,7 @@
                 }
                 outputCtx.putImageData(outputImageData, tile.x, tile.y);
             }
+            
             imageDataToTensor(imageData) {
                 const { width, height, data } = imageData;
                 // 3 channels only: RGB (no alpha)
@@ -1036,6 +1133,7 @@
                 this.images = [];
                 this.processedImages = [];
             }
+            
             addImage(file) {
                 return new Promise((resolve, reject) => {
                     if (!file.type.match('image.*')) {
@@ -1075,25 +1173,31 @@
                     reader.readAsDataURL(file);
                 });
             }
+            
             removeImage(id) {
                 this.images = this.images.filter(img => img.id !== id);
             }
+            
             clearAll() {
                 this.images = [];
                 this.processedImages = [];
             }
+            
             getImages() {
                 return this.images;
             }
+            
             getProcessedImages() {
                 return this.processedImages;
             }
+            
             updateImageStatus(id, status) {
                 const image = this.images.find(img => img.id === id);
                 if (image) {
                     image.status = status;
                 }
             }
+            
             addProcessedImage(id, canvas) {
                 const originalImage = this.images.find(img => img.id === id);
                 if (originalImage) {
@@ -1106,6 +1210,7 @@
                 }
             }
         }
+        
         // UI Controller
         class UIController {
             constructor(remover, imageManager) {
@@ -1114,6 +1219,7 @@
                 this.initializeElements();
                 this.attachEventListeners();
             }
+            
             initializeElements() {
                 this.loadingScreen = document.getElementById('loadingScreen');
                 this.uploadSection = document.getElementById('uploadSection');
@@ -1133,6 +1239,7 @@
                 this.debugPanel = document.getElementById('debugPanel');
                 this.debugLog = document.getElementById('debugLog');
             }
+            
             attachEventListeners() {
                 this.uploadArea.addEventListener('click', () => this.fileInput.click());
                 this.uploadArea.addEventListener('dragover', (e) => {
@@ -1183,9 +1290,10 @@
                     }
                 });
             }
+            
             async handleFiles(files) {
                 if (this.debugLog) {
-                    this.debugLog.textContent = '';
+                    this.debugLog.innerHTML = '';
                 }
                 for (let i = 0; i < files.length; i++) {
                     try {
@@ -1198,6 +1306,7 @@
                     }
                 }
             }
+            
             renderImageList() {
                 const images = this.imageManager.getImages();
                 if (images.length === 0) {
@@ -1205,38 +1314,39 @@
                     return;
                 }
                 this.imageList.innerHTML = images.map(image => `
-                        <div class="image-item">
-                            <div class="image-header">
-                                <div class="image-name">${image.name}</div>
-                                <div class="image-size">${this.formatFileSize(image.size)}</div>
-                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="uiController.removeImage(${image.id})">Remove</button>
-                            </div>
-                            <div class="image-preview">
-                                <div class="preview-box">
-                                    <div class="preview-title">Original</div>
-                                    <img class="preview-img" src="${image.dataUrl}" alt="Original">
-                                </div>
-                                <div class="preview-box">
-                                    <div class="preview-title">Processed</div>
-                                    <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center;">
-                                        <span style="color: var(--text-secondary);">Not processed yet</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="status ${image.status}">${this.getStatusText(image.status)}</div>
+                    <div class="image-item">
+                        <div class="image-header">
+                            <div class="image-name">${image.name}</div>
+                            <div class="image-size">${this.formatFileSize(image.size)}</div>
+                            <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="uiController.removeImage(${image.id})">Remove</button>
                         </div>
-                    `).join('');
+                        <div class="image-preview">
+                            <div class="preview-box">
+                                <div class="preview-title">Original</div>
+                                <img class="preview-img" src="${image.dataUrl}" alt="Original">
+                            </div>
+                            <div class="preview-box">
+                                <div class="preview-title">Processed</div>
+                                <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center;">
+                                    <span style="color: var(--text-secondary);">Not processed yet</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="status ${image.status}">${this.getStatusText(image.status)}</div>
+                    </div>
+                `).join('');
             }
+            
             renderProcessingList() {
                 const images = this.imageManager.getImages();
                 const processedImages = this.imageManager.getProcessedImages();
                 if (images.length === 0) {
                     this.processingList.innerHTML = `
-                            <div class="empty-state">
-                                <div class="empty-icon">📷</div>
-                                <p>No images to process</p>
-                            </div>
-                        `;
+                        <div class="empty-state">
+                            <div class="empty-icon">📷</div>
+                            <p>No images to process</p>
+                        </div>
+                    `;
                     return;
                 }
                 this.processingList.innerHTML = images.map(image => {
@@ -1250,64 +1360,69 @@
                             processedImageHtml = `<img class="preview-img" src="${processedImage.canvas.toDataURL()}" alt="Processed">`;
                         } else {
                             processedImageHtml = `
-                                    <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                                        <span style="color: var(--text-secondary);">Processing result</span>
-                                    </div>
-                                `;
+                                <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                                    <span style="color: var(--text-secondary);">Processing result</span>
+                                </div>
+                            `;
                         }
                     } else {
                         processedImageHtml = `
-                                <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center;">
-                                    <span style="color: var(--text-secondary);">Processing...</span>
-                                </div>
-                            `;
-                    }
-                    return `
-                            <div class="image-item">
-                                <div class="image-header">
-                                    <div class="image-name">${image.name}</div>
-                                    <div class="image-size">${this.formatFileSize(image.size)}</div>
-                                </div>
-                                <div class="image-preview">
-                                    <div class="preview-box">
-                                        <div class="preview-title">Original</div>
-                                        <img class="preview-img" src="${image.dataUrl}" alt="Original">
-                                    </div>
-                                    <div class="preview-box">
-                                        <div class="preview-title">Processed</div>
-                                        ${processedImageHtml}
-                                    </div>
-                                </div>
-                                <div class="progress-container">
-                                    <div class="progress-bar" id="progress-${image.id}" style="width: ${processedImage ? '100%' : '0%'}"></div>
-                                </div>
-                                <div class="progress-text">
-                                    <span id="progress-text-${image.id}">${processedImage ? 'Completed' : 'Waiting to process...'}</span>
-                                    <span>${processedImage ? '100%' : '0%'}</span>
-                                </div>
-                                <div class="status ${image.status}">${this.getStatusText(image.status)}</div>
+                            <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center;">
+                                <span style="color: var(--text-secondary);">Processing...</span>
                             </div>
                         `;
+                    }
+                    return `
+                        <div class="image-item">
+                            <div class="image-header">
+                                <div class="image-name">${image.name}</div>
+                                <div class="image-size">${this.formatFileSize(image.size)}</div>
+                            </div>
+                            <div class="image-preview">
+                                <div class="preview-box">
+                                    <div class="preview-title">Original</div>
+                                    <img class="preview-img" src="${image.dataUrl}" alt="Original">
+                                </div>
+                                <div class="preview-box">
+                                    <div class="preview-title">Processed</div>
+                                    ${processedImageHtml}
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar" id="progress-${image.id}" style="width: ${processedImage ? '100%' : '0%'}"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span id="progress-text-${image.id}">${processedImage ? 'Completed' : 'Waiting to process...'}</span>
+                                <span>${processedImage ? '100%' : '0%'}</span>
+                            </div>
+                            <div class="status ${image.status}">${this.getStatusText(image.status)}</div>
+                        </div>
+                    `;
                 }).join('');
             }
+            
             removeImage(id) {
                 this.imageManager.removeImage(id);
                 this.renderImageList();
                 this.updateNextButton();
             }
+            
             updateNextButton() {
                 this.nextBtn.disabled = this.imageManager.getImages().length === 0;
             }
+            
             showUploadSection() {
                 this.uploadSection.style.display = 'block';
                 this.processingSection.style.display = 'none';
             }
+            
             showProcessingSection() {
                 this.uploadSection.style.display = 'none';
                 this.processingSection.style.display = 'block';
                 this.renderProcessingList();
                 this.processImages();
             }
+            
             async processImages() {
                 const images = this.imageManager.getImages();
                 let completedCount = 0;
@@ -1347,9 +1462,11 @@
                     }
                 }
             }
+            
             updateProcessingStats(completed, total) {
                 this.processingStats.textContent = `${completed}/${total} completed`;
             }
+            
             downloadAllImages() {
                 const processedImages = this.imageManager.getProcessedImages();
                 if (processedImages.length === 0) {
@@ -1367,11 +1484,13 @@
                     }, 'image/png', 1.0);
                 });
             }
+            
             formatFileSize(bytes) {
                 if (bytes < 1024) return bytes + ' B';
                 else if (bytes < 1048576) return Math.round(bytes / 1024) + ' KB';
                 else return Math.round(bytes / 1048576 * 10) / 10 + ' MB';
             }
+            
             getStatusText(status) {
                 switch (status) {
                     case 'pending':
@@ -1387,6 +1506,7 @@
                 }
             }
         }
+        
         // Initialize the application
         let remover, imageManager, uiController;
         async function initialize() {
@@ -1402,13 +1522,13 @@
             } else {
                 const loadingScreen = document.getElementById('loadingScreen');
                 loadingScreen.innerHTML = `
-                        <div class="error-message">
-                            <h4>Failed to load model</h4>
-                            <p>Please check that the model files (model.onnx and model.onnx.data) are in the correct location.</p>
-                            <p>Also ensure your browser supports WebAssembly.</p>
-                        </div>
-                        <button class="btn" onclick="location.reload()">Retry</button>
-                    `;
+                    <div class="error-message">
+                        <h4>Failed to load model</h4>
+                        <p>Please check that the model files (model.onnx and model.onnx.data) are in the correct location.</p>
+                        <p>Also ensure your browser supports WebAssembly.</p>
+                    </div>
+                    <button class="btn" onclick="location.reload()">Retry</button>
+                `;
             }
         }
         window.addEventListener('load', initialize);
