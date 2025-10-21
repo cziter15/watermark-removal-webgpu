@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ONNX Watermark Remover</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.20.0/ort.min.js"></script>
+    <!-- Use the full ONNX Runtime Web build that includes all backends -->
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.0/dist/ort.all.min.js"></script>
     <style>
         :root {
             --primary-color: #6366f1;
@@ -421,6 +422,17 @@
             margin-top: 30px;
         }
         
+        /* Error Message */
+        .error-message {
+            background-color: rgba(248, 113, 113, 0.2);
+            border-left: 4px solid var(--error-color);
+            padding: 15px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--error-color);
+        }
+        
         /* Responsive improvements */
         @media (max-width: 768px) {
             .container {
@@ -662,7 +674,7 @@
                     }
                 }
             } else {
-                statusHTML += '<p style="margin-top: 8px; color: #fbbf24; font-weight: bold;">⚠ WebGPU not available - falling back to WASM (slower performance)</p>';
+                statusHTML += '<p style="margin-top: 8px; color: #fbbf24; font-weight: bold;">⚠ WebGPU not available - falling back to WASM/CPU</p>';
                 if (webgpuResult.error) {
                     statusHTML += `<p style="font-size: 12px; color: #f87171;">Reason: ${webgpuResult.error}</p>`;
                 }
@@ -709,12 +721,9 @@
                         console.warn('Error loading external data file:', e);
                     }
                     
-                    // Determine available execution providers
-                    const webgpuResult = await checkWebGPUSupport();
-                    
-                    // Create session options
+                    // Create session options with multiple execution providers
                     const sessionOptions = {
-                        executionProviders: ['wasm']
+                        executionProviders: ['webgpu', 'wasm', 'cpu']
                     };
                     
                     // If we have external data, add it to the options
@@ -727,29 +736,20 @@
                         ];
                     }
                     
-                    // Load the model
-                    let session = null;
-                    try {
-                        if (webgpuResult.supported) {
-                            console.log('Attempting to load model with WebGPU...');
-                            session = await ort.InferenceSession.create(modelBuffer, {
-                                ...sessionOptions,
-                                executionProviders: ['webgpu']
-                            });
-                            this.executionProvider = 'webgpu';
-                        } else {
-                            throw new Error('WebGPU not available');
-                        }
-                    } catch (e) {
-                        console.log('WebGPU not available, using WASM backend', e);
-                        session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
-                        this.executionProvider = 'wasm';
-                    }
+                    // Load the model with automatic backend selection
+                    const session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
                     
                     // Get input shape information
                     const inputNames = session.inputNames;
                     console.log('Model inputs:', inputNames);
                     console.log('Model outputs:', session.outputNames);
+                    
+                    // Determine which execution provider was used
+                    if (session.handler) {
+                        this.executionProvider = session.handler.backendName || 'unknown';
+                    } else {
+                        this.executionProvider = 'unknown';
+                    }
                     
                     this.session = session;
                     this.modelLoaded = true;
@@ -766,21 +766,17 @@
                         try {
                             console.log('Attempting to load model without external data...');
                             
-                            const webgpuResult = await checkWebGPUSupport();
                             const sessionOptions = {
-                                executionProviders: ['wasm']
+                                executionProviders: ['webgpu', 'wasm', 'cpu']
                             };
                             
-                            let session = null;
-                            if (webgpuResult.supported) {
-                                session = await ort.InferenceSession.create(modelBuffer, {
-                                    ...sessionOptions,
-                                    executionProviders: ['webgpu']
-                                });
-                                this.executionProvider = 'webgpu';
+                            const session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
+                            
+                            // Determine which execution provider was used
+                            if (session.handler) {
+                                this.executionProvider = session.handler.backendName || 'unknown';
                             } else {
-                                session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
-                                this.executionProvider = 'wasm';
+                                this.executionProvider = 'unknown';
                             }
                             
                             this.session = session;
@@ -845,7 +841,6 @@
                 // Run inference
                 const feeds = {};
                 feeds[this.session.inputNames[0]] = inputTensor;
-                
                 const results = await this.session.run(feeds);
                 
                 if (progressCallback) progressCallback(75, 'Postprocessing...');
@@ -1507,14 +1502,15 @@
                 document.getElementById('uploadSection').style.display = 'block';
             } else {
                 // Show error message
-                const loadingText = document.querySelector('.loading-text');
-                const loadingSubtext = document.querySelector('.loading-subtext');
-                
-                loadingText.textContent = 'Failed to load model';
-                loadingSubtext.textContent = 'Please check your internet connection and try refreshing the page';
-                
-                // Hide loading animation
-                document.querySelector('.loading-progress').style.display = 'none';
+                const loadingScreen = document.getElementById('loadingScreen');
+                loadingScreen.innerHTML = `
+                    <div class="error-message">
+                        <h4>Failed to load model</h4>
+                        <p>Please check that the model files (model.onnx and model.onnx.data) are in the correct location.</p>
+                        <p>Also ensure your browser supports WebAssembly.</p>
+                    </div>
+                    <button class="btn" onclick="location.reload()">Retry</button>
+                `;
             }
         }
 
