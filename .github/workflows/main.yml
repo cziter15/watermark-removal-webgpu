@@ -15,10 +15,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository with LFS
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          lfs: true
+          lfs: false  # not needed, we skip downloading large LFS files
+
+      - name: Prepare web directory
+        run: |
+          cd web
+
+          # Replace local model URLs with GitHub raw URLs
+          sed -i \
+            's#"model\.onnx"#"https://github.com/cziter15/watermark-removal-webgpu/raw/main/web/model.onnx"#g' index.html
+
+          sed -i \
+            's#"model\.onnx\.data"#"https://github.com/cziter15/watermark-removal-webgpu/raw/main/web/model.onnx.data"#g' index.html
+
+          # Remove large files if they exist locally (safe cleanup)
+          rm -f model.onnx model.onnx.data
+
+          cd ..
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
