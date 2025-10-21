@@ -208,8 +208,7 @@
             object-fit: cover;
         }
         
-        .thumbnail::before {
-            content: '×';
+        .close-btn {
             position: absolute;
             top: -8px;
             right: -8px;
@@ -225,9 +224,10 @@
             cursor: pointer;
             opacity: 0;
             transition: opacity 0.2s ease;
+            z-index: 1;
         }
         
-        .thumbnail:hover::before {
+        .thumbnail:hover .close-btn {
             opacity: 1;
         }
         
@@ -694,8 +694,16 @@
         <div class="processing-section" id="processingSection">
             <div class="processing-header">
                 <div class="processing-title">Processing Images</div>
-                <div class="processing-stats" id="processingStats">0/0 completed</div>
+                <div class="processing-stats" id="processingStats">0/0 processed</div>
             </div>
+            
+            <div class="upload-area" id="uploadArea2">
+                <p>Drop more images here or click to select</p>
+                <p style="font-size: 12px; color: #8b949e; margin-top: 5px;">Supports JPG, PNG (multiple selection enabled)</p>
+                <input type="file" id="fileInput2" accept="image/*" multiple>
+            </div>
+            
+            <div class="image-list" id="imageList2"></div>
             
             <div class="processing-list" id="processingList"></div>
             
@@ -1281,6 +1289,7 @@
             
             removeImage(id) {
                 this.images = this.images.filter(img => img.id !== id);
+                this.processedImages = this.processedImages.filter(img => img.id !== id);
             }
             
             clearAll() {
@@ -1331,8 +1340,11 @@
                 this.uploadSection = document.getElementById('uploadSection');
                 this.processingSection = document.getElementById('processingSection');
                 this.uploadArea = document.getElementById('uploadArea');
+                this.uploadArea2 = document.getElementById('uploadArea2');
                 this.fileInput = document.getElementById('fileInput');
+                this.fileInput2 = document.getElementById('fileInput2');
                 this.imageList = document.getElementById('imageList');
+                this.imageList2 = document.getElementById('imageList2');
                 this.processingList = document.getElementById('processingList');
                 this.nextBtn = document.getElementById('nextBtn');
                 this.backBtn = document.getElementById('backBtn');
@@ -1362,6 +1374,25 @@
                 this.fileInput.addEventListener('change', (e) => {
                     this.handleFiles(e.target.files);
                 });
+
+                // Second upload area
+                this.uploadArea2.addEventListener('click', () => this.fileInput2.click());
+                this.uploadArea2.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    this.uploadArea2.classList.add('drag-over');
+                });
+                this.uploadArea2.addEventListener('dragleave', () => {
+                    this.uploadArea2.classList.remove('drag-over');
+                });
+                this.uploadArea2.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.uploadArea2.classList.remove('drag-over');
+                    this.handleFiles(e.dataTransfer.files);
+                });
+                this.fileInput2.addEventListener('change', (e) => {
+                    this.handleFiles(e.target.files);
+                });
+
                 this.nextBtn.addEventListener('click', () => {
                     this.showProcessingSection();
                 });
@@ -1397,9 +1428,28 @@
                 this.enablePostProcessingInput.addEventListener('change', () => {
                     this.remover.enablePostProcessing = this.enablePostProcessingInput.checked;
                 });
+
+                // Close button clicks for both lists
+                this.imageList.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('close-btn')) {
+                        const thumbnail = e.target.closest('.thumbnail');
+                        if (thumbnail) {
+                            this.removeImage(thumbnail.dataset.id);
+                        }
+                    }
+                });
+                this.imageList2.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('close-btn')) {
+                        const thumbnail = e.target.closest('.thumbnail');
+                        if (thumbnail) {
+                            this.removeImage(thumbnail.dataset.id);
+                        }
+                    }
+                });
             }
             
             attachDragAndDrop() {
+                // Only attach to upload image list for reordering
                 this.imageList.addEventListener('dragstart', (e) => {
                     const thumbnail = e.target.closest('.thumbnail');
                     if (thumbnail) {
@@ -1447,42 +1497,43 @@
                     }
                     document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('drag-over'));
                 });
-                
-                // Handle remove on click (but prevent if dragging)
-                this.imageList.addEventListener('click', (e) => {
-                    if (e.target.closest('.thumbnail::before')) {
-                        const thumbnail = e.target.closest('.thumbnail');
-                        if (thumbnail) {
-                            this.removeImage(thumbnail.dataset.id);
-                        }
-                    }
-                });
             }
             
             async handleFiles(files) {
                 for (let i = 0; i < files.length; i++) {
                     try {
-                        const image = await this.imageManager.addImage(files[i]);
-                        this.renderImageList();
-                        this.updateNextButton();
+                        await this.imageManager.addImage(files[i]);
                     } catch (error) {
                         console.error('Error adding image:', error);
                         alert(error.message);
                     }
                 }
+                this.renderImageList();
+                this.updateNextButton();
+                if (this.processingSection.style.display === 'block') {
+                    setTimeout(() => {
+                        this.processImages();
+                    }, 500);
+                }
             }
             
             renderImageList() {
                 const images = this.imageManager.getImages();
-                if (images.length === 0) {
-                    this.imageList.innerHTML = '';
-                    return;
-                }
-                this.imageList.innerHTML = images.map(image => `
+                const uploadHtml = images.length === 0 ? '' : images.map(image => `
                     <div class="thumbnail" draggable="true" data-id="${image.id}">
                         <img src="${image.dataUrl}" alt="${image.name}">
+                        <span class="close-btn">×</span>
                     </div>
                 `).join('');
+                this.imageList.innerHTML = uploadHtml;
+
+                const processingHtml = images.length === 0 ? '' : images.map(image => `
+                    <div class="thumbnail" draggable="false" data-id="${image.id}">
+                        <img src="${image.dataUrl}" alt="${image.name}">
+                        <span class="close-btn">×</span>
+                    </div>
+                `).join('');
+                this.imageList2.innerHTML = processingHtml;
             }
             
             renderProcessingList() {
@@ -1500,7 +1551,17 @@
                 this.processingList.innerHTML = images.map(image => {
                     const processedImage = processedImages.find(img => img.id === image.id);
                     let processedImageHtml = '';
-                    if (processedImage) {
+                    let progressWidth = '0%';
+                    let progressMsg = 'Waiting to process...';
+                    if (image.status === 'error') {
+                        processedImageHtml = `
+                            <div class="preview-img" style="background-color: var(--error-color); opacity: 0.2; display: flex; align-items: center; justify-content: center;">
+                                <span style="color: white;">Error</span>
+                            </div>
+                        `;
+                        progressWidth = '100%';
+                        progressMsg = 'Error occurred';
+                    } else if (processedImage) {
                         const ctx = processedImage.canvas.getContext('2d');
                         const imageData = ctx.getImageData(0, 0, 1, 1);
                         const hasContent = imageData.data[0] !== 0 || imageData.data[1] !== 0 || imageData.data[2] !== 0;
@@ -1513,12 +1574,17 @@
                                 </div>
                             `;
                         }
+                        progressWidth = '100%';
+                        progressMsg = 'Completed';
                     } else {
                         processedImageHtml = `
                             <div class="preview-img" style="background-color: var(--background-color); display: flex; align-items: center; justify-content: center;">
                                 <span style="color: var(--text-secondary);">Processing...</span>
                             </div>
                         `;
+                        if (image.status === 'processing') {
+                            progressMsg = 'Processing...';
+                        }
                     }
                     return `
                         <div class="image-item">
@@ -1537,11 +1603,11 @@
                                 </div>
                             </div>
                             <div class="progress-container">
-                                <div class="progress-bar" id="progress-${image.id}" style="width: ${processedImage ? '100%' : '0%'}"></div>
+                                <div class="progress-bar" id="progress-${image.id}" style="width: ${progressWidth}"></div>
                             </div>
                             <div class="progress-text">
-                                <span id="progress-text-${image.id}">${processedImage ? 'Completed' : 'Waiting to process...'}</span>
-                                <span>${processedImage ? '100%' : '0%'}</span>
+                                <span id="progress-text-${image.id}">${progressMsg}</span>
+                                <span>${progressWidth === '100%' ? '100%' : '0%'}</span>
                             </div>
                             <div class="status ${image.status}">${this.getStatusText(image.status)}</div>
                         </div>
@@ -1552,6 +1618,7 @@
             removeImage(id) {
                 this.imageManager.removeImage(id);
                 this.renderImageList();
+                this.renderProcessingList();
                 this.updateNextButton();
             }
             
@@ -1562,6 +1629,8 @@
             showUploadSection() {
                 this.uploadSection.style.display = 'block';
                 this.processingSection.style.display = 'none';
+                this.renderImageList();
+                this.updateNextButton();
             }
             
             showProcessingSection() {
@@ -1569,14 +1638,22 @@
                 this.processingSection.style.display = 'block';
                 
                 this.renderProcessingList();
+                this.renderImageList();
                 this.processImages();
             }
             
             async processImages() {
                 const images = this.imageManager.getImages();
-                let completedCount = 0;
-                this.updateProcessingStats(completedCount, images.length);
-                for (const image of images) {
+                const pendingImages = images.filter(img => img.status === 'pending');
+                if (pendingImages.length === 0) {
+                    if (images.every(img => img.status !== 'pending')) {
+                        this.downloadAllBtn.disabled = false;
+                    }
+                    return;
+                }
+                let doneCount = images.length - pendingImages.length;
+                this.updateProcessingStats(doneCount, images.length);
+                for (const image of pendingImages) {
                     try {
                         this.imageManager.updateImageStatus(image.id, 'processing');
                         this.renderProcessingList();
@@ -1589,31 +1666,31 @@
                             if (progressText) {
                                 progressText.textContent = message;
                             }
-                            const percentElement = progressText.nextElementSibling;
+                            const percentElement = progressText ? progressText.nextElementSibling : null;
                             if (percentElement) {
                                 percentElement.textContent = `${percent}%`;
                             }
                         }, image.name);
                         this.imageManager.addProcessedImage(image.id, processedCanvas);
                         this.imageManager.updateImageStatus(image.id, 'completed');
-                        completedCount++;
-                        this.updateProcessingStats(completedCount, images.length);
+                        doneCount++;
+                        this.updateProcessingStats(doneCount, images.length);
                         this.renderProcessingList();
-                        if (completedCount === images.length) {
-                            this.downloadAllBtn.disabled = false;
-                        }
                     } catch (error) {
                         console.error('Error processing image:', error);
                         this.imageManager.updateImageStatus(image.id, 'error');
                         this.renderProcessingList();
-                        completedCount++;
-                        this.updateProcessingStats(completedCount, images.length);
+                        doneCount++;
+                        this.updateProcessingStats(doneCount, images.length);
                     }
+                }
+                if (images.every(img => img.status !== 'pending')) {
+                    this.downloadAllBtn.disabled = false;
                 }
             }
             
-            updateProcessingStats(completed, total) {
-                this.processingStats.textContent = `${completed}/${total} completed`;
+            updateProcessingStats(done, total) {
+                this.processingStats.textContent = `${done}/${total} processed`;
             }
             
             downloadAllImages() {
