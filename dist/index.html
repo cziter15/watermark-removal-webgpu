@@ -438,27 +438,44 @@
         .debug-panel {
             background-color: var(--card-color);
             border-radius: 10px;
-            padding: 15px;
+            padding: 20px;
             margin-bottom: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            font-family: monospace;
-            font-size: 12px;
-            max-height: 200px;
+            max-height: 800px;
             overflow-y: auto;
         }
-        
+
         .debug-panel h3 {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             color: var(--text-primary);
             font-size: 14px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
-        
+
         .debug-log {
-            color: var(--text-secondary);
-            white-space: pre-wrap;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        
+
+        /* Scrollbar styling */
+        .debug-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .debug-panel::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .debug-panel::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 10px;
+        }
+
+        .debug-panel::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.5);
+        }
         /* Copyright */
         .copyright {
             text-align: center;
@@ -537,32 +554,6 @@
                 flex-direction: column;
                 gap: 10px;
             }
-        }
-
-        /* Debug Panel */
-        .debug-panel {
-            background-color: var(--card-color);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-family: monospace;
-            font-size: 12px;
-            max-height: 600px;  /* Increased from 200px */
-            overflow-y: auto;
-        }
-
-        .debug-panel h3 {
-            margin-bottom: 10px;
-            color: var(--text-primary);
-            font-size: 14px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        }
-
-        .debug-log {
-            color: var(--text-secondary);
-            white-space: pre-wrap;
-            word-break: break-all;
         }
     </style>
 </head>
@@ -857,9 +848,7 @@
                                 0, 0, tile.width, tile.height);
 
                 const beforeBase64 = tileCanvas.toDataURL('image/png');
-                const tileName = `[TILE ${tile.x},${tile.y} ${tile.width}x${tile.height}]`;
-                
-                debugLog(`${tileName} Processing...`);
+                const tileName = `Tile (${tile.x}, ${tile.y})`;
 
                 // Resize to model input size (256x256)
                 const inputCanvas = document.createElement('canvas');
@@ -873,7 +862,6 @@
                                 0, 0, this.inputSize, this.inputSize);
 
                 const imageData = inputCtx.getImageData(0, 0, this.inputSize, this.inputSize);
-
                 const inputTensor = this.imageDataToTensor(imageData);
 
                 // Run inference
@@ -882,8 +870,6 @@
                 const results = await this.session.run(feeds);
 
                 const outputTensor = results[this.session.outputNames[0]];
-
-                // Convert back to image
                 const outputImageData = this.tensorToImageData(outputTensor);
 
                 // Create output canvas at model size
@@ -906,23 +892,29 @@
 
                 const afterBase64 = outputTileCanvas.toDataURL('image/png');
 
-                // Log with clickable images (renamed variable to avoid shadowing)
+                // Display images in debug panel
                 const debugElement = document.getElementById('debugLog');
                 if (debugElement) {
                     const tileDebug = document.createElement('div');
-                    tileDebug.style.marginBottom = '15px';
-                    tileDebug.style.borderBottom = '1px solid #444';
-                    tileDebug.style.paddingBottom = '10px';
+                    tileDebug.style.cssText = `
+                        margin-bottom: 20px;
+                        padding: 10px;
+                        background: rgba(100, 116, 139, 0.2);
+                        border-radius: 8px;
+                        border-left: 4px solid #60a5fa;
+                    `;
                     tileDebug.innerHTML = `
-                        <div style="font-weight: bold; color: #60a5fa;">${tileName}</div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px;">
+                        <div style="font-weight: bold; color: #60a5fa; margin-bottom: 10px; font-size: 13px;">
+                            ${tileName}
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                             <div>
-                                <div style="font-size: 11px; color: #4ade80;">BEFORE</div>
-                                <img src="${beforeBase64}" style="width: 100%; max-width: 120px; border: 1px solid #333; border-radius: 4px; cursor: pointer;" onclick="window.open('${beforeBase64}')" title="Click to open full size">
+                                <div style="font-size: 11px; color: #4ade80; margin-bottom: 5px; text-transform: uppercase;">Before</div>
+                                <img src="${beforeBase64}" style="width: 100%; border: 2px solid #4ade80; border-radius: 6px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onclick="window.open('${beforeBase64}', '_blank')">
                             </div>
                             <div>
-                                <div style="font-size: 11px; color: #f87171;">AFTER</div>
-                                <img src="${afterBase64}" style="width: 100%; max-width: 120px; border: 1px solid #333; border-radius: 4px; cursor: pointer;" onclick="window.open('${afterBase64}')" title="Click to open full size">
+                                <div style="font-size: 11px; color: #f87171; margin-bottom: 5px; text-transform: uppercase;">After</div>
+                                <img src="${afterBase64}" style="width: 100%; border: 2px solid #f87171; border-radius: 6px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onclick="window.open('${afterBase64}', '_blank')">
                             </div>
                         </div>
                     `;
@@ -930,10 +922,8 @@
                     debugElement.scrollTop = debugElement.scrollHeight;
                 }
 
-                debugLog(`${tileName} Complete!`);
-
                 return outputTileCanvas;
-            }
+            }            
             blendTile(outputCtx, tileCanvas, tile, canvasWidth, canvasHeight) {
                 const tileCtx = tileCanvas.getContext('2d', {
                     willReadFrequently: true
