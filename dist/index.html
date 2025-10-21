@@ -195,6 +195,7 @@
             cursor: pointer;
             transition: border-color 0.2s ease;
             aspect-ratio: 1;
+            position: relative;
         }
         
         .thumbnail:hover {
@@ -205,6 +206,34 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+        
+        .thumbnail::before {
+            content: '×';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--error-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .thumbnail:hover::before {
+            opacity: 1;
+        }
+        
+        .thumbnail.drag-over {
+            border-color: var(--secondary-color);
+            transform: scale(1.05);
         }
         
         /* Image Item for Processing */
@@ -1294,6 +1323,7 @@
                 this.imageManager = imageManager;
                 this.initializeElements();
                 this.attachEventListeners();
+                this.attachDragAndDrop();
             }
             
             initializeElements() {
@@ -1369,6 +1399,66 @@
                 });
             }
             
+            attachDragAndDrop() {
+                this.imageList.addEventListener('dragstart', (e) => {
+                    const thumbnail = e.target.closest('.thumbnail');
+                    if (thumbnail) {
+                        e.dataTransfer.setData('text/plain', thumbnail.dataset.id);
+                        thumbnail.style.opacity = '0.5';
+                    }
+                });
+                
+                this.imageList.addEventListener('dragend', (e) => {
+                    const thumbnail = e.target.closest('.thumbnail');
+                    if (thumbnail) {
+                        thumbnail.style.opacity = '1';
+                    }
+                    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('drag-over'));
+                });
+                
+                this.imageList.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    const thumbnail = e.target.closest('.thumbnail');
+                    if (thumbnail) {
+                        thumbnail.classList.add('drag-over');
+                    }
+                });
+                
+                this.imageList.addEventListener('dragleave', (e) => {
+                    const thumbnail = e.target.closest('.thumbnail');
+                    if (thumbnail) {
+                        thumbnail.classList.remove('drag-over');
+                    }
+                });
+                
+                this.imageList.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const draggedId = e.dataTransfer.getData('text/plain');
+                    const dropTarget = e.target.closest('.thumbnail');
+                    if (dropTarget && draggedId !== dropTarget.dataset.id) {
+                        const draggedIndex = this.imageManager.images.findIndex(img => img.id == draggedId);
+                        const targetIndex = this.imageManager.images.findIndex(img => img.id == dropTarget.dataset.id);
+                        if (draggedIndex !== -1 && targetIndex !== -1) {
+                            // Swap positions
+                            [this.imageManager.images[draggedIndex], this.imageManager.images[targetIndex]] = 
+                            [this.imageManager.images[targetIndex], this.imageManager.images[draggedIndex]];
+                            this.renderImageList();
+                        }
+                    }
+                    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('drag-over'));
+                });
+                
+                // Handle remove on click (but prevent if dragging)
+                this.imageList.addEventListener('click', (e) => {
+                    if (e.target.closest('.thumbnail::before')) {
+                        const thumbnail = e.target.closest('.thumbnail');
+                        if (thumbnail) {
+                            this.removeImage(thumbnail.dataset.id);
+                        }
+                    }
+                });
+            }
+            
             async handleFiles(files) {
                 for (let i = 0; i < files.length; i++) {
                     try {
@@ -1389,7 +1479,7 @@
                     return;
                 }
                 this.imageList.innerHTML = images.map(image => `
-                    <div class="thumbnail" onclick="uiController.removeImage(${image.id})">
+                    <div class="thumbnail" draggable="true" data-id="${image.id}">
                         <img src="${image.dataUrl}" alt="${image.name}">
                     </div>
                 `).join('');
