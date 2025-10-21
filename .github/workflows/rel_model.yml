@@ -1,19 +1,21 @@
-name: Release model
-
+name: Deploy and Release
 on:
   workflow_dispatch:
-
+permissions:
+  contents: write   # for Pages and Releases
+  pages: write      # for Pages
+  id-token: write   # for Pages deployment
 jobs:
   release-model:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Create release and upload assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        id: create_release
         run: |
-          gh release create v${GITHUB_RUN_NUMBER} \
-            --title "Auto Release $GITHUB_RUN_NUMBER" \
+          gh release create "v${{ github.run_number }}" \
+            --title "Auto Release ${{ github.run_number }}" \
             --notes "Automated release with model files" \
             ./web/model.onnx ./web/model.onnx.data
