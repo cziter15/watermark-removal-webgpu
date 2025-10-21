@@ -556,7 +556,7 @@
         // Define constants for model URLs
         const MODEL_URL = '--MODEL--URL--HERE--';
         const MODEL_DATA_URL = '--MODEL--DATA--URL--HERE--';
-
+        
         // Check browser compatibility
         function checkBrowserCompatibility() {
             const hasWebAssembly = typeof WebAssembly === 'object';
@@ -749,12 +749,13 @@
                     
                     // If we have external data, add it to the options
                     if (externalDataBuffer) {
-                        // Create a map of external data files
-                        const externalData = new Map();
-                        externalData.set('model.onnx.data', new Uint8Array(externalDataBuffer));
-                        
-                        // Add the external data to the session options
-                        sessionOptions.externalData = externalData;
+                        // Use the array format for external data
+                        sessionOptions.externalData = [
+                            {
+                                data: externalDataBuffer,
+                                path: 'model.onnx.data'
+                            }
+                        ];
                     }
                     
                     // Load the model
