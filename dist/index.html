@@ -438,207 +438,6 @@
             color: var(--error-color);
         }
         
-        /* Debug Panel */
-        .debug-panel {
-            background-color: var(--card-color);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-height: 600px;
-            overflow-y: auto;
-        }
-
-        .debug-panel h3 {
-            margin-bottom: 15px;
-            color: var(--text-primary);
-            font-size: 16px;
-            position: sticky;
-            top: 0;
-            background-color: var(--card-color);
-            padding: 10px 0;
-            z-index: 10;
-        }
-
-        .debug-log {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .debug-image-section {
-            border: 2px solid rgba(96, 165, 250, 0.3);
-            border-radius: 10px;
-            padding: 15px;
-            background-color: rgba(15, 23, 42, 0.5);
-        }
-
-        .debug-image-header {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--info-color);
-        }
-
-        .debug-image-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--info-color);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .debug-image-title::before {
-            content: "🖼️";
-            font-size: 24px;
-        }
-
-        .debug-image-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-        }
-
-        .debug-info-item {
-            font-size: 12px;
-            color: var(--text-secondary);
-            background-color: rgba(15, 23, 42, 0.5);
-            padding: 6px 10px;
-            border-radius: 5px;
-        }
-
-        .debug-info-item strong {
-            color: var(--text-primary);
-            display: inline-block;
-            min-width: 60px;
-        }
-
-        .debug-tiles-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 15px;
-        }
-
-        .debug-tile {
-            background-color: var(--surface-color);
-            border-radius: 8px;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-
-        .debug-tile:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
-            border-color: var(--primary-color);
-        }
-
-        .debug-tile-header {
-            font-size: 12px;
-            font-weight: bold;
-            color: var(--text-primary);
-            margin-bottom: 10px;
-            text-align: center;
-            padding: 6px;
-            background-color: rgba(99, 102, 241, 0.1);
-            border-radius: 5px;
-        }
-
-        .debug-tile-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .debug-image-container {
-            text-align: center;
-        }
-
-        .debug-image-label {
-            font-size: 10px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .debug-image-before .debug-image-label {
-            color: var(--accent-color);
-        }
-
-        .debug-image-after .debug-image-label {
-            color: var(--secondary-color);
-        }
-
-        .debug-image {
-            width: 100%;
-            height: 90px;
-            object-fit: cover;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background-color: var(--background-color);
-        }
-
-        .debug-image:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-        }
-
-        .debug-image-before .debug-image {
-            border: 2px solid var(--accent-color);
-        }
-
-        .debug-image-after .debug-image {
-            border: 2px solid var(--secondary-color);
-        }
-
-        .debug-tile-info {
-            font-size: 10px;
-            color: var(--text-secondary);
-            background-color: rgba(15, 23, 42, 0.7);
-            padding: 8px;
-            border-radius: 5px;
-        }
-
-        .debug-tile-info div {
-            margin-bottom: 4px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .debug-tile-info div:last-child {
-            margin-bottom: 0;
-        }
-
-        .debug-tile-info strong {
-            color: var(--text-primary);
-        }
-
-        /* Scrollbar styling */
-        .debug-panel::-webkit-scrollbar {
-            width: 10px;
-        }
-
-        .debug-panel::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .debug-panel::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            border-radius: 10px;
-        }
-
-        .debug-panel::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(180deg, var(--secondary-color) 0%, var(--primary-color) 100%);
-        }
-        
         /* Copyright */
         .copyright {
             text-align: center;
@@ -689,14 +488,6 @@
             .settings-panel {
                 padding: 15px;
             }
-            
-            .debug-tiles-grid {
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            }
-            
-            .debug-panel {
-                max-height: 400px;
-            }
         }
         
         @media (max-width: 480px) {
@@ -723,14 +514,6 @@
             
             .navigation {
                 flex-direction: column;
-            }
-            
-            .debug-tiles-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .debug-tile-content {
-                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -776,11 +559,6 @@
                 </div>
             </div>
             
-            <div class="debug-panel" id="debugPanel" style="display: none;">
-                <h3>🔍 Debug Information</h3>
-                <div class="debug-log" id="debugLog"></div>
-            </div>
-            
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📁</div>
                 <p>Click to upload or drag & drop images</p>
@@ -821,11 +599,6 @@
         // Define constants for model URLs
         const MODEL_URL = 'model.onnx';
         const MODEL_DATA_URL = 'model.onnx.data';
-        
-        // Debug logging function
-        function logDebug(message) {
-            console.log(message);
-        }
         
         // Check for WebGPU support
         async function checkWebGPUSupport() {
@@ -909,19 +682,18 @@
                 this.modelPath = MODEL_URL;
                 this.modelDataPath = MODEL_DATA_URL;
                 this.executionProvider = null;
-                this.currentImageDebugId = null;
                 this.enablePostProcessing = true;
             }
             
             async loadModel(modelPath, modelDataPath) {
                 try {
-                    logDebug("Loading model...");
+                    console.log("Loading model...");
                     const modelResponse = await fetch(modelPath);
                     if (!modelResponse.ok) {
                         throw new Error(`Failed to fetch model: ${modelResponse.statusText}`);
                     }
                     const modelBuffer = await modelResponse.arrayBuffer();
-                    logDebug(`Model loaded, size: ${modelBuffer.byteLength} bytes`);
+                    console.log(`Model loaded, size: ${modelBuffer.byteLength} bytes`);
                     let externalDataBuffer = null;
                     let externalDataLoaded = false;
                     try {
@@ -929,12 +701,12 @@
                         if (dataResponse.ok) {
                             externalDataBuffer = await dataResponse.arrayBuffer();
                             externalDataLoaded = true;
-                            logDebug("External data file loaded successfully");
+                            console.log("External data file loaded successfully");
                         } else {
-                            logDebug(`External data file not found: ${dataResponse.statusText}`);
+                            console.log(`External data file not found: ${dataResponse.statusText}`);
                         }
                     } catch (e) {
-                        logDebug(`External data file not found (optional): ${e.message}`);
+                        console.log(`External data file not found (optional): ${e.message}`);
                     }
                     const sessionOptions = {
                         executionProviders: ['webgpu', 'wasm', 'cpu']
@@ -945,25 +717,25 @@
                             path: 'model.onnx.data'
                         }];
                     }
-                    logDebug("Creating inference session...");
+                    console.log("Creating inference session...");
                     const session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
                     const inputNames = session.inputNames;
                     const outputNames = session.outputNames;
-                    logDebug(`Model inputs: ${JSON.stringify(inputNames)}`);
-                    logDebug(`Model outputs: ${JSON.stringify(outputNames)}`);
+                    console.log(`Model inputs: ${JSON.stringify(inputNames)}`);
+                    console.log(`Model outputs: ${JSON.stringify(outputNames)}`);
                     if (session.handler) {
                         this.executionProvider = session.handler.backendName || 'unknown';
                     } else {
                         this.executionProvider = 'unknown';
                     }
-                    logDebug(`Using execution provider: ${this.executionProvider}`);
+                    console.log(`Using execution provider: ${this.executionProvider}`);
                     this.session = session;
                     this.modelLoaded = true;
                     this.modelPath = modelPath;
                     this.modelDataPath = modelDataPath;
                     return true;
                 } catch (error) {
-                    logDebug(`Model loading error: ${error.message}`);
+                    console.error(`Model loading error: ${error.message}`);
                     console.error('Model loading error:', error);
                     return false;
                 }
@@ -975,7 +747,7 @@
                 }
                 const originalWidth = image.width;
                 const originalHeight = image.height;
-                logDebug(`Processing image: ${imageName} (${originalWidth}x${originalHeight})`);
+                console.log(`Processing image: ${imageName} (${originalWidth}x${originalHeight})`);
                 if (originalWidth < 64 || originalHeight < 64) {
                     throw new Error('Image is too small. Minimum size is 64x64 pixels.');
                 }
@@ -996,7 +768,7 @@
                 
                 // For small images, process without tiling
                 if (originalWidth <= this.tileSize && originalHeight <= this.tileSize) {
-                    logDebug("Processing small image without tiling");
+                    console.log("Processing small image without tiling");
                     const processedTile = await this.processWholeImage(image, progressCallback, imageName);
                     outputCtx.drawImage(processedTile, 0, 0);
                     if (progressCallback) {
@@ -1020,44 +792,7 @@
                         });
                     }
                 }
-                logDebug(`Processing ${tiles.length} tiles (size=${this.tileSize}, overlap=${this.overlap})`);
-                
-                // Create debug section for this image
-                const debugLogElement = document.getElementById('debugLog');
-                if (debugLogElement) {
-                    const imageSection = document.createElement('div');
-                    imageSection.className = 'debug-image-section';
-                    this.currentImageDebugId = 'debug-section-' + Date.now();
-                    imageSection.id = this.currentImageDebugId;
-                    
-                    const imageHeader = document.createElement('div');
-                    imageHeader.className = 'debug-image-header';
-                    imageHeader.innerHTML = `
-                        <div class="debug-image-title">${imageName}</div>
-                        <div class="debug-image-info">
-                            <div class="debug-info-item"><strong>Dimensions:</strong> ${originalWidth}x${originalHeight}px</div>
-                            <div class="debug-info-item"><strong>Tile Size:</strong> ${this.tileSize}px</div>
-                            <div class="debug-info-item"><strong>Overlap:</strong> ${this.overlap}px</div>
-                            <div class="debug-info-item"><strong>Total Tiles:</strong> ${tiles.length}</div>
-                            <div class="debug-info-item"><strong>Model Input:</strong> ${this.inputSize}px</div>
-                            <div class="debug-info-item"><strong>Provider:</strong> ${this.executionProvider.toUpperCase()}</div>
-                        </div>
-                    `;
-                    imageSection.appendChild(imageHeader);
-                    
-                    // Create tiles grid container
-                    const tilesGrid = document.createElement('div');
-                    tilesGrid.className = 'debug-tiles-grid';
-                    tilesGrid.id = this.currentImageDebugId + '-tiles';
-                    imageSection.appendChild(tilesGrid);
-                    
-                    debugLogElement.appendChild(imageSection);
-                    
-                    // Scroll to the new section
-                    setTimeout(() => {
-                        imageSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 100);
-                }
+                console.log(`Processing ${tiles.length} tiles (size=${this.tileSize}, overlap=${this.overlap})`);
                 
                 // Process each tile
                 for (let i = 0; i < tiles.length; i++) {
@@ -1067,7 +802,7 @@
                         const processedTile = await this.processTile(image, tile, i);
                         this.blendTile(outputCtx, processedTile, tile, originalWidth, originalHeight);
                     } catch (error) {
-                        logDebug(`Error processing tile ${i}: ${error.message}`);
+                        console.log(`Error processing tile ${i}: ${error.message}`);
                     }
                     const progress = Math.round(((i + 1) / tiles.length) * 100);
                     if (progressCallback) {
@@ -1087,49 +822,12 @@
             }
             
             async processWholeImage(image, progressCallback, imageName) {
-                // Create debug section for this image
-                const debugLogElement = document.getElementById('debugLog');
-                if (debugLogElement) {
-                    const imageSection = document.createElement('div');
-                    imageSection.className = 'debug-image-section';
-                    this.currentImageDebugId = 'debug-section-' + Date.now();
-                    imageSection.id = this.currentImageDebugId;
-                    
-                    const imageHeader = document.createElement('div');
-                    imageHeader.className = 'debug-image-header';
-                    imageHeader.innerHTML = `
-                        <div class="debug-image-title">${imageName}</div>
-                        <div class="debug-image-info">
-                            <div class="debug-info-item"><strong>Dimensions:</strong> ${image.width}x${image.height}px</div>
-                            <div class="debug-info-item"><strong>Processing:</strong> Whole Image</div>
-                            <div class="debug-info-item"><strong>Model Input:</strong> ${this.inputSize}px</div>
-                            <div class="debug-info-item"><strong>Provider:</strong> ${this.executionProvider.toUpperCase()}</div>
-                        </div>
-                    `;
-                    imageSection.appendChild(imageHeader);
-                    
-                    // Create tiles grid container
-                    const tilesGrid = document.createElement('div');
-                    tilesGrid.className = 'debug-tiles-grid';
-                    tilesGrid.id = this.currentImageDebugId + '-tiles';
-                    imageSection.appendChild(tilesGrid);
-                    
-                    debugLogElement.appendChild(imageSection);
-                    
-                    // Scroll to the new section
-                    setTimeout(() => {
-                        imageSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 100);
-                }
-                
                 // Extract the whole image
                 const tileCanvas = document.createElement('canvas');
                 tileCanvas.width = image.width;
                 tileCanvas.height = image.height;
                 const tileCtx = tileCanvas.getContext('2d');
                 tileCtx.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width, image.height);
-
-                const beforeBase64 = tileCanvas.toDataURL('image/png');
 
                 // Resize to model input size
                 const inputCanvas = document.createElement('canvas');
@@ -1171,39 +869,6 @@
                 outputTileCtx.drawImage(outputModelCanvas, 0, 0, this.inputSize, this.inputSize,
                                     0, 0, image.width, image.height);
 
-                const afterBase64 = outputTileCanvas.toDataURL('image/png');
-
-                // Display images in debug panel
-                const tilesGrid = document.getElementById(this.currentImageDebugId + '-tiles');
-                if (tilesGrid) {
-                    const tileDebug = document.createElement('div');
-                    tileDebug.className = 'debug-tile';
-                    
-                    // Get tensor shapes for display
-                    const inputShape = inputTensor.dims.join('×');
-                    const outputShape = outputTensor.dims.join('×');
-                    
-                    tileDebug.innerHTML = `
-                        <div class="debug-tile-header">Whole Image Processing</div>
-                        <div class="debug-tile-content">
-                            <div class="debug-image-container debug-image-before">
-                                <div class="debug-image-label">Before</div>
-                                <img class="debug-image" src="${beforeBase64}" alt="Before" title="Click to open in new tab" onclick="window.open('${beforeBase64}', '_blank')">
-                            </div>
-                            <div class="debug-image-container debug-image-after">
-                                <div class="debug-image-label">After</div>
-                                <img class="debug-image" src="${afterBase64}" alt="After" title="Click to open in new tab" onclick="window.open('${afterBase64}', '_blank')">
-                            </div>
-                        </div>
-                        <div class="debug-tile-info">
-                            <div><strong>Size:</strong> <span>${image.width}×${image.height}</span></div>
-                            <div><strong>Input:</strong> <span>${inputShape}</span></div>
-                            <div><strong>Output:</strong> <span>${outputShape}</span></div>
-                        </div>
-                    `;
-                    tilesGrid.appendChild(tileDebug);
-                }
-
                 return outputTileCanvas;
             }
             
@@ -1215,8 +880,6 @@
                 const tileCtx = tileCanvas.getContext('2d');
                 tileCtx.drawImage(sourceImage, tile.x, tile.y, tile.width, tile.height, 
                                 0, 0, tile.width, tile.height);
-
-                const beforeBase64 = tileCanvas.toDataURL('image/png');
 
                 // Resize to model input size
                 const inputCanvas = document.createElement('canvas');
@@ -1257,39 +920,6 @@
                 outputTileCtx.imageSmoothingQuality = 'high';
                 outputTileCtx.drawImage(outputModelCanvas, 0, 0, this.inputSize, this.inputSize,
                                     0, 0, tile.width, tile.height);
-
-                const afterBase64 = outputTileCanvas.toDataURL('image/png');
-
-                // Display images in debug panel
-                const tilesGrid = document.getElementById(this.currentImageDebugId + '-tiles');
-                if (tilesGrid) {
-                    const tileDebug = document.createElement('div');
-                    tileDebug.className = 'debug-tile';
-                    
-                    // Get tensor shapes for display
-                    const inputShape = inputTensor.dims.join('×');
-                    const outputShape = outputTensor.dims.join('×');
-                    
-                    tileDebug.innerHTML = `
-                        <div class="debug-tile-header">Tile #${index + 1} - (${tile.x}, ${tile.y})</div>
-                        <div class="debug-tile-content">
-                            <div class="debug-image-container debug-image-before">
-                                <div class="debug-image-label">Before</div>
-                                <img class="debug-image" src="${beforeBase64}" alt="Before" title="Click to open in new tab" onclick="window.open('${beforeBase64}', '_blank')">
-                            </div>
-                            <div class="debug-image-container debug-image-after">
-                                <div class="debug-image-label">After</div>
-                                <img class="debug-image" src="${afterBase64}" alt="After" title="Click to open in new tab" onclick="window.open('${afterBase64}', '_blank')">
-                            </div>
-                        </div>
-                        <div class="debug-tile-info">
-                            <div><strong>Size:</strong> <span>${tile.width}×${tile.height}</span></div>
-                            <div><strong>Input:</strong> <span>${inputShape}</span></div>
-                            <div><strong>Output:</strong> <span>${outputShape}</span></div>
-                        </div>
-                    `;
-                    tilesGrid.appendChild(tileDebug);
-                }
 
                 return outputTileCanvas;
             }
@@ -1579,8 +1209,6 @@
                 this.inputSizeInput = document.getElementById('inputSize');
                 this.enablePostProcessingInput = document.getElementById('enablePostProcessing');
                 this.processingStats = document.getElementById('processingStats');
-                this.debugPanel = document.getElementById('debugPanel');
-                this.debugLog = document.getElementById('debugLog');
             }
             
             attachEventListeners() {
@@ -1610,9 +1238,6 @@
                     this.imageManager.clearAll();
                     this.renderImageList();
                     this.updateNextButton();
-                    if (this.debugLog) {
-                        this.debugLog.innerHTML = '';
-                    }
                 });
                 this.downloadAllBtn.addEventListener('click', () => {
                     this.downloadAllImages();
@@ -1765,16 +1390,6 @@
             showProcessingSection() {
                 this.uploadSection.style.display = 'none';
                 this.processingSection.style.display = 'block';
-                
-                // Clear debug log before starting new processing session
-                if (this.debugLog) {
-                    this.debugLog.innerHTML = '';
-                }
-                
-                // Show debug panel
-                if (this.debugPanel) {
-                    this.debugPanel.style.display = 'block';
-                }
                 
                 this.renderProcessingList();
                 this.processImages();
