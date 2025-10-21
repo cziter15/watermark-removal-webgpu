@@ -41,9 +41,9 @@ jobs:
           mkdir -p dist
           cp -r web/. dist/
           # Replace model.onnx.data with release URL
-          find dist -name "*.html" -type f -exec sed -i 's#model\.onnx\.data#https://github.com/cziter15/watermark-removal-webgpu/releases/download/v4/model.onnx.data#g' {} +
+          find dist -name "*.html" -type f -exec sed -i 's#model\.onnx\.data#https://github.com/cziter15/watermark-removal-webgpu/raw/refs/heads/main/web/model.onnx.data#g' {} +
           # Replace model.onnx with release URL
-          find dist -name "*.html" -type f -exec sed -i 's#model\.onnx#https://github.com/cziter15/watermark-removal-webgpu/releases/download/v4/model.onnx#g' {} +
+          find dist -name "*.html" -type f -exec sed -i 's#model\.onnx#https://github.com/cziter15/watermark-removal-webgpu/raw/refs/heads/main/web/model.onnx#g' {} +
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
