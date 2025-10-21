@@ -44,7 +44,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             padding: 30px;
-            max-width: 900px;
+            max-width: 1200px;
             width: 100%;
             border: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 20px;
@@ -200,6 +200,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         .image-name {
@@ -207,7 +209,8 @@
             font-size: 16px;
             color: var(--text-primary);
             word-break: break-all;
-            max-width: 70%;
+            flex: 1;
+            min-width: 200px;
         }
         
         .image-size {
@@ -421,6 +424,7 @@
             display: flex;
             justify-content: space-between;
             margin-top: 30px;
+            gap: 10px;
         }
         
         /* Error Message */
@@ -441,7 +445,7 @@
             padding: 20px;
             margin-bottom: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            max-height: 800px;
+            max-height: 600px;
             overflow-y: auto;
         }
 
@@ -449,17 +453,28 @@
             margin-bottom: 15px;
             color: var(--text-primary);
             font-size: 16px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            position: sticky;
+            top: 0;
+            background-color: var(--card-color);
+            padding: 10px 0;
+            z-index: 10;
         }
 
         .debug-log {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
+        }
+
+        .debug-image-section {
+            border: 2px solid rgba(96, 165, 250, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            background-color: rgba(15, 23, 42, 0.5);
         }
 
         .debug-image-header {
-            background-color: rgba(15, 23, 42, 0.7);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 15px;
@@ -467,60 +482,77 @@
         }
 
         .debug-image-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             color: var(--info-color);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .debug-image-title::before {
+            content: "🖼️";
+            font-size: 24px;
         }
 
         .debug-image-info {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 10px;
-            margin-bottom: 10px;
         }
 
         .debug-info-item {
             font-size: 12px;
             color: var(--text-secondary);
+            background-color: rgba(15, 23, 42, 0.5);
+            padding: 6px 10px;
+            border-radius: 5px;
         }
 
         .debug-info-item strong {
             color: var(--text-primary);
+            display: inline-block;
+            min-width: 60px;
         }
 
         .debug-tiles-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 15px;
         }
 
         .debug-tile {
-            background-color: rgba(15, 23, 42, 0.5);
+            background-color: var(--surface-color);
             border-radius: 8px;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
+            overflow: hidden;
         }
 
         .debug-tile:hover {
             transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+            border-color: var(--primary-color);
         }
 
         .debug-tile-header {
             font-size: 12px;
             font-weight: bold;
             color: var(--text-primary);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             text-align: center;
+            padding: 6px;
+            background-color: rgba(99, 102, 241, 0.1);
+            border-radius: 5px;
         }
 
         .debug-tile-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 8px;
+            gap: 10px;
+            margin-bottom: 10px;
         }
 
         .debug-image-container {
@@ -530,8 +562,9 @@
         .debug-image-label {
             font-size: 10px;
             font-weight: bold;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .debug-image-before .debug-image-label {
@@ -539,40 +572,44 @@
         }
 
         .debug-image-after .debug-image-label {
-            color: var(--error-color);
+            color: var(--secondary-color);
         }
 
         .debug-image {
             width: 100%;
-            height: 80px;
+            height: 90px;
             object-fit: cover;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.2s ease;
+            background-color: var(--background-color);
         }
 
         .debug-image:hover {
             transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
 
         .debug-image-before .debug-image {
-            border: 1px solid var(--accent-color);
+            border: 2px solid var(--accent-color);
         }
 
         .debug-image-after .debug-image {
-            border: 1px solid var(--error-color);
+            border: 2px solid var(--secondary-color);
         }
 
         .debug-tile-info {
             font-size: 10px;
             color: var(--text-secondary);
             background-color: rgba(15, 23, 42, 0.7);
-            padding: 6px;
-            border-radius: 4px;
+            padding: 8px;
+            border-radius: 5px;
         }
 
         .debug-tile-info div {
-            margin-bottom: 3px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
         }
 
         .debug-tile-info div:last-child {
@@ -585,7 +622,7 @@
 
         /* Scrollbar styling */
         .debug-panel::-webkit-scrollbar {
-            width: 8px;
+            width: 10px;
         }
 
         .debug-panel::-webkit-scrollbar-track {
@@ -594,12 +631,12 @@
         }
 
         .debug-panel::-webkit-scrollbar-thumb {
-            background: rgba(99, 102, 241, 0.3);
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             border-radius: 10px;
         }
 
         .debug-panel::-webkit-scrollbar-thumb:hover {
-            background: rgba(99, 102, 241, 0.5);
+            background: linear-gradient(180deg, var(--secondary-color) 0%, var(--primary-color) 100%);
         }
         
         /* Copyright */
@@ -654,7 +691,11 @@
             }
             
             .debug-tiles-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            }
+            
+            .debug-panel {
+                max-height: 400px;
             }
         }
         
@@ -682,10 +723,13 @@
             
             .navigation {
                 flex-direction: column;
-                gap: 10px;
             }
             
             .debug-tiles-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .debug-tile-content {
                 grid-template-columns: 1fr;
             }
         }
@@ -713,7 +757,7 @@
         <!-- Upload Section -->
         <div class="upload-section" id="uploadSection">
             <div class="settings-panel">
-                <h3>Processing Settings</h3>
+                <h3>⚙️ Processing Settings</h3>
                 <div class="setting-item">
                     <label for="tileSize">Tile Size (for large images):</label>
                     <input type="number" id="tileSize" value="256" min="64" max="1024" step="64">
@@ -729,7 +773,7 @@
             </div>
             
             <div class="debug-panel" id="debugPanel" style="display: none;">
-                <h3>Debug Information</h3>
+                <h3>🔍 Debug Information</h3>
                 <div class="debug-log" id="debugLog"></div>
             </div>
             
@@ -777,11 +821,6 @@
         // Debug logging function
         function debugLog(message) {
             console.log(message);
-            const debugLog = document.getElementById('debugLog');
-            if (debugLog) {
-                debugLog.textContent += message + '\n';
-                debugLog.scrollTop = debugLog.scrollHeight;
-            }
         }
         
         // Check for WebGPU support
@@ -866,6 +905,7 @@
                 this.modelPath = MODEL_URL;
                 this.modelDataPath = MODEL_DATA_URL;
                 this.executionProvider = null;
+                this.currentImageDebugId = null;
             }
             
             async loadModel(modelPath, modelDataPath) {
@@ -924,20 +964,20 @@
                 }
             }
             
-            async processImage(image, progressCallback) {
+            async processImage(image, progressCallback, imageName = "Unknown") {
                 if (!this.modelLoaded) {
                     throw new Error('Model not loaded');
                 }
                 const originalWidth = image.width;
                 const originalHeight = image.height;
-                debugLog(`Processing image: ${originalWidth}x${originalHeight}`);
+                debugLog(`Processing image: ${imageName} (${originalWidth}x${originalHeight})`);
                 if (originalWidth < 64 || originalHeight < 64) {
                     throw new Error('Image is too small. Minimum size is 64x64 pixels.');
                 }
-                return await this.processTiled(image, progressCallback);
+                return await this.processTiled(image, progressCallback, imageName);
             }
             
-            async processTiled(image, progressCallback) {
+            async processTiled(image, progressCallback, imageName) {
                 const originalWidth = image.width;
                 const originalHeight = image.height;
                 const outputCanvas = document.createElement('canvas');
@@ -964,30 +1004,20 @@
                 }
                 debugLog(`Processing ${tiles.length} tiles (size=${this.tileSize}, overlap=${this.overlap})`);
                 
-                // Create a canvas to draw the tile grid
-                const tileGridCanvas = document.createElement('canvas');
-                tileGridCanvas.width = originalWidth;
-                tileGridCanvas.height = originalHeight;
-                const tileGridCtx = tileGridCanvas.getContext('2d');
-                
-                // Draw the original image
-                tileGridCtx.drawImage(image, 0, 0);
-                
-                // Draw tile grid
-                tileGridCtx.strokeStyle = '#60a5fa';
-                tileGridCtx.lineWidth = 1;
-                for (const tile of tiles) {
-                    tileGridCtx.strokeRect(tile.x, tile.y, tile.width, tile.height);
-                }
-                
-                // Add debug header
-                const debugElement = document.getElementById('debugLog');
-                if (debugElement) {
+                // Create debug section for this image
+                const debugLog = document.getElementById('debugLog');
+                if (debugLog) {
+                    const imageSection = document.createElement('div');
+                    imageSection.className = 'debug-image-section';
+                    this.currentImageDebugId = 'debug-section-' + Date.now();
+                    imageSection.id = this.currentImageDebugId;
+                    
                     const imageHeader = document.createElement('div');
                     imageHeader.className = 'debug-image-header';
                     imageHeader.innerHTML = `
-                        <div class="debug-image-title">Image Processing: ${originalWidth}x${originalHeight}</div>
+                        <div class="debug-image-title">${imageName}</div>
                         <div class="debug-image-info">
+                            <div class="debug-info-item"><strong>Dimensions:</strong> ${originalWidth}x${originalHeight}px</div>
                             <div class="debug-info-item"><strong>Tile Size:</strong> ${this.tileSize}px</div>
                             <div class="debug-info-item"><strong>Overlap:</strong> ${this.overlap}px</div>
                             <div class="debug-info-item"><strong>Total Tiles:</strong> ${tiles.length}</div>
@@ -995,12 +1025,20 @@
                             <div class="debug-info-item"><strong>Provider:</strong> ${this.executionProvider.toUpperCase()}</div>
                         </div>
                     `;
-                    debugElement.appendChild(imageHeader);
+                    imageSection.appendChild(imageHeader);
                     
                     // Create tiles grid container
                     const tilesGrid = document.createElement('div');
                     tilesGrid.className = 'debug-tiles-grid';
-                    debugElement.appendChild(tilesGrid);
+                    tilesGrid.id = this.currentImageDebugId + '-tiles';
+                    imageSection.appendChild(tilesGrid);
+                    
+                    debugLog.appendChild(imageSection);
+                    
+                    // Scroll to the new section
+                    setTimeout(() => {
+                        imageSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
                 }
                 
                 // Process each tile
@@ -1011,7 +1049,7 @@
                         const processedTile = await this.processTile(image, tile, i);
                         this.blendTile(outputCtx, processedTile, tile, originalWidth, originalHeight);
                     } catch (error) {
-                        debugLog(`Error processing tile: ${error.message}`);
+                        debugLog(`Error processing tile ${i}: ${error.message}`);
                     }
                     const progress = Math.round(((i + 1) / tiles.length) * 100);
                     if (progressCallback) {
@@ -1032,9 +1070,8 @@
                                 0, 0, tile.width, tile.height);
 
                 const beforeBase64 = tileCanvas.toDataURL('image/png');
-                const tileName = `Tile (${tile.x}, ${tile.y})`;
 
-                // Resize to model input size (256x256)
+                // Resize to model input size
                 const inputCanvas = document.createElement('canvas');
                 inputCanvas.width = this.inputSize;
                 inputCanvas.height = this.inputSize;
@@ -1077,35 +1114,34 @@
                 const afterBase64 = outputTileCanvas.toDataURL('image/png');
 
                 // Display images in debug panel
-                const tilesGrid = document.querySelector('.debug-tiles-grid');
+                const tilesGrid = document.getElementById(this.currentImageDebugId + '-tiles');
                 if (tilesGrid) {
                     const tileDebug = document.createElement('div');
                     tileDebug.className = 'debug-tile';
                     
                     // Get tensor shapes for display
-                    const inputShape = JSON.stringify(inputTensor.dims);
-                    const outputShape = JSON.stringify(outputTensor.dims);
+                    const inputShape = inputTensor.dims.join('×');
+                    const outputShape = outputTensor.dims.join('×');
                     
                     tileDebug.innerHTML = `
-                        <div class="debug-tile-header">${tileName}</div>
+                        <div class="debug-tile-header">Tile #${index + 1} - (${tile.x}, ${tile.y})</div>
                         <div class="debug-tile-content">
                             <div class="debug-image-container debug-image-before">
-                                <div class="debug-image-label">BEFORE</div>
-                                <img class="debug-image" src="${beforeBase64}" onclick="window.open('${beforeBase64}', '_blank')">
+                                <div class="debug-image-label">Before</div>
+                                <img class="debug-image" src="${beforeBase64}" alt="Before" title="Click to open in new tab" onclick="window.open('${beforeBase64}', '_blank')">
                             </div>
                             <div class="debug-image-container debug-image-after">
-                                <div class="debug-image-label">AFTER</div>
-                                <img class="debug-image" src="${afterBase64}" onclick="window.open('${afterBase64}', '_blank')">
+                                <div class="debug-image-label">After</div>
+                                <img class="debug-image" src="${afterBase64}" alt="After" title="Click to open in new tab" onclick="window.open('${afterBase64}', '_blank')">
                             </div>
                         </div>
                         <div class="debug-tile-info">
-                            <div><strong>Size:</strong> ${tile.width}x${tile.height}</div>
-                            <div><strong>Input:</strong> ${inputShape}</div>
-                            <div><strong>Output:</strong> ${outputShape}</div>
+                            <div><strong>Size:</strong> <span>${tile.width}×${tile.height}</span></div>
+                            <div><strong>Input:</strong> <span>${inputShape}</span></div>
+                            <div><strong>Output:</strong> <span>${outputShape}</span></div>
                         </div>
                     `;
                     tilesGrid.appendChild(tileDebug);
-                    tilesGrid.scrollTop = tilesGrid.scrollHeight;
                 }
 
                 return outputTileCanvas;
@@ -1149,24 +1185,19 @@
             
             imageDataToTensor(imageData) {
                 const { width, height, data } = imageData;
-                // 3 channels only: RGB (no alpha)
                 const tensorData = new Float32Array(3 * width * height);
 
-                // Convert RGBA to RGB, normalize to [0, 1]
-                // Format: [1, 3, H, W]
                 for (let i = 0; i < height; i++) {
                     for (let j = 0; j < width; j++) {
                         const pixelIndex = i * width + j;
-                        const dataIndex = pixelIndex * 4; // RGBA has 4 values per pixel
+                        const dataIndex = pixelIndex * 4;
 
-                        // Extract RGB only (skip alpha at dataIndex + 3)
-                        tensorData[pixelIndex] = data[dataIndex] / 255.0;                    // R
-                        tensorData[width * height + pixelIndex] = data[dataIndex + 1] / 255.0; // G
-                        tensorData[width * height * 2 + pixelIndex] = data[dataIndex + 2] / 255.0; // B
+                        tensorData[pixelIndex] = data[dataIndex] / 255.0;
+                        tensorData[width * height + pixelIndex] = data[dataIndex + 1] / 255.0;
+                        tensorData[width * height * 2 + pixelIndex] = data[dataIndex + 2] / 255.0;
                     }
                 }
 
-                debugLog(`Input tensor: [1, 3, ${height}, ${width}]`);
                 return new ort.Tensor('float32', tensorData, [1, 3, height, width]);
             }
 
@@ -1179,38 +1210,31 @@
                 
                 const [batch, channels, height, width] = dims;
                 
-                debugLog(`Output tensor: [${batch}, ${channels}, ${height}, ${width}]`);
-                
                 if (batch !== 1 || channels !== 3) {
                     throw new Error(`Unexpected tensor shape: [${batch}, ${channels}, ${height}, ${width}]. Expected [1, 3, H, W]`);
                 }
                 
                 const data = tensor.data;
-                // Create RGBA image data for canvas
                 const imageData = new ImageData(width, height);
                 const pixelData = imageData.data;
 
-                // Convert [1, 3, H, W] to RGBA (add alpha channel)
                 for (let i = 0; i < height; i++) {
                     for (let j = 0; j < width; j++) {
                         const pixelIndex = i * width + j;
-                        const dataIndex = pixelIndex * 4; // RGBA has 4 values per pixel
+                        const dataIndex = pixelIndex * 4;
 
-                        // Get RGB values from tensor (3 channels)
-                        let r = data[pixelIndex];                              // R channel
-                        let g = data[width * height + pixelIndex];             // G channel
-                        let b = data[width * height * 2 + pixelIndex];         // B channel
+                        let r = data[pixelIndex];
+                        let g = data[width * height + pixelIndex];
+                        let b = data[width * height * 2 + pixelIndex];
 
-                        // Clamp to [0, 1] range
                         r = Math.max(0, Math.min(1, r));
                         g = Math.max(0, Math.min(1, g));
                         b = Math.max(0, Math.min(1, b));
 
-                        // Convert to [0, 255] and set RGBA
-                        pixelData[dataIndex] = Math.round(r * 255);     // R
-                        pixelData[dataIndex + 1] = Math.round(g * 255); // G
-                        pixelData[dataIndex + 2] = Math.round(b * 255); // B
-                        pixelData[dataIndex + 3] = 255;                 // A (always opaque)
+                        pixelData[dataIndex] = Math.round(r * 255);
+                        pixelData[dataIndex + 1] = Math.round(g * 255);
+                        pixelData[dataIndex + 2] = Math.round(b * 255);
+                        pixelData[dataIndex + 3] = 255;
                     }
                 }
 
@@ -1386,9 +1410,6 @@
             }
             
             async handleFiles(files) {
-                if (this.debugLog) {
-                    this.debugLog.innerHTML = '';
-                }
                 for (let i = 0; i < files.length; i++) {
                     try {
                         const image = await this.imageManager.addImage(files[i]);
@@ -1513,6 +1534,17 @@
             showProcessingSection() {
                 this.uploadSection.style.display = 'none';
                 this.processingSection.style.display = 'block';
+                
+                // Clear debug log before starting new processing session
+                if (this.debugLog) {
+                    this.debugLog.innerHTML = '';
+                }
+                
+                // Show debug panel
+                if (this.debugPanel) {
+                    this.debugPanel.style.display = 'block';
+                }
+                
                 this.renderProcessingList();
                 this.processImages();
             }
@@ -1523,11 +1555,6 @@
                 this.updateProcessingStats(completedCount, images.length);
                 for (const image of images) {
                     try {
-                        // Clear debug panel for new image
-                        if (this.debugLog) {
-                            this.debugLog.innerHTML = '';
-                        }
-                        
                         this.imageManager.updateImageStatus(image.id, 'processing');
                         this.renderProcessingList();
                         const progressBar = document.getElementById(`progress-${image.id}`);
@@ -1543,7 +1570,7 @@
                             if (percentElement) {
                                 percentElement.textContent = `${percent}%`;
                             }
-                        });
+                        }, image.name);
                         this.imageManager.addProcessedImage(image.id, processedCanvas);
                         this.imageManager.updateImageStatus(image.id, 'completed');
                         completedCount++;
@@ -1571,16 +1598,18 @@
                 if (processedImages.length === 0) {
                     return;
                 }
-                processedImages.forEach(image => {
-                    image.canvas.toBlob((blob) => {
-                        const url = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        const baseName = image.name.split('.').slice(0, -1).join('.');
-                        link.download = `${baseName}_watermark_removed.png`;
-                        link.href = url;
-                        link.click();
-                        URL.revokeObjectURL(url);
-                    }, 'image/png', 1.0);
+                processedImages.forEach((image, index) => {
+                    setTimeout(() => {
+                        image.canvas.toBlob((blob) => {
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            const baseName = image.name.split('.').slice(0, -1).join('.');
+                            link.download = `${baseName}_watermark_removed.png`;
+                            link.href = url;
+                            link.click();
+                            URL.revokeObjectURL(url);
+                        }, 'image/png', 1.0);
+                    }, index * 100);
                 });
             }
             
@@ -1593,13 +1622,13 @@
             getStatusText(status) {
                 switch (status) {
                     case 'pending':
-                        return 'Pending';
+                        return '⏳ Pending';
                     case 'processing':
-                        return 'Processing...';
+                        return '⚙️ Processing...';
                     case 'completed':
-                        return 'Completed';
+                        return '✅ Completed';
                     case 'error':
-                        return 'Error';
+                        return '❌ Error';
                     default:
                         return status;
                 }
@@ -1613,7 +1642,6 @@
             remover = new ONNXWatermarkRemover();
             imageManager = new ImageManager();
             uiController = new UIController(remover, imageManager);
-            document.getElementById('debugPanel').style.display = 'block';
             const success = await remover.loadModel(MODEL_URL, MODEL_DATA_URL);
             if (success) {
                 document.getElementById('loadingScreen').style.display = 'none';
@@ -1622,11 +1650,11 @@
                 const loadingScreen = document.getElementById('loadingScreen');
                 loadingScreen.innerHTML = `
                     <div class="error-message">
-                        <h4>Failed to load model</h4>
+                        <h4>❌ Failed to load model</h4>
                         <p>Please check that the model files (model.onnx and model.onnx.data) are in the correct location.</p>
                         <p>Also ensure your browser supports WebAssembly.</p>
                     </div>
-                    <button class="btn" onclick="location.reload()">Retry</button>
+                    <button class="btn" onclick="location.reload()">🔄 Retry</button>
                 `;
             }
         }
