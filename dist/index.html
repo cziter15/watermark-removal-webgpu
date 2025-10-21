@@ -121,13 +121,13 @@
         .upload-area {
             border: 3px dashed var(--primary-color);
             border-radius: 15px;
-            padding: 40px;
+            padding: 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-bottom: 30px;
             background-color: rgba(0, 212, 255, 0.05);
-            min-height: 400px;
+            min-height: 250px;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -635,8 +635,8 @@
             }
             
             .upload-area {
-                padding: 30px 20px;
-                min-height: 300px;
+                padding: 15px 10px;
+                min-height: 200px;
             }
             
             .image-preview {
@@ -678,8 +678,8 @@
             }
             
             .upload-area {
-                padding: 20px 15px;
-                min-height: 250px;
+                padding: 10px 5px;
+                min-height: 150px;
             }
             
             .btn {
@@ -1351,7 +1351,7 @@
                         const img = new Image();
                         img.onload = () => {
                             const imageObj = {
-                                id: Date.now() + Math.random(),
+                                id: Date.now().toString() + Math.random().toString(),
                                 file: file,
                                 name: file.name,
                                 size: file.size,
@@ -1506,13 +1506,14 @@
                 // Close button clicks - improved to prevent bubbling and ensure click registration
                 this.imageList.addEventListener('click', (e) => {
                     if (e.target.classList.contains('close-btn')) {
+                        e.preventDefault();
                         e.stopPropagation();
                         const thumbnail = e.target.closest('.thumbnail');
                         if (thumbnail) {
                             this.removeImage(thumbnail.dataset.id);
                         }
                     }
-                }, true); // Use capture phase for better reliability
+                }); // Removed capture phase for better click handling
 
                 // Modal close on escape
                 document.addEventListener('keydown', (e) => {
