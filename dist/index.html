@@ -906,9 +906,9 @@
 
                 const afterBase64 = outputTileCanvas.toDataURL('image/png');
 
-                // Log with clickable images
-                const debugLog = document.getElementById('debugLog');
-                if (debugLog) {
+                // Log with clickable images (renamed variable to avoid shadowing)
+                const debugElement = document.getElementById('debugLog');
+                if (debugElement) {
                     const tileDebug = document.createElement('div');
                     tileDebug.style.marginBottom = '15px';
                     tileDebug.style.borderBottom = '1px solid #444';
@@ -926,9 +926,11 @@
                             </div>
                         </div>
                     `;
-                    debugLog.appendChild(tileDebug);
-                    debugLog.scrollTop = debugLog.scrollHeight;
+                    debugElement.appendChild(tileDebug);
+                    debugElement.scrollTop = debugElement.scrollHeight;
                 }
+
+                debugLog(`${tileName} Complete!`);
 
                 return outputTileCanvas;
             }
