@@ -1024,195 +1024,155 @@
             async processTiled(image, progressCallback) {
                 const originalWidth = image.width;
                 const originalHeight = image.height;
-
+            
                 // Create output canvas
                 const outputCanvas = document.createElement('canvas');
                 outputCanvas.width = originalWidth;
                 outputCanvas.height = originalHeight;
                 const outputCtx = outputCanvas.getContext('2d', { willReadFrequently: true });
-
-                // Fill with black background first
+            
+                // Initialize with black background
                 outputCtx.fillStyle = 'black';
                 outputCtx.fillRect(0, 0, originalWidth, originalHeight);
-
-                // Create weight maps for blending
-                const weightCanvas = document.createElement('canvas');
-                weightCanvas.width = originalWidth;
-                weightCanvas.height = originalHeight;
-                const weightCtx = weightCanvas.getContext('2d', { willReadFrequently: true });
-                const weightData = weightCtx.createImageData(originalWidth, originalHeight);
-                
-                // Initialize weight data to zeros
-                for (let i = 0; i < weightData.data.length; i += 4) {
-                    weightData.data[i] = 0;     // R
-                    weightData.data[i + 1] = 0; // G
-                    weightData.data[i + 2] = 0; // B
-                    weightData.data[i + 3] = 255; // A
-                }
-                
+            
+                // Weight map to track blend contributions
+                const weightMap = new Float32Array(originalWidth * originalHeight);
+            
                 // Calculate tile step with overlap
                 const step = this.tileSize - this.overlap;
-                let tileCount = 0;
-                let tilesProcessed = 0;
-
-                // Count total tiles
+                const tiles = [];
+            
+                // Collect all tiles to process
                 for (let y = 0; y < originalHeight; y += step) {
                     for (let x = 0; x < originalWidth; x += step) {
-                        tileCount++;
-                    }
-                }
-                
-                debugLog(`Processing ${tileCount} tiles`);
-
-                // Process each tile
-                for (let y = 0; y < originalHeight; y += step) {
-                    for (let x = 0; x < originalWidth; x += step) {
-                        // Add small delay to keep UI responsive
-                        await new Promise(resolve => setTimeout(resolve, 10));
-                        
-                        // Calculate tile dimensions (should be tileSize x tileSize, but might be less at edges)
                         const tileWidth = Math.min(this.tileSize, originalWidth - x);
                         const tileHeight = Math.min(this.tileSize, originalHeight - y);
-
-                        debugLog(`Processing tile at (${x}, ${y}), size: ${tileWidth}x${tileHeight}`);
-
+                        tiles.push({ x, y, tileWidth, tileHeight });
+                    }
+                }
+                
+                debugLog(`Processing ${tiles.length} tiles (tileSize=${this.tileSize}, overlap=${this.overlap})`);
+            
+                // Process each tile
+                for (let tileIdx = 0; tileIdx < tiles.length; tileIdx++) {
+                    const tile = tiles[tileIdx];
+                    
+                    // Keep UI responsive
+                    await new Promise(resolve => setTimeout(resolve, 5));
+                    
+                    debugLog(`Processing tile ${tileIdx + 1}/${tiles.length} at (${tile.x}, ${tile.y}), size: ${tile.tileWidth}x${tile.tileHeight}`);
+            
+                    try {
                         // Extract tile from original image
                         const tileCanvas = document.createElement('canvas');
-                        tileCanvas.width = this.tileSize; // Always use model input size
-                        tileCanvas.height = this.tileSize;
+                        tileCanvas.width = tile.tileWidth;
+                        tileCanvas.height = tile.tileHeight;
                         const tileCtx = tileCanvas.getContext('2d', { willReadFrequently: true });
+                        tileCtx.drawImage(image, tile.x, tile.y, tile.tileWidth, tile.tileHeight, 0, 0, tile.tileWidth, tile.tileHeight);
                         
-                        // Fill with black for padding (if tile is at edge and smaller than tileSize)
-                        tileCtx.fillStyle = 'black';
-                        tileCtx.fillRect(0, 0, this.tileSize, this.tileSize);
+                        // Process the tile through the model
+                        const processedTileCanvas = await this.processTileData(tileCanvas, tile.tileWidth, tile.tileHeight);
                         
-                        // Draw the tile at (0,0) on the tileCanvas (no padding needed because we filled with black)
-                        tileCtx.drawImage(image, x, y, tileWidth, tileHeight, 0, 0, tileWidth, tileHeight);
+                        // Blend the processed tile into output
+                        this.blendTileIntoOutput(outputCtx, processedTileCanvas, tile.x, tile.y, tile.tileWidth, tile.tileHeight, originalWidth, originalHeight, weightMap);
                         
-                        // Process the tile (which is now tileSize x tileSize, with padding if necessary)
-                        const processedTileCanvas = await this.processTile(tileCanvas);
-                        
-                        // Create weight map for this tile (only for the actual tile area, not the padding)
-                        const tileWeightCanvas = document.createElement('canvas');
-                        tileWeightCanvas.width = tileWidth;
-                        tileWeightCanvas.height = tileHeight;
-                        const tileWeightCtx = tileWeightCanvas.getContext('2d', { willReadFrequently: true });
-                        const tileWeightData = tileWeightCtx.createImageData(tileWidth, tileHeight);
-                        
-                        // Calculate weights based on distance from edges
-                        for (let ty = 0; ty < tileHeight; ty++) {
-                            for (let tx = 0; tx < tileWidth; tx++) {
-                                const idx = (ty * tileWidth + tx) * 4;
-                                
-                                // Calculate distance from edges
-                                let distX = Math.min(tx, tileWidth - tx - 1);
-                                let distY = Math.min(ty, tileHeight - ty - 1);
-                                
-                                // If we're at the edge of the image, use full weight
-                                if (x === 0 || x + tileWidth === originalWidth) {
-                                    distX = this.overlap;
-                                }
-                                if (y === 0 || y + tileHeight === originalHeight) {
-                                    distY = this.overlap;
-                                }
-                                
-                                // Calculate weight (1 at center, 0 at edges)
-                                const weightX = Math.min(1, distX / this.overlap);
-                                const weightY = Math.min(1, distY / this.overlap);
-                                const weight = weightX * weightY;
-                                
-                                tileWeightData.data[idx] = weight * 255;
-                                tileWeightData.data[idx + 1] = weight * 255;
-                                tileWeightData.data[idx + 2] = weight * 255;
-                                tileWeightData.data[idx + 3] = 255;
-                            }
-                        }
-                        
-                        // Get the processed tile data (only the actual tile area, not the padding)
-                        const processedTileData = processedTileCanvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, tileWidth, tileHeight);
-                        
-                        // Blend the tile with the output canvas
-                        const outputData = outputCtx.getImageData(x, y, tileWidth, tileHeight);
-                        
-                        for (let i = 0; i < outputData.data.length; i += 4) {
-                            const weight = tileWeightData.data[i] / 255;
-                            const currentWeight = weightData.data[(y * originalWidth + x) * 4 + (i / 4) % tileWidth + Math.floor((i / 4) / tileWidth) * originalWidth] / 255;
-                            
-                            if (currentWeight === 0) {
-                                // First tile to contribute to this pixel
-                                outputData.data[i] = processedTileData.data[i];
-                                outputData.data[i + 1] = processedTileData.data[i + 1];
-                                outputData.data[i + 2] = processedTileData.data[i + 2];
-                                weightData.data[(y * originalWidth + x) * 4 + (i / 4) % tileWidth + Math.floor((i / 4) / tileWidth) * originalWidth] = weight * 255;
-                            } else {
-                                // Blend with existing data
-                                const blendFactor = weight / (currentWeight + weight);
-                                outputData.data[i] = outputData.data[i] * (1 - blendFactor) + processedTileData.data[i] * blendFactor;
-                                outputData.data[i + 1] = outputData.data[i + 1] * (1 - blendFactor) + processedTileData.data[i + 1] * blendFactor;
-                                outputData.data[i + 2] = outputData.data[i + 2] * (1 - blendFactor) + processedTileData.data[i + 2] * blendFactor;
-                                weightData.data[(y * originalWidth + x) * 4 + (i / 4) % tileWidth + Math.floor((i / 4) / tileWidth) * originalWidth] = (currentWeight + weight) * 255;
-                            }
-                        }
-                        
-                        // Put the blended data back
-                        outputCtx.putImageData(outputData, x, y);
-                        
-                        tilesProcessed++;
-                        const progress = Math.round((tilesProcessed / tileCount) * 100);
-                        if (progressCallback) progressCallback(progress, `Processing tile ${tilesProcessed}/${tileCount} (${this.executionProvider.toUpperCase()})...`);
+                    } catch (error) {
+                        debugLog(`Error processing tile: ${error.message}`);
                     }
+            
+                    const progress = Math.round(((tileIdx + 1) / tiles.length) * 100);
+                    if (progressCallback) progressCallback(progress, `Processing tile ${tileIdx + 1}/${tiles.length}...`);
                 }
-
-                // Debug: Check if final canvas has content
-                const finalCheckData = outputCtx.getImageData(0, 0, 1, 1).data;
-                debugLog(`Final canvas sample pixel: [${finalCheckData[0]}, ${finalCheckData[1]}, ${finalCheckData[2]}, ${finalCheckData[3]}]`);
-
+            
                 return outputCanvas;
             }
-
-            async processTile(tileCanvas) {
-                // The tileCanvas is already at the model input size (tileSize x tileSize)
-                const tileCtx = tileCanvas.getContext('2d', { willReadFrequently: true });
-                const imageData = tileCtx.getImageData(0, 0, this.tileSize, this.tileSize);
+            
+            async processTileData(tileCanvas, tileWidth, tileHeight) {
+                // Resize tile to model input size
+                const resizedCanvas = document.createElement('canvas');
+                resizedCanvas.width = this.inputSize;
+                resizedCanvas.height = this.inputSize;
+                const resizedCtx = resizedCanvas.getContext('2d');
                 
-                // Convert to tensor and run inference
+                resizedCtx.imageSmoothingEnabled = true;
+                resizedCtx.imageSmoothingQuality = 'high';
+                resizedCtx.drawImage(tileCanvas, 0, 0, tileWidth, tileHeight, 0, 0, this.inputSize, this.inputSize);
+                
+                const imageData = resizedCtx.getImageData(0, 0, this.inputSize, this.inputSize);
+                
+                // Run inference
                 const inputTensor = this.imageDataToTensor(imageData);
-                debugLog(`Tile input tensor shape: [${inputTensor.dims.join(', ')}]`);
-                
                 const feeds = {};
-                const inputName = this.session.inputNames[0]; // Use the first input name
-                feeds[inputName] = inputTensor;
+                feeds[this.session.inputNames[0]] = inputTensor;
                 const results = await this.session.run(feeds);
                 
-                // Get output tensor
-                const outputName = this.session.outputNames[0]; // Use the first output name
-                const outputTensor = results[outputName];
-                debugLog(`Tile output tensor shape: [${outputTensor.dims.join(', ')}]`);
-                
-                // Log some sample values from the output tensor
-                if (this.debugMode && outputTensor.data && outputTensor.data.length > 0) {
-                    const sampleSize = Math.min(10, outputTensor.data.length);
-                    let sampleValues = [];
-                    for (let i = 0; i < sampleSize; i++) {
-                        sampleValues.push(outputTensor.data[i].toFixed(4));
-                    }
-                    debugLog(`Tile sample output values: [${sampleValues.join(', ')}]`);
-                }
-                
+                // Get output
+                const outputTensor = results[this.session.outputNames[0]];
                 const outputImageData = this.tensorToImageData(outputTensor);
                 
-                // Create output canvas
+                // Resize back to original tile size
                 const outputCanvas = document.createElement('canvas');
-                outputCanvas.width = this.tileSize;
-                outputCanvas.height = this.tileSize;
+                outputCanvas.width = tileWidth;
+                outputCanvas.height = tileHeight;
                 const outputCtx = outputCanvas.getContext('2d');
-                outputCtx.putImageData(outputImageData, 0, 0);
                 
-                // Debug: Check if tile canvas has content
-                const tileCheckData = outputCtx.getImageData(0, 0, 1, 1).data;
-                debugLog(`Tile canvas sample pixel: [${tileCheckData[0]}, ${tileCheckData[1]}, ${tileCheckData[2]}, ${tileCheckData[3]}]`);
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = this.inputSize;
+                tempCanvas.height = this.inputSize;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.putImageData(outputImageData, 0, 0);
+                
+                outputCtx.imageSmoothingEnabled = true;
+                outputCtx.imageSmoothingQuality = 'high';
+                outputCtx.drawImage(tempCanvas, 0, 0, this.inputSize, this.inputSize, 0, 0, tileWidth, tileHeight);
                 
                 return outputCanvas;
+            }
+            
+            blendTileIntoOutput(outputCtx, tileCanvas, tileX, tileY, tileWidth, tileHeight, canvasWidth, canvasHeight, weightMap) {
+                const tileCtx = tileCanvas.getContext('2d', { willReadFrequently: true });
+                const tileImageData = tileCtx.getImageData(0, 0, tileWidth, tileHeight);
+                const tileData = tileImageData.data;
+                
+                const outputImageData = outputCtx.getImageData(tileX, tileY, tileWidth, tileHeight);
+                const outputData = outputImageData.data;
+                
+                for (let ty = 0; ty < tileHeight; ty++) {
+                    for (let tx = 0; tx < tileWidth; tx++) {
+                        const pixelIdx = (ty * tileWidth + tx) * 4;
+                        const worldIdx = (tileY + ty) * canvasWidth + (tileX + tx);
+                        
+                        // Calculate feather weight (1 in center, 0 at edges with smooth transition)
+                        const distLeft = tx;
+                        const distRight = tileWidth - tx - 1;
+                        const distTop = ty;
+                        const distBottom = tileHeight - ty - 1;
+                        
+                        const minDistX = Math.min(distLeft, distRight);
+                        const minDistY = Math.min(distTop, distBottom);
+                        const minDist = Math.min(minDistX, minDistY);
+                        
+                        let weight = 1.0;
+                        if (this.overlap > 0 && minDist < this.overlap) {
+                            weight = minDist / this.overlap;
+                        }
+                        
+                        // Blend pixel
+                        const currentWeight = weightMap[worldIdx] || 0;
+                        const totalWeight = currentWeight + weight;
+                        const blend = totalWeight > 0 ? weight / totalWeight : 1.0;
+                        
+                        // Linear interpolation
+                        outputData[pixelIdx] = Math.round(outputData[pixelIdx] * (1 - blend) + tileData[pixelIdx] * blend);
+                        outputData[pixelIdx + 1] = Math.round(outputData[pixelIdx + 1] * (1 - blend) + tileData[pixelIdx + 1] * blend);
+                        outputData[pixelIdx + 2] = Math.round(outputData[pixelIdx + 2] * (1 - blend) + tileData[pixelIdx + 2] * blend);
+                        outputData[pixelIdx + 3] = 255;
+                        
+                        weightMap[worldIdx] = Math.min(totalWeight, 1.0);
+                    }
+                }
+                
+                outputCtx.putImageData(outputImageData, tileX, tileY);
             }
 
             imageDataToTensor(imageData) {
