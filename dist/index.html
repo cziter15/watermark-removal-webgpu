@@ -149,16 +149,17 @@
             position: absolute;
             top: 15px;
             right: 15px;
-            font-size: 24px;
+            font-size: 28px;
             color: var(--accent-color);
             cursor: pointer;
             background: rgba(0, 212, 255, 0.1);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
+            line-height: 1;
             transition: all 0.2s ease;
         }
 
@@ -556,15 +557,21 @@
             height: 100%;
             overflow: auto;
             background-color: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .modal-content {
-            margin: auto;
+            margin: 0;
             display: block;
             width: 80%;
             max-width: 1200px;
             max-height: 80%;
             object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
         
         .close {
@@ -575,6 +582,7 @@
             font-size: 40px;
             font-weight: bold;
             cursor: pointer;
+            z-index: 1001;
         }
         
         .close:hover {
@@ -786,7 +794,7 @@
         function openModal(src) {
             const modal = document.getElementById('imageModal');
             const modalImg = document.getElementById('modalImg');
-            modal.style.display = 'block';
+            modal.style.display = 'flex';
             modalImg.src = src;
         }
 
