@@ -517,50 +517,6 @@
             color: var(--text-primary);
         }
         
-        /* Execution Info */
-        .execution-info {
-            background-color: rgba(88, 166, 255, 0.1);
-            border-left: 4px solid var(--info-color);
-            padding: 15px;
-            border-radius: 0 10px 10px 0;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        
-        .execution-info h4 {
-            margin-bottom: 8px;
-            color: var(--info-color);
-        }
-        
-        .execution-info p {
-            margin-bottom: 5px;
-            color: var(--text-primary);
-        }
-        
-        .execution-info .provider-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-right: 5px;
-        }
-        
-        .provider-badge.webgpu {
-            background-color: var(--accent-color);
-            color: white;
-        }
-        
-        .provider-badge.wasm {
-            background-color: var(--warning-color);
-            color: white;
-        }
-        
-        .provider-badge.cpu {
-            background-color: #8b949e;
-            color: white;
-        }
-        
         /* Navigation */
         .navigation {
             display: flex;
@@ -725,10 +681,6 @@
             <div class="loading-bar">
                 <div class="loading-progress"></div>
             </div>
-            <div class="execution-info" id="executionInfo" style="margin-top: 30px; width: 100%;">
-                <h4>Execution Provider Information</h4>
-                <p id="providerStatus">Detecting available execution providers...</p>
-            </div>
         </div>
         
         <!-- Upload Section -->
@@ -770,7 +722,7 @@
             
             <div class="navigation">
                 <button class="btn btn-secondary" id="clearBtn">Clear All</button>
-                <button class="btn" id="nextBtn" disabled>Process Images</button>
+                <button class="btn" id="nextBtn" disabled>Next: Process Images</button>
             </div>
         </div>
         
@@ -797,7 +749,7 @@
     </div>
     
     <!-- Copyright -->
-    <div class="copyright">
+    <div class="copyright" id="copyright">
         © <a href="https://github.com/cziter15" target="_blank" rel="noopener noreferrer">K. STREHLAU</a>
     </div>
 
@@ -841,78 +793,6 @@
         // Define constants for model URLs
         const MODEL_URL = 'model.onnx';
         const MODEL_DATA_URL = 'model.onnx.data';
-        
-        // Check for WebGPU support
-        async function checkWebGPUSupport() {
-            const result = {
-                supported: false,
-                error: null,
-                details: {}
-            };
-            try {
-                if (!navigator.gpu) {
-                    result.error = 'navigator.gpu not found - WebGPU is not supported in this browser';
-                    return result;
-                }
-                const adapter = await navigator.gpu.requestAdapter();
-                if (!adapter) {
-                    result.error = 'No GPU adapter found - your graphics card may not support WebGPU';
-                    return result;
-                }
-                if (typeof adapter.requestAdapterInfo === 'function') {
-                    try {
-                        const adapterInfo = await adapter.requestAdapterInfo();
-                        result.details.adapter = adapterInfo;
-                    } catch (e) {
-                        console.log('Adapter info not available:', e);
-                    }
-                }
-                const device = await adapter.requestDevice();
-                if (!device) {
-                    result.error = 'Failed to create GPU device - your graphics drivers may be outdated';
-                    return result;
-                }
-                result.supported = true;
-                return result;
-            } catch (e) {
-                result.error = `WebGPU error: ${e.message}`;
-                return result;
-            }
-        }
-        
-        // Update execution provider status
-        async function updateExecutionProviderStatus() {
-            const providerStatus = document.getElementById('providerStatus');
-            const webgpuResult = await checkWebGPUSupport();
-            const webglSupported = !!document.createElement('canvas').getContext('webgl') || !!document.createElement('canvas').getContext('experimental-webgl');
-            let statusHTML = 'Available execution providers: ';
-            if (webgpuResult.supported) {
-                statusHTML += '<span class="provider-badge webgpu">WebGPU (Recommended)</span> ';
-            }
-            if (webglSupported) {
-                statusHTML += '<span class="provider-badge wasm">WASM</span> ';
-            }
-            statusHTML += '<span class="provider-badge cpu">CPU</span>';
-            if (webgpuResult.supported) {
-                statusHTML += '<p style="margin-top: 8px; color: #00d4ff; font-weight: bold;">✓ WebGPU is available - this will provide the best performance!</p>';
-                if (webgpuResult.details.adapter) {
-                    const adapter = webgpuResult.details.adapter;
-                    let gpuInfo = '';
-                    if (adapter.vendor) gpuInfo += `Vendor: ${adapter.vendor} `;
-                    if (adapter.device) gpuInfo += `Device: ${adapter.device} `;
-                    if (adapter.description) gpuInfo += `Description: ${adapter.description}`;
-                    if (gpuInfo) {
-                        statusHTML += `<p style="font-size: 12px; color: #8b949e;">GPU: ${gpuInfo}</p>`;
-                    }
-                }
-            } else {
-                statusHTML += '<p style="margin-top: 8px; color: #f0b90b; font-weight: bold;">⚠ WebGPU not available - falling back to WASM/CPU</p>';
-                if (webgpuResult.error) {
-                    statusHTML += `<p style="font-size: 12px; color: #f85149;">Reason: ${webgpuResult.error}</p>`;
-                }
-            }
-            providerStatus.innerHTML = statusHTML;
-        }
         
         class ONNXWatermarkRemover {
             constructor() {
@@ -1205,7 +1085,7 @@
                             blendFactor *= (tile.height - ty) / featherSize;
                         }
                         
-                        // Apply the blend factor
+                        // Apply theblend factor
                         outputData[pixelIdx] = Math.round(outputData[pixelIdx] * (1 - blendFactor) + tileData[pixelIdx] * blendFactor);
                         outputData[pixelIdx + 1] = Math.round(outputData[pixelIdx + 1] * (1 - blendFactor) + tileData[pixelIdx + 1] * blendFactor);
                         outputData[pixelIdx + 2] = Math.round(outputData[pixelIdx + 2] * (1 - blendFactor) + tileData[pixelIdx + 2] * blendFactor);
@@ -1814,7 +1694,6 @@
         // Initialize the application
         let remover, imageManager, uiController;
         async function initialize() {
-            await updateExecutionProviderStatus();
             remover = new ONNXWatermarkRemover();
             imageManager = new ImageManager();
             uiController = new UIController(remover, imageManager);
@@ -1835,6 +1714,9 @@
             if (success) {
                 document.getElementById('loadingScreen').style.display = 'none';
                 document.getElementById('uploadSection').style.display = 'block';
+                // Add provider info to copyright
+                const copyright = document.getElementById('copyright');
+                copyright.innerHTML += ` | Using: ${remover.executionProvider.toUpperCase()}`;
             } else {
                 const loadingScreen = document.getElementById('loadingScreen');
                 loadingScreen.innerHTML = `
