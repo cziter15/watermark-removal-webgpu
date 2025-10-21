@@ -6,54 +6,56 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          lfs: false
+          fetch-depth: 0
 
-      - name: Set up Git user
+      - name: Verify web directory exists
         run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-
-      - name: Create empty gh-pages branch (if missing)
-        run: |
-          if ! git ls-remote --exit-code origin gh-pages; then
-            git checkout --orphan gh-pages
-            git rm -rf .
-            echo "# GitHub Pages branch" > README.md
-            git add README.md
-            git commit -m "Initial empty gh-pages branch"
-            git push origin gh-pages
+          if [ ! -d "web" ]; then
+            echo "Error: web directory not found"
+            exit 1
+          fi
+          if [ -z "$(ls -A web)" ]; then
+            echo "Error: web directory is empty"
+            exit 1
           fi
 
-      - name: Prepare web directory
+      - name: Prepare deployment directory
         run: |
-          cd web
+          mkdir -p dist
+          cp -r web/. dist/
+          find dist -name "*.html" -type f -exec sed -i 's#"model\.onnx"#"https://github.com/cziter15/watermark-removal-webgpu/raw/main/web/model.onnx"#g' {} \;
+          find dist -name "*.html" -type f -exec sed -i 's#"model\.onnx\.data"#"https://github.com/cziter15/watermark-removal-webgpu/raw/main/web/model.onnx.data"#g' {} \;
 
-          # Replace local model URLs with GitHub raw URLs
-          sed -i \
-            's#"model\.onnx"#"https://github.com/cziter15/watermark-removal-webgpu/raw/main/web/model.onnx"#g' index.html
+      - name: Verify URL replacements
+        run: |
+          if grep -r "model\.onnx" dist/ | grep -v "raw/main/web/model.onnx"; then
+            echo "Error: Not all model URLs were replaced"
+            exit 1
+          fi
 
-          sed -i \
-            's#"model\.onnx\.data"#"https://github.com/cziter15/watermark-removal-webgpu/raw/main/web/model.onnx.data"#g' index.html
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
 
-          # Remove large files if they exist locally (safe cleanup)
-          rm -f model.onnx model.onnx.data
-
-          cd ..
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'dist'
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./web
+        id: deployment
+        uses: actions/deploy-pages@v4
