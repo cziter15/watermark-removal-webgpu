@@ -1069,18 +1069,17 @@
                 tileCtx.drawImage(sourceImage, tile.x, tile.y, tile.width, tile.height, 
                                 0, 0, tile.width, tile.height);
 
-                const beforeBase64 = tileCanvas.toDataURL('image/png');
-
-                // Resize to model input size
+                // Use a more sophisticated downsampling method
                 const inputCanvas = document.createElement('canvas');
                 inputCanvas.width = this.inputSize;
                 inputCanvas.height = this.inputSize;
                 const inputCtx = inputCanvas.getContext('2d');
                 
-                inputCtx.imageSmoothingEnabled = true;
-                inputCtx.imageSmoothingQuality = 'high';
+                // Apply a slight blur before downsampling to reduce artifacts
+                inputCtx.filter = 'blur(0.5px)';
                 inputCtx.drawImage(tileCanvas, 0, 0, tile.width, tile.height, 
                                 0, 0, this.inputSize, this.inputSize);
+                inputCtx.filter = 'none';
 
                 const imageData = inputCtx.getImageData(0, 0, this.inputSize, this.inputSize);
                 const inputTensor = this.imageDataToTensor(imageData);
@@ -1100,49 +1099,17 @@
                 const outputModelCtx = outputModelCanvas.getContext('2d');
                 outputModelCtx.putImageData(outputImageData, 0, 0);
 
-                // Resize back to original tile size
+                // Use a better upsampling method
                 const outputTileCanvas = document.createElement('canvas');
                 outputTileCanvas.width = tile.width;
                 outputTileCanvas.height = tile.height;
                 const outputTileCtx = outputTileCanvas.getContext('2d');
                 
-                outputTileCtx.imageSmoothingEnabled = true;
-                outputTileCtx.imageSmoothingQuality = 'high';
+                // Apply a slight blur after upsampling to smooth edges
+                outputTileCtx.filter = 'blur(0.3px)';
                 outputTileCtx.drawImage(outputModelCanvas, 0, 0, this.inputSize, this.inputSize,
                                     0, 0, tile.width, tile.height);
-
-                const afterBase64 = outputTileCanvas.toDataURL('image/png');
-
-                // Display images in debug panel
-                const tilesGrid = document.getElementById(this.currentImageDebugId + '-tiles');
-                if (tilesGrid) {
-                    const tileDebug = document.createElement('div');
-                    tileDebug.className = 'debug-tile';
-                    
-                    // Get tensor shapes for display
-                    const inputShape = inputTensor.dims.join('×');
-                    const outputShape = outputTensor.dims.join('×');
-                    
-                    tileDebug.innerHTML = `
-                        <div class="debug-tile-header">Tile #${index + 1} - (${tile.x}, ${tile.y})</div>
-                        <div class="debug-tile-content">
-                            <div class="debug-image-container debug-image-before">
-                                <div class="debug-image-label">Before</div>
-                                <img class="debug-image" src="${beforeBase64}" alt="Before" title="Click to open in new tab" onclick="window.open('${beforeBase64}', '_blank')">
-                            </div>
-                            <div class="debug-image-container debug-image-after">
-                                <div class="debug-image-label">After</div>
-                                <img class="debug-image" src="${afterBase64}" alt="After" title="Click to open in new tab" onclick="window.open('${afterBase64}', '_blank')">
-                            </div>
-                        </div>
-                        <div class="debug-tile-info">
-                            <div><strong>Size:</strong> <span>${tile.width}×${tile.height}</span></div>
-                            <div><strong>Input:</strong> <span>${inputShape}</span></div>
-                            <div><strong>Output:</strong> <span>${outputShape}</span></div>
-                        </div>
-                    `;
-                    tilesGrid.appendChild(tileDebug);
-                }
+                outputTileCtx.filter = 'none';
 
                 return outputTileCanvas;
             }
@@ -1155,28 +1122,41 @@
                 const tileData = tileImageData.data;
                 const outputImageData = outputCtx.getImageData(tile.x, tile.y, tile.width, tile.height);
                 const outputData = outputImageData.data;
+                
+                // Create a simple feathering mask for better blending
+                const featherSize = Math.min(this.overlap, 16); // Limit feather size
+                
                 for (let ty = 0; ty < tile.height; ty++) {
                     for (let tx = 0; tx < tile.width; tx++) {
                         const pixelIdx = (ty * tile.width + tx) * 4;
+                        
+                        // Calculate blend factor based on distance from edges
                         let blendFactor = 1.0;
-                        if (tile.x > 0 && tx < this.overlap) {
-                            blendFactor *= tx / this.overlap;
+                        
+                        // Left edge
+                        if (tile.x > 0 && tx < featherSize) {
+                            blendFactor *= tx / featherSize;
                         }
-                        if (tile.y > 0 && ty < this.overlap) {
-                            blendFactor *= ty / this.overlap;
+                        
+                        // Top edge
+                        if (tile.y > 0 && ty < featherSize) {
+                            blendFactor *= ty / featherSize;
                         }
-                        if (tile.x + tile.width < canvasWidth && tx >= tile.width - this.overlap) {
-                            blendFactor *= (tile.width - tx) / this.overlap;
+                        
+                        // Right edge
+                        if (tile.x + tile.width < canvasWidth && tx >= tile.width - featherSize) {
+                            blendFactor *= (tile.width - tx) / featherSize;
                         }
-                        if (tile.y + tile.height < canvasHeight && ty >= tile.height - this.overlap) {
-                            blendFactor *= (tile.height - ty) / this.overlap;
+                        
+                        // Bottom edge
+                        if (tile.y + tile.height < canvasHeight && ty >= tile.height - featherSize) {
+                            blendFactor *= (tile.height - ty) / featherSize;
                         }
-                        const r = Math.round(outputData[pixelIdx] * (1 - blendFactor) + tileData[pixelIdx] * blendFactor);
-                        const g = Math.round(outputData[pixelIdx + 1] * (1 - blendFactor) + tileData[pixelIdx + 1] * blendFactor);
-                        const b = Math.round(outputData[pixelIdx + 2] * (1 - blendFactor) + tileData[pixelIdx + 2] * blendFactor);
-                        outputData[pixelIdx] = r;
-                        outputData[pixelIdx + 1] = g;
-                        outputData[pixelIdx + 2] = b;
+                        
+                        // Apply the blend factor
+                        outputData[pixelIdx] = Math.round(outputData[pixelIdx] * (1 - blendFactor) + tileData[pixelIdx] * blendFactor);
+                        outputData[pixelIdx + 1] = Math.round(outputData[pixelIdx + 1] * (1 - blendFactor) + tileData[pixelIdx + 1] * blendFactor);
+                        outputData[pixelIdx + 2] = Math.round(outputData[pixelIdx + 2] * (1 - blendFactor) + tileData[pixelIdx + 2] * blendFactor);
                         outputData[pixelIdx + 3] = 255;
                     }
                 }
@@ -1201,45 +1181,52 @@
                 return new ort.Tensor('float32', tensorData, [1, 3, height, width]);
             }
 
-            tensorToImageData(tensor) {
-                const dims = tensor.dims;
-                
-                if (dims.length !== 4) {
-                    throw new Error(`Expected 4D tensor, got ${dims.length}D: [${dims.join(', ')}]`);
-                }
-                
-                const [batch, channels, height, width] = dims;
-                
-                if (batch !== 1 || channels !== 3) {
-                    throw new Error(`Unexpected tensor shape: [${batch}, ${channels}, ${height}, ${width}]. Expected [1, 3, H, W]`);
-                }
-                
-                const data = tensor.data;
-                const imageData = new ImageData(width, height);
-                const pixelData = imageData.data;
-
-                for (let i = 0; i < height; i++) {
-                    for (let j = 0; j < width; j++) {
-                        const pixelIndex = i * width + j;
-                        const dataIndex = pixelIndex * 4;
-
-                        let r = data[pixelIndex];
-                        let g = data[width * height + pixelIndex];
-                        let b = data[width * height * 2 + pixelIndex];
-
-                        r = Math.max(0, Math.min(1, r));
-                        g = Math.max(0, Math.min(1, g));
-                        b = Math.max(0, Math.min(1, b));
-
-                        pixelData[dataIndex] = Math.round(r * 255);
-                        pixelData[dataIndex + 1] = Math.round(g * 255);
-                        pixelData[dataIndex + 2] = Math.round(b * 255);
-                        pixelData[dataIndex + 3] = 255;
-                    }
-                }
-
-                return imageData;
+         tensorToImageData(tensor) {
+            const dims = tensor.dims;
+            
+            if (dims.length !== 4) {
+                throw new Error(`Expected 4D tensor, got ${dims.length}D: [${dims.join(', ')}]`);
             }
+            
+            const [batch, channels, height, width] = dims;
+            
+            if (batch !== 1 || channels !== 3) {
+                throw new Error(`Unexpected tensor shape: [${batch}, ${channels}, ${height}, ${width}]. Expected [1, 3, H, W]`);
+            }
+            
+            const data = tensor.data;
+            const imageData = new ImageData(width, height);
+            const pixelData = imageData.data;
+
+            for (let i = 0; i < height; i++) {
+                for (let j = 0; j < width; j++) {
+                    const pixelIndex = i * width + j;
+                    const dataIndex = pixelIndex * 4;
+
+                    // Check if the model outputs values in [0, 1] or [-1, 1] range
+                    // If it's [-1, 1], we need to normalize it
+                    let r = data[pixelIndex];
+                    let g = data[width * height + pixelIndex];
+                    let b = data[width * height * 2 + pixelIndex];
+                    
+                    // If the model outputs values in [-1, 1] range, uncomment these lines:
+                    // r = (r + 1) / 2;
+                    // g = (g + 1) / 2;
+                    // b = (b + 1) / 2;
+
+                    r = Math.max(0, Math.min(1, r));
+                    g = Math.max(0, Math.min(1, g));
+                    b = Math.max(0, Math.min(1, b));
+
+                    pixelData[dataIndex] = Math.round(r * 255);
+                    pixelData[dataIndex + 1] = Math.round(g * 255);
+                    pixelData[dataIndex + 2] = Math.round(b * 255);
+                    pixelData[dataIndex + 3] = 255;
+                }
+            }
+
+            return imageData;
+}
         }
 
         // Image management
