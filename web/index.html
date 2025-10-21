@@ -328,8 +328,12 @@
         <div class="settings-panel" id="settingsPanel">
             <h3>Model Settings</h3>
             <div class="setting-item">
-                <label for="modelPath">Model Path:</label>
-                <input type="text" id="modelPath" value="model.onnx">
+                <label for="modelPath">Model URL:</label>
+                <input type="text" id="modelPath" value="https://api.cors.lol/?url=https%3A%2F%2Fgithub.com%2Fcziter15%2Fwatermark-removal-webgpu%2Fraw%2Frefs%2Fheads%2Fmain%2Fweb%2Fmodel.onnx">
+            </div>
+            <div class="setting-item">
+                <label for="modelDataPath">Model Data URL:</label>
+                <input type="text" id="modelDataPath" value="https://api.cors.lol/?url=https%3A%2F%2Fgithub.com%2Fcziter15%2Fwatermark-removal-webgpu%2Fraw%2Frefs%2Fheads%2Fmain%2Fweb%2Fmodel.onnx.data">
             </div>
             <div class="setting-item">
                 <label for="tileSize">Tile Size (for large images):</label>
@@ -347,7 +351,7 @@
         
         <div id="modelStatus" class="model-status loading">
             <span class="loading"></span>
-            <span>Loading model.onnx...</span>
+            <span>Loading model...</span>
         </div>
         
         <div id="status"></div>
@@ -383,6 +387,10 @@
     </div>
 
     <script>
+        // Model URLs configuration
+        const MODEL_URL = 'https://api.cors.lol/?url=https%3A%2F%2Fgithub.com%2Fcziter15%2Fwatermark-removal-webgpu%2Fraw%2Frefs%2Fheads%2Fmain%2Fweb%2Fmodel.onnx';
+        const MODEL_DATA_URL = 'https://api.cors.lol/?url=https%3A%2F%2Fgithub.com%2Fcziter15%2Fwatermark-removal-webgpu%2Fraw%2Frefs%2Fheads%2Fmain%2Fweb%2Fmodel.onnx.data';
+
         // Check browser compatibility
         function checkBrowserCompatibility() {
             const hasWebAssembly = typeof WebAssembly === 'object';
@@ -534,13 +542,14 @@
                 this.inputSize = 256; // Model's expected input size
                 this.tileSize = 256; // Process in tiles for large images
                 this.overlap = 32; // Overlap between tiles to avoid seams
-                this.modelPath = 'model.onnx';
+                this.modelPath = MODEL_URL;
+                this.modelDataPath = MODEL_DATA_URL;
                 this.executionProvider = null;
             }
 
-            async loadModel(modelPath) {
+            async loadModel(modelPath, modelDataPath) {
                 try {
-                    updateModelStatus('loading', `Loading ${modelPath}...`);
+                    updateModelStatus('loading', `Loading model...`);
                     
                     // Fetch the model file
                     const modelResponse = await fetch(modelPath);
@@ -549,16 +558,19 @@
                     }
                     const modelBuffer = await modelResponse.arrayBuffer();
                     
-                    // Try to fetch external data file if it exists
+                    // Fetch external data file
                     let externalDataBuffer = null;
                     try {
-                        const dataResponse = await fetch('model.onnx.data');
+                        updateModelStatus('loading', `Loading model data...`);
+                        const dataResponse = await fetch(modelDataPath);
                         if (dataResponse.ok) {
                             externalDataBuffer = await dataResponse.arrayBuffer();
                             console.log('External data file loaded');
+                        } else {
+                            console.log('External data file not found or failed to load');
                         }
                     } catch (e) {
-                        console.log('No external data file found or not needed');
+                        console.log('Error loading external data file:', e);
                     }
                     
                     // Determine available execution providers
@@ -603,11 +615,12 @@
                     
                     this.modelLoaded = true;
                     this.modelPath = modelPath;
+                    this.modelDataPath = modelDataPath;
                     return true;
                 } catch (error) {
                     updateModelStatus('error', `✗ Error loading model: ${error.message}`);
                     console.error('Model loading error:', error);
-                    showStatus(`Failed to load ${modelPath}. Make sure the file exists in the same directory.`, 'error');
+                    showStatus(`Failed to load model. Make sure the URLs are accessible.`, 'error');
                     document.getElementById('retryBtn').style.display = 'inline-block';
                     return false;
                 }
@@ -869,6 +882,7 @@
         const toggleSettings = document.getElementById('toggleSettings');
         const settingsPanel = document.getElementById('settingsPanel');
         const modelPathInput = document.getElementById('modelPath');
+        const modelDataPathInput = document.getElementById('modelDataPath');
         const tileSizeInput = document.getElementById('tileSize');
         const overlapInput = document.getElementById('overlap');
         const inputSizeInput = document.getElementById('inputSize');
@@ -924,6 +938,10 @@
         // Apply settings changes
         modelPathInput.addEventListener('change', () => {
             remover.modelPath = modelPathInput.value;
+        });
+
+        modelDataPathInput.addEventListener('change', () => {
+            remover.modelDataPath = modelDataPathInput.value;
         });
 
         tileSizeInput.addEventListener('change', () => {
@@ -1069,7 +1087,7 @@
             retryBtn.disabled = true;
             retryBtn.innerHTML = 'Retrying<span class="loading"></span>';
             
-            const success = await remover.loadModel(remover.modelPath);
+            const success = await remover.loadModel(remover.modelPath, remover.modelDataPath);
             if (success) {
                 showStatus('Model loaded successfully! You can now process images.', 'success');
                 retryBtn.style.display = 'none';
@@ -1091,7 +1109,7 @@
             // Update execution provider status
             await updateExecutionProviderStatus();
 
-            const success = await remover.loadModel(remover.modelPath);
+            const success = await remover.loadModel(remover.modelPath, remover.modelDataPath);
             if (success) {
                 showStatus('Ready! Upload an image to remove watermarks.', 'success');
                 setTimeout(hideStatus, 2000);
