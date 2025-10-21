@@ -1,9 +1,11 @@
 name: Deploy to GitHub Pages
 
+# Triggers: push to main + manual trigger
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
