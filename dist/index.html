@@ -204,12 +204,12 @@
         .image-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 15px;
+            gap: 8px;
             width: 100%;
             max-height: 250px;
             overflow-y: auto;
-            padding: 10px 0;
-            margin-top: 20px;
+            padding: 5px 0;
+            margin-top: 10px;
         }
 
         .image-list::-webkit-scrollbar {
@@ -256,25 +256,35 @@
         
         .close-btn {
             position: absolute;
-            top: -8px;
-            right: -8px;
+            top: 0;
+            right: 0;
             background: var(--error-color);
             color: white;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 16px;
             cursor: pointer;
             opacity: 0;
-            transition: opacity 0.2s ease;
-            z-index: 1;
+            transition: all 0.2s ease;
+            z-index: 2;
+            pointer-events: auto;
+            line-height: 1;
+            font-weight: bold;
+            border: 2px solid var(--background-color);
         }
         
         .thumbnail:hover .close-btn {
             opacity: 1;
+            transform: scale(1);
+        }
+
+        .close-btn:hover {
+            background: #ff0000;
+            transform: scale(1.1);
         }
         
         .thumbnail.drag-over {
@@ -557,7 +567,6 @@
             height: 100%;
             overflow: auto;
             background-color: rgba(0,0,0,0.9);
-            display: flex;
             align-items: center;
             justify-content: center;
         }
@@ -633,7 +642,7 @@
             
             .image-list {
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-                gap: 10px;
+                gap: 6px;
                 max-height: 200px;
             }
             
@@ -681,7 +690,7 @@
             
             .image-list {
                 grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-                gap: 8px;
+                gap: 4px;
                 max-height: 150px;
             }
         }
@@ -1491,15 +1500,16 @@
                     this.remover.enablePostProcessing = this.enablePostProcessingInput.checked;
                 });
 
-                // Close button clicks
+                // Close button clicks - improved to prevent bubbling and ensure click registration
                 this.imageList.addEventListener('click', (e) => {
                     if (e.target.classList.contains('close-btn')) {
+                        e.stopPropagation();
                         const thumbnail = e.target.closest('.thumbnail');
                         if (thumbnail) {
                             this.removeImage(thumbnail.dataset.id);
                         }
                     }
-                });
+                }, true); // Use capture phase for better reliability
 
                 // Modal close on escape
                 document.addEventListener('keydown', (e) => {
