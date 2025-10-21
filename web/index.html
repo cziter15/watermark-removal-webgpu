@@ -554,8 +554,8 @@
 
     <script>
         // Define constants for model URLs
-        const MODEL_URL = 'model.onnx';
-        const MODEL_DATA_URL = 'model.onnx.data';
+        const MODEL_URL = '--MODEL--URL--HERE--';
+        const MODEL_DATA_URL = '--MODEL--DATA--URL--HERE--';
 
         // Check browser compatibility
         function checkBrowserCompatibility() {
@@ -731,10 +731,12 @@
                         const dataResponse = await fetch(modelDataPath);
                         if (dataResponse.ok) {
                             externalDataBuffer = await dataResponse.arrayBuffer();
-                            console.log('External data file loaded');
+                            console.log('External data file loaded successfully');
+                        } else {
+                            console.warn(`External data file not found: ${dataResponse.statusText}`);
                         }
                     } catch (e) {
-                        console.log('No external data file found or not needed');
+                        console.warn('Error loading external data file:', e);
                     }
                     
                     // Determine available execution providers
@@ -742,14 +744,18 @@
                     
                     // Create session options
                     const sessionOptions = {
-                        executionProviders: ['wasm'],
-                        externalData: externalDataBuffer ? [
-                            {
-                                data: externalDataBuffer,
-                                path: 'model.onnx.data'
-                            }
-                        ] : undefined
+                        executionProviders: ['wasm']
                     };
+                    
+                    // If we have external data, add it to the options
+                    if (externalDataBuffer) {
+                        // Create a map of external data files
+                        const externalData = new Map();
+                        externalData.set('model.onnx.data', new Uint8Array(externalDataBuffer));
+                        
+                        // Add the external data to the session options
+                        sessionOptions.externalData = externalData;
+                    }
                     
                     // Load the model
                     try {
