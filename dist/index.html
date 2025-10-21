@@ -819,7 +819,7 @@
         const MODEL_DATA_URL = 'model.onnx.data';
         
         // Debug logging function
-        function debugLog(message) {
+        function logDebug(message) {
             console.log(message);
         }
         
@@ -910,13 +910,13 @@
             
             async loadModel(modelPath, modelDataPath) {
                 try {
-                    debugLog("Loading model...");
+                    logDebug("Loading model...");
                     const modelResponse = await fetch(modelPath);
                     if (!modelResponse.ok) {
                         throw new Error(`Failed to fetch model: ${modelResponse.statusText}`);
                     }
                     const modelBuffer = await modelResponse.arrayBuffer();
-                    debugLog(`Model loaded, size: ${modelBuffer.byteLength} bytes`);
+                    logDebug(`Model loaded, size: ${modelBuffer.byteLength} bytes`);
                     let externalDataBuffer = null;
                     let externalDataLoaded = false;
                     try {
@@ -924,12 +924,12 @@
                         if (dataResponse.ok) {
                             externalDataBuffer = await dataResponse.arrayBuffer();
                             externalDataLoaded = true;
-                            debugLog("External data file loaded successfully");
+                            logDebug("External data file loaded successfully");
                         } else {
-                            debugLog(`External data file not found: ${dataResponse.statusText}`);
+                            logDebug(`External data file not found: ${dataResponse.statusText}`);
                         }
                     } catch (e) {
-                        debugLog(`External data file not found (optional): ${e.message}`);
+                        logDebug(`External data file not found (optional): ${e.message}`);
                     }
                     const sessionOptions = {
                         executionProviders: ['webgpu', 'wasm', 'cpu']
@@ -940,25 +940,25 @@
                             path: 'model.onnx.data'
                         }];
                     }
-                    debugLog("Creating inference session...");
+                    logDebug("Creating inference session...");
                     const session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
                     const inputNames = session.inputNames;
                     const outputNames = session.outputNames;
-                    debugLog(`Model inputs: ${JSON.stringify(inputNames)}`);
-                    debugLog(`Model outputs: ${JSON.stringify(outputNames)}`);
+                    logDebug(`Model inputs: ${JSON.stringify(inputNames)}`);
+                    logDebug(`Model outputs: ${JSON.stringify(outputNames)}`);
                     if (session.handler) {
                         this.executionProvider = session.handler.backendName || 'unknown';
                     } else {
                         this.executionProvider = 'unknown';
                     }
-                    debugLog(`Using execution provider: ${this.executionProvider}`);
+                    logDebug(`Using execution provider: ${this.executionProvider}`);
                     this.session = session;
                     this.modelLoaded = true;
                     this.modelPath = modelPath;
                     this.modelDataPath = modelDataPath;
                     return true;
                 } catch (error) {
-                    debugLog(`Model loading error: ${error.message}`);
+                    logDebug(`Model loading error: ${error.message}`);
                     console.error('Model loading error:', error);
                     return false;
                 }
@@ -970,7 +970,7 @@
                 }
                 const originalWidth = image.width;
                 const originalHeight = image.height;
-                debugLog(`Processing image: ${imageName} (${originalWidth}x${originalHeight})`);
+                logDebug(`Processing image: ${imageName} (${originalWidth}x${originalHeight})`);
                 if (originalWidth < 64 || originalHeight < 64) {
                     throw new Error('Image is too small. Minimum size is 64x64 pixels.');
                 }
@@ -1002,11 +1002,11 @@
                         });
                     }
                 }
-                debugLog(`Processing ${tiles.length} tiles (size=${this.tileSize}, overlap=${this.overlap})`);
+                logDebug(`Processing ${tiles.length} tiles (size=${this.tileSize}, overlap=${this.overlap})`);
                 
                 // Create debug section for this image
-                const debugLog = document.getElementById('debugLog');
-                if (debugLog) {
+                const debugLogElement = document.getElementById('debugLog');
+                if (debugLogElement) {
                     const imageSection = document.createElement('div');
                     imageSection.className = 'debug-image-section';
                     this.currentImageDebugId = 'debug-section-' + Date.now();
@@ -1033,7 +1033,7 @@
                     tilesGrid.id = this.currentImageDebugId + '-tiles';
                     imageSection.appendChild(tilesGrid);
                     
-                    debugLog.appendChild(imageSection);
+                    debugLogElement.appendChild(imageSection);
                     
                     // Scroll to the new section
                     setTimeout(() => {
@@ -1049,7 +1049,7 @@
                         const processedTile = await this.processTile(image, tile, i);
                         this.blendTile(outputCtx, processedTile, tile, originalWidth, originalHeight);
                     } catch (error) {
-                        debugLog(`Error processing tile ${i}: ${error.message}`);
+                        logDebug(`Error processing tile ${i}: ${error.message}`);
                     }
                     const progress = Math.round(((i + 1) / tiles.length) * 100);
                     if (progressCallback) {
