@@ -27,45 +27,45 @@
 
 ```mermaid
 graph TD
-    Input[Input<br/>3 × 256 × 256]
+    Input[Input<br/>3 x 256 x 256]
 
-    Input --> enc1[enc1<br/>conv_block 3→64<br/>e1: 64 × 256 × 256]
-    enc1 --> pool1[/MaxPool2d(2) → 64 × 128 × 128/]
+    Input --> enc1[enc1<br/>conv_block 3->64<br/>e1: 64 x 256 x 256]
+    enc1 --> pool1[/MaxPool2d(2) -> 64 x 128 x 128/]
 
-    pool1 --> enc2[enc2<br/>conv_block 64→128<br/>e2: 128 × 128 × 128]
-    enc2 --> pool2[/MaxPool2d(2) → 128 × 64 × 64/]
+    pool1 --> enc2[enc2<br/>conv_block 64->128<br/>e2: 128 x 128 x 128]
+    enc2 --> pool2[/MaxPool2d(2) -> 128 x 64 x 64/]
 
-    pool2 --> enc3[enc3<br/>conv_block 128→256<br/>e3: 256 × 64 × 64]
-    enc3 --> pool3[/MaxPool2d(2) → 256 × 32 × 32/]
+    pool2 --> enc3[enc3<br/>conv_block 128->256<br/>e3: 256 x 64 x 64]
+    enc3 --> pool3[/MaxPool2d(2) -> 256 x 32 x 32/]
 
-    pool3 --> enc4[enc4<br/>conv_block 256→512<br/>e4: 512 × 32 × 32]
-    enc4 --> pool4[/MaxPool2d(2) → 512 × 16 × 16/]
+    pool3 --> enc4[enc4<br/>conv_block 256->512<br/>e4: 512 x 32 x 32]
+    enc4 --> pool4[/MaxPool2d(2) -> 512 x 16 x 16/]
 
-    pool4 --> bottleneck[bottleneck<br/>conv_block 512→1024<br/>b: 1024 × 16 × 16]
+    pool4 --> bottleneck[bottleneck<br/>conv_block 512->1024<br/>b: 1024 x 16 x 16]
 
     %% Decoder path
-    bottleneck --> up4[Upsample ×2 → 1024 × 32 × 32]
-    up4 --> concat4[Concat (b_up + e4)<br/>1024 + 512 = 1536 × 32 × 32]
-    e4 --> concat4
-    concat4 --> dec4[dec4<br/>conv_block 1536→512<br/>d4: 512 × 32 × 32]
+    bottleneck --> up4[Upsample x2 -> 1024 x 32 x 32]
+    up4 --> concat4[Concat (b_up + e4)<br/>1024 + 512 = 1536 x 32 x 32]
+    e4 -.-> concat4
+    concat4 --> dec4[dec4<br/>conv_block 1536->512<br/>d4: 512 x 32 x 32]
 
-    dec4 --> up3[Upsample ×2 → 512 × 64 × 64]
-    up3 --> concat3[Concat (d4_up + e3)<br/>512 + 256 = 768 × 64 × 64]
-    e3 --> concat3
-    concat3 --> dec3[dec3<br/>conv_block 768→256<br/>d3: 256 × 64 × 64]
+    dec4 --> up3[Upsample x2 -> 512 x 64 x 64]
+    up3 --> concat3[Concat (d4_up + e3)<br/>512 + 256 = 768 x 64 x 64]
+    e3 -.-> concat3
+    concat3 --> dec3[dec3<br/>conv_block 768->256<br/>d3: 256 x 64 x 64]
 
-    dec3 --> up2[Upsample ×2 → 256 × 128 × 128]
-    up2 --> concat2[Concat (d3_up + e2)<br/>256 + 128 = 384 × 128 × 128]
-    e2 --> concat2
-    concat2 --> dec2[dec2<br/>conv_block 384→128<br/>d2: 128 × 128 × 128]
+    dec3 --> up2[Upsample x2 -> 256 x 128 x 128]
+    up2 --> concat2[Concat (d3_up + e2)<br/>256 + 128 = 384 x 128 x 128]
+    e2 -.-> concat2
+    concat2 --> dec2[dec2<br/>conv_block 384->128<br/>d2: 128 x 128 x 128]
 
-    dec2 --> up1[Upsample ×2 → 128 × 256 × 256]
-    up1 --> concat1[Concat (d2_up + e1)<br/>128 + 64 = 192 × 256 × 256]
-    e1 --> concat1
-    concat1 --> dec1[dec1<br/>conv_block 192→64<br/>d1: 64 × 256 × 256]
+    dec2 --> up1[Upsample x2 -> 128 x 256 x 256]
+    up1 --> concat1[Concat (d2_up + e1)<br/>128 + 64 = 192 x 256 x 256]
+    e1 -.-> concat1
+    concat1 --> dec1[dec1<br/>conv_block 192->64<br/>d1: 64 x 256 x 256]
 
-    dec1 --> final[final_layer<br/>Conv2d 64→3 (1×1) → Output: 3 × 256 × 256]
-    final --> Output[Output<br/>3 × 256 × 256]
+    dec1 --> final[final_layer<br/>Conv2d 64->3 (1x1) -> Output: 3 x 256 x 256]
+    final --> Output[Output<br/>3 x 256 x 256]
 ```
 
 ## 📚 Notes on ONNX + WebGPU
