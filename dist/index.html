@@ -458,25 +458,69 @@
             gap: 15px;
         }
 
-        .debug-tile {
-            background-color: rgba(15, 23, 42, 0.5);
+        .debug-image-header {
+            background-color: rgba(15, 23, 42, 0.7);
             border-radius: 8px;
             padding: 15px;
+            margin-bottom: 15px;
             border-left: 4px solid var(--info-color);
         }
 
-        .debug-tile-header {
-            font-size: 14px;
+        .debug-image-title {
+            font-size: 16px;
             font-weight: bold;
             color: var(--info-color);
             margin-bottom: 10px;
         }
 
+        .debug-image-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .debug-info-item {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .debug-info-item strong {
+            color: var(--text-primary);
+        }
+
+        .debug-tiles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .debug-tile {
+            background-color: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .debug-tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .debug-tile-header {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
         .debug-tile-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .debug-image-container {
@@ -484,9 +528,9 @@
         }
 
         .debug-image-label {
-            font-size: 12px;
+            font-size: 10px;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             text-transform: uppercase;
         }
 
@@ -500,7 +544,9 @@
 
         .debug-image {
             width: 100%;
-            border-radius: 6px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
             cursor: pointer;
             transition: transform 0.2s;
         }
@@ -510,23 +556,23 @@
         }
 
         .debug-image-before .debug-image {
-            border: 2px solid var(--accent-color);
+            border: 1px solid var(--accent-color);
         }
 
         .debug-image-after .debug-image {
-            border: 2px solid var(--error-color);
+            border: 1px solid var(--error-color);
         }
 
         .debug-tile-info {
-            font-size: 12px;
+            font-size: 10px;
             color: var(--text-secondary);
             background-color: rgba(15, 23, 42, 0.7);
-            padding: 10px;
-            border-radius: 6px;
+            padding: 6px;
+            border-radius: 4px;
         }
 
         .debug-tile-info div {
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .debug-tile-info div:last-child {
@@ -607,8 +653,8 @@
                 padding: 15px;
             }
             
-            .debug-tile-content {
-                grid-template-columns: 1fr;
+            .debug-tiles-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
         }
         
@@ -637,6 +683,10 @@
             .navigation {
                 flex-direction: column;
                 gap: 10px;
+            }
+            
+            .debug-tiles-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -913,11 +963,52 @@
                     }
                 }
                 debugLog(`Processing ${tiles.length} tiles (size=${this.tileSize}, overlap=${this.overlap})`);
+                
+                // Create a canvas to draw the tile grid
+                const tileGridCanvas = document.createElement('canvas');
+                tileGridCanvas.width = originalWidth;
+                tileGridCanvas.height = originalHeight;
+                const tileGridCtx = tileGridCanvas.getContext('2d');
+                
+                // Draw the original image
+                tileGridCtx.drawImage(image, 0, 0);
+                
+                // Draw tile grid
+                tileGridCtx.strokeStyle = '#60a5fa';
+                tileGridCtx.lineWidth = 1;
+                for (const tile of tiles) {
+                    tileGridCtx.strokeRect(tile.x, tile.y, tile.width, tile.height);
+                }
+                
+                // Add debug header
+                const debugElement = document.getElementById('debugLog');
+                if (debugElement) {
+                    const imageHeader = document.createElement('div');
+                    imageHeader.className = 'debug-image-header';
+                    imageHeader.innerHTML = `
+                        <div class="debug-image-title">Image Processing: ${originalWidth}x${originalHeight}</div>
+                        <div class="debug-image-info">
+                            <div class="debug-info-item"><strong>Tile Size:</strong> ${this.tileSize}px</div>
+                            <div class="debug-info-item"><strong>Overlap:</strong> ${this.overlap}px</div>
+                            <div class="debug-info-item"><strong>Total Tiles:</strong> ${tiles.length}</div>
+                            <div class="debug-info-item"><strong>Model Input:</strong> ${this.inputSize}px</div>
+                            <div class="debug-info-item"><strong>Provider:</strong> ${this.executionProvider.toUpperCase()}</div>
+                        </div>
+                    `;
+                    debugElement.appendChild(imageHeader);
+                    
+                    // Create tiles grid container
+                    const tilesGrid = document.createElement('div');
+                    tilesGrid.className = 'debug-tiles-grid';
+                    debugElement.appendChild(tilesGrid);
+                }
+                
+                // Process each tile
                 for (let i = 0; i < tiles.length; i++) {
                     const tile = tiles[i];
                     await new Promise(resolve => setTimeout(resolve, 5));
                     try {
-                        const processedTile = await this.processTile(image, tile);
+                        const processedTile = await this.processTile(image, tile, i);
                         this.blendTile(outputCtx, processedTile, tile, originalWidth, originalHeight);
                     } catch (error) {
                         debugLog(`Error processing tile: ${error.message}`);
@@ -927,10 +1018,11 @@
                         progressCallback(progress, `Processing tile ${i + 1}/${tiles.length} (${this.executionProvider.toUpperCase()})...`);
                     }
                 }
+                
                 return outputCanvas;
             }
             
-            async processTile(sourceImage, tile) {
+            async processTile(sourceImage, tile, index) {
                 // Extract tile region
                 const tileCanvas = document.createElement('canvas');
                 tileCanvas.width = tile.width;
@@ -985,8 +1077,8 @@
                 const afterBase64 = outputTileCanvas.toDataURL('image/png');
 
                 // Display images in debug panel
-                const debugElement = document.getElementById('debugLog');
-                if (debugElement) {
+                const tilesGrid = document.querySelector('.debug-tiles-grid');
+                if (tilesGrid) {
                     const tileDebug = document.createElement('div');
                     tileDebug.className = 'debug-tile';
                     
@@ -1007,14 +1099,13 @@
                             </div>
                         </div>
                         <div class="debug-tile-info">
-                            <div><strong>Tile Position:</strong> (${tile.x}, ${tile.y})</div>
-                            <div><strong>Tile Size:</strong> ${tile.width}x${tile.height}</div>
-                            <div><strong>Input Tensor:</strong> ${inputShape}</div>
-                            <div><strong>Output Tensor:</strong> ${outputShape}</div>
+                            <div><strong>Size:</strong> ${tile.width}x${tile.height}</div>
+                            <div><strong>Input:</strong> ${inputShape}</div>
+                            <div><strong>Output:</strong> ${outputShape}</div>
                         </div>
                     `;
-                    debugElement.appendChild(tileDebug);
-                    debugElement.scrollTop = debugElement.scrollHeight;
+                    tilesGrid.appendChild(tileDebug);
+                    tilesGrid.scrollTop = tilesGrid.scrollHeight;
                 }
 
                 return outputTileCanvas;
@@ -1267,6 +1358,9 @@
                     this.imageManager.clearAll();
                     this.renderImageList();
                     this.updateNextButton();
+                    if (this.debugLog) {
+                        this.debugLog.innerHTML = '';
+                    }
                 });
                 this.downloadAllBtn.addEventListener('click', () => {
                     this.downloadAllImages();
@@ -1429,6 +1523,11 @@
                 this.updateProcessingStats(completedCount, images.length);
                 for (const image of images) {
                     try {
+                        // Clear debug panel for new image
+                        if (this.debugLog) {
+                            this.debugLog.innerHTML = '';
+                        }
+                        
                         this.imageManager.updateImageStatus(image.id, 'processing');
                         this.renderProcessingList();
                         const progressBar = document.getElementById(`progress-${image.id}`);
