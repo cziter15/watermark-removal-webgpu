@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ONNX Watermark Remover</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.20.0/ort.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f8f9ff;
+        }
+        .upload-area.drag-over {
+            background: #f0f0ff;
+            border-color: #764ba2;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin: 10px 5px;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .image-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .image-box {
+            text-align: center;
+        }
+        .image-box h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .image-box img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .image-box canvas {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .status.info {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .model-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .model-status.loading {
+            color: #1976d2;
+        }
+        .model-status.ready {
+            color: #2e7d32;
+        }
+        .model-status.error {
+            color: #c62828;
+        }
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        .progress-text {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .browser-warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .settings-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .settings-panel h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .setting-item {
+            margin-bottom: 10px;
+        }
+        .setting-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+        .setting-item input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .toggle-settings {
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .execution-info {
+            background: #e8f4fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .execution-info h4 {
+            margin-bottom: 8px;
+            color: #0d47a1;
+        }
+        .execution-info p {
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .execution-info .provider-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .provider-badge.webgpu {
+            background: #4caf50;
+            color: white;
+        }
+        .provider-badge.wasm {
+            background: #ff9800;
+            color: white;
+        }
+        .provider-badge.cpu {
+            background: #9e9e9e;
+            color: white;
+        }
+        .troubleshooting {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .troubleshooting h4 {
+            margin-bottom: 8px;
+            color: #ff6f00;
+        }
+        .troubleshooting ol {
+            margin-left: 20px;
+            color: #333;
+        }
+        .troubleshooting li {
+            margin-bottom: 8px;
+        }
+        .browser-info {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #333;
+        }
+        @media (max-width: 768px) {
+            .image-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 ONNX Watermark Remover</h1>
+        <p class="subtitle">Upload an image to remove watermarks using AI</p>
+        
+        <div id="browserWarning" class="browser-warning">
+            Your browser may not support all features required for this application. For best results, please use the latest version of Chrome, Firefox, or Edge.
+        </div>
+        
+        <div class="execution-info" id="executionInfo">
+            <h4>Execution Provider Information</h4>
+            <p>This application runs in your browser using ONNX Runtime Web.</p>
+            <p><strong>WebGPU</strong> is the browser equivalent of CUDA and provides the best performance.</p>
+            <p><strong>WASM</strong> is a fallback that runs on any browser but may be slower.</p>
+            <p id="providerStatus">Detecting available execution providers...</p>
+            <div class="browser-info" id="browserInfo"></div>
+        </div>
+        
+        <div class="troubleshooting" id="troubleshooting" style="display: none;">
+            <h4>WebGPU Not Available - Troubleshooting</h4>
+            <p>If WebGPU is not available, follow these steps to enable it:</p>
+            <ol>
+                <li><strong>Chrome/Edge:</strong> Make sure you're using version 113 or newer. WebGPU should be enabled by default.</li>
+                <li><strong>Firefox:</strong> Type <code>about:config</code> in the address bar, search for <code>dom.webgpu.enabled</code>, and set it to <code>true</code>.</li>
+                <li><strong>Safari:</strong> Enable "Experimental Features" in the Develop menu (enable Develop menu in Preferences > Advanced).</li>
+                <li><strong>Update your browser</strong> to the latest version.</li>
+                <li><strong>Update your graphics drivers</strong> to the latest version.</li>
+                <li>Make sure you're accessing this page via <strong>HTTPS</strong> or <strong>localhost</strong> (WebGPU requires a secure context).</li>
+            </ol>
+        </div>
+        
+        <button class="toggle-settings" id="toggleSettings">⚙️ Advanced Settings</button>
+        
+        <div class="settings-panel" id="settingsPanel">
+            <h3>Model Settings</h3>
+            <div class="setting-item">
+                <label for="modelPath">Model Path:</label>
+                <input type="text" id="modelPath" value="model.onnx">
+            </div>
+            <div class="setting-item">
+                <label for="tileSize">Tile Size (for large images):</label>
+                <input type="number" id="tileSize" value="256" min="64" max="1024">
+            </div>
+            <div class="setting-item">
+                <label for="overlap">Tile Overlap (pixels):</label>
+                <input type="number" id="overlap" value="32" min="0" max="128">
+            </div>
+            <div class="setting-item">
+                <label for="inputSize">Model Input Size:</label>
+                <input type="number" id="inputSize" value="256" min="64" max="1024">
+            </div>
+        </div>
+        
+        <div id="modelStatus" class="model-status loading">
+            <span class="loading"></span>
+            <span>Loading model.onnx...</span>
+        </div>
+        
+        <div id="status"></div>
+        
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText"></div>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <p>Click to upload or drag & drop an image</p>
+            <p style="font-size: 12px; color: #999; margin-top: 5px;">Supports JPG, PNG</p>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+        
+        <div style="text-align: center;">
+            <button class="btn" id="processBtn" disabled>Remove Watermark</button>
+            <button class="btn" id="downloadBtn" disabled>Download Result</button>
+            <button class="btn" id="retryBtn" style="display: none;">Retry Model Loading</button>
+        </div>
+        
+        <div class="image-container" id="imageContainer" style="display: none;">
+            <div class="image-box">
+                <h3>Original Image</h3>
+                <img id="originalImg" alt="Original">
+            </div>
+            <div class="image-box">
+                <h3>Processed Image</h3>
+                <canvas id="processedCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check browser compatibility
+        function checkBrowserCompatibility() {
+            const hasWebAssembly = typeof WebAssembly === 'object';
+            const hasWebGL = !!document.createElement('canvas').getContext('webgl') || 
+                           !!document.createElement('canvas').getContext('experimental-webgl');
+            
+            if (!hasWebAssembly || !hasWebGL) {
+                document.getElementById('browserWarning').style.display = 'block';
+                return false;
+            }
+            return true;
+        }
+
+        // Check for WebGPU support with detailed error reporting
+        async function checkWebGPUSupport() {
+            const result = {
+                supported: false,
+                error: null,
+                details: {}
+            };
+            
+            try {
+                // Check if navigator.gpu exists
+                if (!navigator.gpu) {
+                    result.error = 'navigator.gpu not found - WebGPU is not supported in this browser';
+                    return result;
+                }
+                
+                // Try to get an adapter
+                const adapter = await navigator.gpu.requestAdapter();
+                if (!adapter) {
+                    result.error = 'No GPU adapter found - your graphics card may not support WebGPU';
+                    return result;
+                }
+                
+                // Try to get adapter info if available (check if method exists)
+                if (typeof adapter.requestAdapterInfo === 'function') {
+                    try {
+                        const adapterInfo = await adapter.requestAdapterInfo();
+                        result.details.adapter = adapterInfo;
+                    } catch (e) {
+                        console.log('Adapter info not available:', e);
+                    }
+                }
+                
+                // Try to get a device
+                const device = await adapter.requestDevice();
+                if (!device) {
+                    result.error = 'Failed to create GPU device - your graphics drivers may be outdated';
+                    return result;
+                }
+                
+                result.supported = true;
+                return result;
+            } catch (e) {
+                result.error = `WebGPU error: ${e.message}`;
+                return result;
+            }
+        }
+
+        // Get browser information
+        function getBrowserInfo() {
+            const ua = navigator.userAgent;
+            let browserName = "Unknown";
+            let browserVersion = "Unknown";
+            
+            if (ua.indexOf("Chrome") > -1 && ua.indexOf("Edg") === -1) {
+                browserName = "Chrome";
+                browserVersion = ua.match(/Chrome\/(\d+)/)[1];
+            } else if (ua.indexOf("Firefox") > -1) {
+                browserName = "Firefox";
+                browserVersion = ua.match(/Firefox\/(\d+)/)[1];
+            } else if (ua.indexOf("Safari") > -1 && ua.indexOf("Chrome") === -1) {
+                browserName = "Safari";
+                browserVersion = ua.match(/Version\/(\d+)/)[1];
+            } else if (ua.indexOf("Edg") > -1) {
+                browserName = "Edge";
+                browserVersion = ua.match(/Edg\/(\d+)/)[1];
+            }
+            
+            return {
+                name: browserName,
+                version: browserVersion,
+                userAgent: ua.substring(0, 100) + "..."
+            };
+        }
+
+        // Update execution provider status
+        async function updateExecutionProviderStatus() {
+            const providerStatus = document.getElementById('providerStatus');
+            const browserInfo = document.getElementById('browserInfo');
+            const troubleshooting = document.getElementById('troubleshooting');
+            
+            // Display browser info
+            const browser = getBrowserInfo();
+            browserInfo.innerHTML = `
+                Browser: ${browser.name} ${browser.version}<br>
+                User Agent: ${browser.userAgent}<br>
+                Secure Context: ${window.isSecureContext ? 'Yes' : 'No'}
+            `;
+            
+            // Check WebGPU support
+            const webgpuResult = await checkWebGPUSupport();
+            const webglSupported = !!document.createElement('canvas').getContext('webgl') || 
+                                 !!document.createElement('canvas').getContext('experimental-webgl');
+            
+            let statusHTML = 'Available execution providers: ';
+            
+            if (webgpuResult.supported) {
+                statusHTML += '<span class="provider-badge webgpu">WebGPU (Recommended)</span> ';
+            }
+            
+            if (webglSupported) {
+                statusHTML += '<span class="provider-badge wasm">WASM</span> ';
+            }
+            
+            statusHTML += '<span class="provider-badge cpu">CPU</span>';
+            
+            if (webgpuResult.supported) {
+                statusHTML += '<p style="margin-top: 8px; color: #4caf50; font-weight: bold;">✓ WebGPU is available - this will provide the best performance!</p>';
+                
+                // Show adapter info if available
+                if (webgpuResult.details.adapter) {
+                    const adapter = webgpuResult.details.adapter;
+                    let gpuInfo = '';
+                    if (adapter.vendor) gpuInfo += `Vendor: ${adapter.vendor} `;
+                    if (adapter.device) gpuInfo += `Device: ${adapter.device} `;
+                    if (adapter.description) gpuInfo += `Description: ${adapter.description}`;
+                    
+                    if (gpuInfo) {
+                        statusHTML += `<p style="font-size: 12px; color: #555;">GPU: ${gpuInfo}</p>`;
+                    }
+                }
+            } else {
+                statusHTML += '<p style="margin-top: 8px; color: #ff9800; font-weight: bold;">⚠ WebGPU not available - falling back to WASM (slower performance)</p>';
+                if (webgpuResult.error) {
+                    statusHTML += `<p style="font-size: 12px; color: #d32f2f;">Reason: ${webgpuResult.error}</p>`;
+                }
+                troubleshooting.style.display = 'block';
+            }
+            
+            providerStatus.innerHTML = statusHTML;
+        }
+
+        class ONNXWatermarkRemover {
+            constructor() {
+                this.session = null;
+                this.modelLoaded = false;
+                this.inputSize = 256; // Model's expected input size
+                this.tileSize = 256; // Process in tiles for large images
+                this.overlap = 32; // Overlap between tiles to avoid seams
+                this.modelPath = 'model.onnx';
+                this.executionProvider = null;
+            }
+
+            async loadModel(modelPath) {
+                try {
+                    updateModelStatus('loading', `Loading ${modelPath}...`);
+                    
+                    // Fetch the model file
+                    const modelResponse = await fetch(modelPath);
+                    if (!modelResponse.ok) {
+                        throw new Error(`Failed to fetch model: ${modelResponse.statusText}`);
+                    }
+                    const modelBuffer = await modelResponse.arrayBuffer();
+                    
+                    // Try to fetch external data file if it exists
+                    let externalDataBuffer = null;
+                    try {
+                        const dataResponse = await fetch('model.onnx.data');
+                        if (dataResponse.ok) {
+                            externalDataBuffer = await dataResponse.arrayBuffer();
+                            console.log('External data file loaded');
+                        }
+                    } catch (e) {
+                        console.log('No external data file found or not needed');
+                    }
+                    
+                    // Determine available execution providers
+                    const webgpuResult = await checkWebGPUSupport();
+                    
+                    // Create session options
+                    const sessionOptions = {
+                        executionProviders: ['wasm'],
+                        externalData: externalDataBuffer ? [
+                            {
+                                data: externalDataBuffer,
+                                path: 'model.onnx.data'
+                            }
+                        ] : undefined
+                    };
+                    
+                    // Load the model
+                    try {
+                        if (webgpuResult.supported) {
+                            // Try WebGPU first (browser equivalent of CUDA)
+                            console.log('Attempting to load model with WebGPU...');
+                            this.session = await ort.InferenceSession.create(modelBuffer, {
+                                ...sessionOptions,
+                                executionProviders: ['webgpu']
+                            });
+                            this.executionProvider = 'webgpu';
+                            updateModelStatus('ready', '✓ Model loaded with WebGPU acceleration (best performance)');
+                        } else {
+                            throw new Error('WebGPU not available');
+                        }
+                    } catch (e) {
+                        console.log('WebGPU not available, using WASM backend', e);
+                        this.session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
+                        this.executionProvider = 'wasm';
+                        updateModelStatus('ready', '✓ Model loaded with WASM backend');
+                    }
+                    
+                    // Get input shape information
+                    const inputNames = this.session.inputNames;
+                    console.log('Model inputs:', inputNames);
+                    console.log('Model outputs:', this.session.outputNames);
+                    
+                    this.modelLoaded = true;
+                    this.modelPath = modelPath;
+                    return true;
+                } catch (error) {
+                    updateModelStatus('error', `✗ Error loading model: ${error.message}`);
+                    console.error('Model loading error:', error);
+                    showStatus(`Failed to load ${modelPath}. Make sure the file exists in the same directory.`, 'error');
+                    document.getElementById('retryBtn').style.display = 'inline-block';
+                    return false;
+                }
+            }
+
+            async processImage(image) {
+                if (!this.modelLoaded) {
+                    throw new Error('Model not loaded');
+                }
+
+                const originalWidth = image.width;
+                const originalHeight = image.height;
+
+                // Validate image size
+                if (originalWidth < 64 || originalHeight < 64) {
+                    throw new Error('Image is too small. Minimum size is 64x64 pixels.');
+                }
+
+                // Show progress bar
+                showProgress(0, 'Preparing image...');
+
+                // For large images, process in tiles to maintain quality
+                if (originalWidth > this.tileSize || originalHeight > this.tileSize) {
+                    showStatus(`Processing large image (${originalWidth}x${originalHeight}) in tiles...`, 'info');
+                    return await this.processTiled(image);
+                } else {
+                    return await this.processSingle(image);
+                }
+            }
+
+            async processSingle(image) {
+                const originalWidth = image.width;
+                const originalHeight = image.height;
+
+                showProgress(25, 'Preprocessing image...');
+                await new Promise(resolve => setTimeout(resolve, 50));
+
+                // Create canvas for preprocessing
+                const canvas = document.createElement('canvas');
+                canvas.width = this.inputSize;
+                canvas.height = this.inputSize;
+                const ctx = canvas.getContext('2d');
+                
+                // Resize image to model input size
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(image, 0, 0, this.inputSize, this.inputSize);
+                const imageData = ctx.getImageData(0, 0, this.inputSize, this.inputSize);
+                
+                showProgress(50, `Running AI model (${this.executionProvider.toUpperCase()})...`);
+                await new Promise(resolve => setTimeout(resolve, 50));
+                
+                // Convert to tensor format [1, 3, H, W] with normalization
+                const inputTensor = this.imageDataToTensor(imageData);
+                
+                // Run inference
+                const feeds = {};
+                feeds[this.session.inputNames[0]] = inputTensor;
+                
+                const results = await this.session.run(feeds);
+                
+                showProgress(75, 'Postprocessing...');
+                await new Promise(resolve => setTimeout(resolve, 50));
+                
+                // Get output tensor
+                const outputName = this.session.outputNames[0];
+                const outputTensor = results[outputName];
+                
+                // Convert tensor back to image
+                const outputImageData = this.tensorToImageData(outputTensor);
+                
+                // Create output canvas with original size
+                const outputCanvas = document.createElement('canvas');
+                outputCanvas.width = originalWidth;
+                outputCanvas.height = originalHeight;
+                const outputCtx = outputCanvas.getContext('2d');
+                
+                // Draw resized output
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = this.inputSize;
+                tempCanvas.height = this.inputSize;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.putImageData(outputImageData, 0, 0);
+                
+                // Scale back to original size with high quality
+                outputCtx.imageSmoothingEnabled = true;
+                outputCtx.imageSmoothingQuality = 'high';
+                outputCtx.drawImage(tempCanvas, 0, 0, originalWidth, originalHeight);
+                
+                showProgress(100, 'Complete!');
+                
+                return outputCanvas;
+            }
+
+            async processTiled(image) {
+                const originalWidth = image.width;
+                const originalHeight = image.height;
+
+                // Create output canvas
+                const outputCanvas = document.createElement('canvas');
+                outputCanvas.width = originalWidth;
+                outputCanvas.height = originalHeight;
+                const outputCtx = outputCanvas.getContext('2d');
+
+                const step = this.tileSize - this.overlap;
+                let tileCount = 0;
+                let tilesProcessed = 0;
+
+                // Count total tiles
+                for (let y = 0; y < originalHeight; y += step) {
+                    for (let x = 0; x < originalWidth; x += step) {
+                        tileCount++;
+                    }
+                }
+
+                // Process each tile
+                for (let y = 0; y < originalHeight; y += step) {
+                    for (let x = 0; x < originalWidth; x += step) {
+                        // Add small delay to keep UI responsive
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                        
+                        const tileWidth = Math.min(this.tileSize, originalWidth - x);
+                        const tileHeight = Math.min(this.tileSize, originalHeight - y);
+
+                        // Extract and process tile at model's expected resolution
+                        const tileCanvas = document.createElement('canvas');
+                        tileCanvas.width = this.inputSize;
+                        tileCanvas.height = this.inputSize;
+                        const tileCtx = tileCanvas.getContext('2d');
+                        
+                        // Draw image tile with high quality scaling
+                        tileCtx.imageSmoothingEnabled = true;
+                        tileCtx.imageSmoothingQuality = 'high';
+                        tileCtx.drawImage(image, x, y, tileWidth, tileHeight, 0, 0, this.inputSize, this.inputSize);
+                        
+                        // Process tile
+                        const tileImageData = tileCtx.getImageData(0, 0, this.inputSize, this.inputSize);
+                        const inputTensor = this.imageDataToTensor(tileImageData);
+                        
+                        const feeds = {};
+                        feeds[this.session.inputNames[0]] = inputTensor;
+                        const results = await this.session.run(feeds);
+                        
+                        const outputName = this.session.outputNames[0];
+                        const outputTensor = results[outputName];
+                        const outputImageData = this.tensorToImageData(outputTensor);
+                        
+                        // Create temporary canvas for the processed tile
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = this.inputSize;
+                        tempCanvas.height = this.inputSize;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.putImageData(outputImageData, 0, 0);
+                        
+                        // Draw processed tile back to output, scaling to original tile size
+                        outputCtx.imageSmoothingEnabled = true;
+                        outputCtx.imageSmoothingQuality = 'high';
+                        
+                        // Apply feathering on overlap regions for smooth blending
+                        if (x > 0 || y > 0) {
+                            outputCtx.save();
+                            
+                            // Create clipping region with feathered edges
+                            const featherSize = this.overlap / 2;
+                            
+                            if (x > 0 && y > 0) {
+                                // Both edges - use radial gradient
+                                const gradient = outputCtx.createRadialGradient(
+                                    x + featherSize, y + featherSize, 0,
+                                    x + featherSize, y + featherSize, featherSize
+                                );
+                                gradient.addColorStop(0, 'rgba(0,0,0,1)');
+                                gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                                outputCtx.globalCompositeOperation = 'destination-out';
+                                outputCtx.fillStyle = gradient;
+                                outputCtx.fillRect(x, y, featherSize, featherSize);
+                            }
+                            
+                            outputCtx.globalCompositeOperation = 'source-over';
+                            outputCtx.globalAlpha = 1.0;
+                            outputCtx.restore();
+                        }
+                        
+                        // Draw processed tile
+                        outputCtx.drawImage(tempCanvas, 0, 0, this.inputSize, this.inputSize, x, y, tileWidth, tileHeight);
+                        
+                        tilesProcessed++;
+                        const progress = Math.round((tilesProcessed / tileCount) * 100);
+                        showProgress(progress, `Processing tile ${tilesProcessed}/${tileCount} (${this.executionProvider.toUpperCase()})...`);
+                    }
+                }
+
+                return outputCanvas;
+            }
+
+            imageDataToTensor(imageData) {
+                const { width, height, data } = imageData;
+                const tensorData = new Float32Array(3 * width * height);
+                
+                // Convert RGBA to RGB and normalize to [0, 1]
+                // Format: [1, 3, H, W] - batch, channels, height, width
+                for (let i = 0; i < height; i++) {
+                    for (let j = 0; j < width; j++) {
+                        const pixelIndex = i * width + j;
+                        const dataIndex = pixelIndex * 4;
+                        
+                        // R channel
+                        tensorData[pixelIndex] = data[dataIndex] / 255.0;
+                        // G channel
+                        tensorData[width * height + pixelIndex] = data[dataIndex + 1] / 255.0;
+                        // B channel
+                        tensorData[width * height * 2 + pixelIndex] = data[dataIndex + 2] / 255.0;
+                    }
+                }
+                
+                return new ort.Tensor('float32', tensorData, [1, 3, height, width]);
+            }
+
+            tensorToImageData(tensor) {
+                const [batch, channels, height, width] = tensor.dims;
+                const data = tensor.data;
+                
+                const imageData = new ImageData(width, height);
+                const pixelData = imageData.data;
+                
+                // Convert from [1, 3, H, W] to RGBA
+                for (let i = 0; i < height; i++) {
+                    for (let j = 0; j < width; j++) {
+                        const pixelIndex = i * width + j;
+                        const dataIndex = pixelIndex * 4;
+                        
+                        // Clamp values to [0, 1] and convert to [0, 255]
+                        pixelData[dataIndex] = Math.max(0, Math.min(255, data[pixelIndex] * 255));
+                        pixelData[dataIndex + 1] = Math.max(0, Math.min(255, data[width * height + pixelIndex] * 255));
+                        pixelData[dataIndex + 2] = Math.max(0, Math.min(255, data[width * height * 2 + pixelIndex] * 255));
+                        pixelData[dataIndex + 3] = 255; // Alpha
+                    }
+                }
+                
+                return imageData;
+            }
+        }
+
+        let remover = new ONNXWatermarkRemover();
+        let originalImage = null;
+        let processedCanvas = null;
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const processBtn = document.getElementById('processBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const retryBtn = document.getElementById('retryBtn');
+        const originalImg = document.getElementById('originalImg');
+        const processedCanvasEl = document.getElementById('processedCanvas');
+        const imageContainer = document.getElementById('imageContainer');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const toggleSettings = document.getElementById('toggleSettings');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const modelPathInput = document.getElementById('modelPath');
+        const tileSizeInput = document.getElementById('tileSize');
+        const overlapInput = document.getElementById('overlap');
+        const inputSizeInput = document.getElementById('inputSize');
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+        }
+
+        function hideStatus() {
+            document.getElementById('status').style.display = 'none';
+        }
+
+        function showProgress(percent, message = '') {
+            progressContainer.style.display = 'block';
+            progressBar.style.width = percent + '%';
+            progressText.textContent = message;
+            progressText.style.display = message ? 'block' : 'none';
+        }
+
+        function hideProgress() {
+            progressContainer.style.display = 'none';
+            progressText.style.display = 'none';
+            progressBar.style.width = '0%';
+        }
+
+        function updateModelStatus(state, message) {
+            const modelStatus = document.getElementById('modelStatus');
+            modelStatus.className = `model-status ${state}`;
+            
+            if (state === 'loading') {
+                modelStatus.innerHTML = `<span class="loading"></span><span>${message}</span>`;
+            } else {
+                modelStatus.innerHTML = `<span>${message}</span>`;
+            }
+        }
+
+        function updateProcessButton() {
+            processBtn.disabled = !(remover.modelLoaded && originalImage);
+        }
+
+        // Toggle settings panel
+        toggleSettings.addEventListener('click', () => {
+            if (settingsPanel.style.display === 'none' || settingsPanel.style.display === '') {
+                settingsPanel.style.display = 'block';
+            } else {
+                settingsPanel.style.display = 'none';
+            }
+        });
+
+        // Apply settings changes
+        modelPathInput.addEventListener('change', () => {
+            remover.modelPath = modelPathInput.value;
+        });
+
+        tileSizeInput.addEventListener('change', () => {
+            const value = parseInt(tileSizeInput.value);
+            if (value >= 64 && value <= 1024) {
+                remover.tileSize = value;
+            }
+        });
+
+        overlapInput.addEventListener('change', () => {
+            const value = parseInt(overlapInput.value);
+            if (value >= 0 && value <= 128) {
+                remover.overlap = value;
+            }
+        });
+
+        inputSizeInput.addEventListener('change', () => {
+            const value = parseInt(inputSizeInput.value);
+            if (value >= 64 && value <= 1024) {
+                remover.inputSize = value;
+            }
+        });
+
+        // Upload handlers
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleImageUpload(file);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleImageUpload(file);
+            }
+        });
+
+        function handleImageUpload(file) {
+            // Validate file type
+            if (!file.type.match('image.*')) {
+                showStatus('Please upload an image file (JPEG, PNG, etc.)', 'error');
+                return;
+            }
+
+            // Validate file size (limit to 20MB)
+            if (file.size > 20 * 1024 * 1024) {
+                showStatus('File is too large. Please upload an image smaller than 20MB.', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    originalImage = img;
+                    originalImg.src = e.target.result;
+                    imageContainer.style.display = 'grid';
+                    downloadBtn.disabled = true;
+                    updateProcessButton();
+                    
+                    // Clear previous result
+                    const ctx = processedCanvasEl.getContext('2d');
+                    ctx.clearRect(0, 0, processedCanvasEl.width, processedCanvasEl.height);
+                    
+                    if (remover.modelLoaded) {
+                        showStatus('Image loaded! Click "Remove Watermark" to process.', 'success');
+                        setTimeout(hideStatus, 2000);
+                    }
+                };
+                img.onerror = () => {
+                    showStatus('Failed to load image. Please try another file.', 'error');
+                };
+                img.src = e.target.result;
+            };
+            reader.onerror = () => {
+                showStatus('Failed to read file. Please try again.', 'error');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        processBtn.addEventListener('click', async () => {
+            if (!originalImage || !remover.modelLoaded) return;
+
+            processBtn.disabled = true;
+            processBtn.innerHTML = 'Processing<span class="loading"></span>';
+            hideStatus();
+
+            try {
+                processedCanvas = await remover.processImage(originalImage);
+                
+                // Display result
+                processedCanvasEl.width = processedCanvas.width;
+                processedCanvasEl.height = processedCanvas.height;
+                const ctx = processedCanvasEl.getContext('2d');
+                ctx.drawImage(processedCanvas, 0, 0);
+
+                showStatus('Watermark removed successfully!', 'success');
+                downloadBtn.disabled = false;
+                setTimeout(() => {
+                    hideStatus();
+                    hideProgress();
+                }, 2000);
+            } catch (error) {
+                showStatus(`Error processing image: ${error.message}`, 'error');
+                console.error('Processing error:', error);
+                hideProgress();
+            } finally {
+                processBtn.disabled = false;
+                processBtn.innerHTML = 'Remove Watermark';
+                updateProcessButton();
+            }
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            if (!processedCanvas) return;
+            
+            processedCanvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = 'watermark_removed.png';
+                link.href = url;
+                link.click();
+                URL.revokeObjectURL(url);
+            }, 'image/png', 1.0);
+        });
+
+        // Retry button for model loading
+        retryBtn.addEventListener('click', async () => {
+            retryBtn.disabled = true;
+            retryBtn.innerHTML = 'Retrying<span class="loading"></span>';
+            
+            const success = await remover.loadModel(remover.modelPath);
+            if (success) {
+                showStatus('Model loaded successfully! You can now process images.', 'success');
+                retryBtn.style.display = 'none';
+                updateProcessButton();
+                setTimeout(hideStatus, 2000);
+            }
+            
+            retryBtn.disabled = false;
+            retryBtn.innerHTML = 'Retry Model Loading';
+        });
+
+        // Load model on page load
+        async function initialize() {
+            // Check browser compatibility
+            if (!checkBrowserCompatibility()) {
+                showStatus('Your browser may not support all features required for this application.', 'error');
+            }
+
+            // Update execution provider status
+            await updateExecutionProviderStatus();
+
+            const success = await remover.loadModel(remover.modelPath);
+            if (success) {
+                showStatus('Ready! Upload an image to remove watermarks.', 'success');
+                setTimeout(hideStatus, 2000);
+            }
+        }
+
+        // Initialize the application
+        window.addEventListener('load', initialize);
+    </script>
+</body>
+</html>
