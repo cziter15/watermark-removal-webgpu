@@ -6,6 +6,7 @@
     <title>ONNX Watermark Remover</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.20.0/ort.min.js"></script>
     <style>
+        /* Keep all existing styles */
         :root {
             --primary-color: #6366f1;
             --secondary-color: #8b5cf6;
@@ -271,61 +272,6 @@
             border-left: 4px solid var(--warning-color);
         }
         
-        .settings-panel {
-            background-color: var(--card-color);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            display: none;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .settings-panel h3 {
-            margin-bottom: 10px;
-            color: var(--text-primary);
-        }
-        
-        .setting-item {
-            margin-bottom: 15px;
-        }
-        
-        .setting-item label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-        
-        .setting-item input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-            background-color: var(--surface-color);
-            color: var(--text-primary);
-        }
-        
-        .setting-item input[type="range"] {
-            padding: 5px 0;
-        }
-        
-        .setting-item span {
-            display: inline-block;
-            margin-left: 10px;
-            color: var(--text-primary);
-        }
-        
-        .toggle-settings {
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            cursor: pointer;
-            font-size: 14px;
-            margin-bottom: 10px;
-            padding: 5px 0;
-            font-weight: 500;
-        }
-        
         .execution-info {
             background-color: rgba(96, 165, 250, 0.1);
             border-left: 4px solid var(--info-color);
@@ -430,14 +376,6 @@
                 font-size: 14px;
                 margin: 5px;
             }
-            
-            .settings-panel {
-                padding: 10px;
-            }
-            
-            .progress-container {
-                height: 15px;
-            }
         }
         
         @media (max-width: 480px) {
@@ -490,29 +428,6 @@
                 <li><strong>Update your graphics drivers</strong> to the latest version.</li>
                 <li>Make sure you're accessing this page via <strong>HTTPS</strong> or <strong>localhost</strong> (WebGPU requires a secure context).</li>
             </ol>
-        </div>
-        
-        <button class="toggle-settings" id="toggleSettings">⚙️ Advanced Settings</button>
-        
-        <div class="settings-panel" id="settingsPanel">
-            <h3>Processing Settings</h3>
-            <div class="setting-item">
-                <label for="tileSize">Tile Size (for large images):</label>
-                <input type="number" id="tileSize" value="256" min="64" max="1024">
-            </div>
-            <div class="setting-item">
-                <label for="overlap">Tile Overlap (pixels):</label>
-                <input type="number" id="overlap" value="8" min="0" max="32">
-            </div>
-            <div class="setting-item">
-                <label for="inputSize">Model Input Size:</label>
-                <input type="number" id="inputSize" value="256" min="64" max="1024">
-            </div>
-            <div class="setting-item">
-                <label for="strength">Removal Strength:</label>
-                <input type="range" id="strength" min="1" max="10" value="7">
-                <span id="strengthValue">7</span>
-            </div>
         </div>
         
         <div id="modelStatus" class="model-status loading">
@@ -705,13 +620,10 @@
             constructor() {
                 this.session = null;
                 this.modelLoaded = false;
-                this.inputSize = 256; // Model's expected input size
-                this.tileSize = 256; // Process in tiles for large images
-                this.overlap = 8; // Reduced overlap between tiles
+                this.inputSize = 256; // Fixed model input size to match Python code
                 this.modelPath = MODEL_URL;
                 this.modelDataPath = MODEL_DATA_URL;
                 this.executionProvider = null;
-                this.strength = 0.7; // Removal strength (0-1)
             }
 
             async loadModel(modelPath, modelDataPath) {
@@ -813,19 +725,7 @@
                 // Show progress bar
                 showProgress(0, 'Preparing image...');
 
-                // For large images, process in tiles to maintain quality
-                if (originalWidth > this.tileSize || originalHeight > this.tileSize) {
-                    showStatus(`Processing large image (${originalWidth}x${originalHeight}) in tiles...`, 'info');
-                    return await this.processTiled(image);
-                } else {
-                    return await this.processSingle(image);
-                }
-            }
-
-            async processSingle(image) {
-                const originalWidth = image.width;
-                const originalHeight = image.height;
-
+                // Process the image as a whole (no tiling like in Python code)
                 showProgress(25, 'Preprocessing image...');
                 await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -863,9 +763,6 @@
                 // Convert tensor back to image
                 const outputImageData = this.tensorToImageData(outputTensor);
                 
-                // Apply strength factor to the output
-                this.applyStrength(outputImageData, imageData);
-                
                 // Create output canvas with original size
                 const outputCanvas = document.createElement('canvas');
                 outputCanvas.width = originalWidth;
@@ -879,123 +776,13 @@
                 const tempCtx = tempCanvas.getContext('2d');
                 tempCtx.putImageData(outputImageData, 0, 0);
                 
-                // Scale back to original size with high quality
+                // Scale back to original size with high quality (like LANCZOS in Python)
                 outputCtx.imageSmoothingEnabled = true;
                 outputCtx.imageSmoothingQuality = 'high';
                 outputCtx.drawImage(tempCanvas, 0, 0, originalWidth, originalHeight);
                 
                 showProgress(100, 'Complete!');
                 
-                return outputCanvas;
-            }
-
-            async processTiled(image) {
-                const originalWidth = image.width;
-                const originalHeight = image.height;
-
-                // Create output canvas
-                const outputCanvas = document.createElement('canvas');
-                outputCanvas.width = originalWidth;
-                outputCanvas.height = originalHeight;
-                const outputCtx = outputCanvas.getContext('2d');
-
-                const step = this.tileSize - this.overlap;
-                let tileCount = 0;
-                let tilesProcessed = 0;
-
-                // Count total tiles
-                for (let y = 0; y < originalHeight; y += step) {
-                    for (let x = 0; x < originalWidth; x += step) {
-                        tileCount++;
-                    }
-                }
-
-                // Process each tile
-                for (let y = 0; y < originalHeight; y += step) {
-                    for (let x = 0; x < originalWidth; x += step) {
-                        // Add small delay to keep UI responsive
-                        await new Promise(resolve => setTimeout(resolve, 10));
-                        
-                        const tileWidth = Math.min(this.tileSize, originalWidth - x);
-                        const tileHeight = Math.min(this.tileSize, originalHeight - y);
-
-                        // Extract and process tile at model's expected resolution
-                        const tileCanvas = document.createElement('canvas');
-                        tileCanvas.width = this.inputSize;
-                        tileCanvas.height = this.inputSize;
-                        const tileCtx = tileCanvas.getContext('2d');
-                        
-                        // Draw image tile with high quality scaling
-                        tileCtx.imageSmoothingEnabled = true;
-                        tileCtx.imageSmoothingQuality = 'high';
-                        tileCtx.drawImage(image, x, y, tileWidth, tileHeight, 0, 0, this.inputSize, this.inputSize);
-                        
-                        // Process tile
-                        const tileImageData = tileCtx.getImageData(0, 0, this.inputSize, this.inputSize);
-                        const inputTensor = this.imageDataToTensor(tileImageData);
-                        
-                        const feeds = {};
-                        feeds[this.session.inputNames[0]] = inputTensor;
-                        const results = await this.session.run(feeds);
-                        
-                        const outputName = this.session.outputNames[0];
-                        const outputTensor = results[outputName];
-                        const outputImageData = this.tensorToImageData(outputTensor);
-                        
-                        // Apply strength factor to the output
-                        this.applyStrength(outputImageData, tileImageData);
-                        
-                        // Create temporary canvas for the processed tile
-                        const tempCanvas = document.createElement('canvas');
-                        tempCanvas.width = this.inputSize;
-                        tempCanvas.height = this.inputSize;
-                        const tempCtx = tempCanvas.getContext('2d');
-                        tempCtx.putImageData(outputImageData, 0, 0);
-                        
-                        // Scale the processed tile back to original tile dimensions
-                        const scaledTileCanvas = document.createElement('canvas');
-                        scaledTileCanvas.width = tileWidth;
-                        scaledTileCanvas.height = tileHeight;
-                        const scaledTileCtx = scaledTileCanvas.getContext('2d');
-                        scaledTileCtx.imageSmoothingEnabled = true;
-                        scaledTileCtx.imageSmoothingQuality = 'high';
-                        scaledTileCtx.drawImage(tempCanvas, 0, 0, this.inputSize, this.inputSize, 0, 0, tileWidth, tileHeight);
-                        
-                        // Calculate the region to draw (excluding overlap areas)
-                        const drawX = x + (x > 0 ? this.overlap : 0);
-                        const drawY = y + (y > 0 ? this.overlap : 0);
-                        const drawWidth = tileWidth - ((x > 0 ? this.overlap : 0) + (x + tileWidth < originalWidth ? this.overlap : 0));
-                        const drawHeight = tileHeight - ((y > 0 ? this.overlap : 0) + (y + tileHeight < originalHeight ? this.overlap : 0));
-                        
-                        // Only draw if we have a valid region
-                        if (drawWidth > 0 && drawHeight > 0) {
-                            // Extract the region from the scaled tile
-                            const regionCanvas = document.createElement('canvas');
-                            regionCanvas.width = drawWidth;
-                            regionCanvas.height = drawHeight;
-                            const regionCtx = regionCanvas.getContext('2d');
-                            
-                            // Calculate source coordinates in the scaled tile
-                            const sourceX = x > 0 ? this.overlap : 0;
-                            const sourceY = y > 0 ? this.overlap : 0;
-                            
-                            // Draw the region
-                            regionCtx.drawImage(
-                                scaledTileCanvas,
-                                sourceX, sourceY, drawWidth, drawHeight,
-                                0, 0, drawWidth, drawHeight
-                            );
-                            
-                            // Draw the region to the output canvas
-                            outputCtx.drawImage(regionCanvas, drawX, drawY);
-                        }
-                        
-                        tilesProcessed++;
-                        const progress = Math.round((tilesProcessed / tileCount) * 100);
-                        showProgress(progress, `Processing tile ${tilesProcessed}/${tileCount} (${this.executionProvider.toUpperCase()})...`);
-                    }
-                }
-
                 return outputCanvas;
             }
 
@@ -1045,20 +832,6 @@
                 
                 return imageData;
             }
-            
-            applyStrength(outputImageData, originalImageData) {
-                const outputData = outputImageData.data;
-                const originalData = originalImageData.data;
-                const strength = this.strength;
-                
-                // Blend between original and output based on strength
-                for (let i = 0; i < outputData.length; i += 4) {
-                    outputData[i] = Math.round(originalData[i] * (1 - strength) + outputData[i] * strength);
-                    outputData[i + 1] = Math.round(originalData[i + 1] * (1 - strength) + outputData[i + 1] * strength);
-                    outputData[i + 2] = Math.round(originalData[i + 2] * (1 - strength) + outputData[i + 2] * strength);
-                    // Alpha remains unchanged
-                }
-            }
         }
 
         let remover = new ONNXWatermarkRemover();
@@ -1076,13 +849,6 @@
         const progressContainer = document.getElementById('progressContainer');
         const progressBar = document.getElementById('progressBar');
         const progressText = document.getElementById('progressText');
-        const toggleSettings = document.getElementById('toggleSettings');
-        const settingsPanel = document.getElementById('settingsPanel');
-        const tileSizeInput = document.getElementById('tileSize');
-        const overlapInput = document.getElementById('overlap');
-        const inputSizeInput = document.getElementById('inputSize');
-        const strengthInput = document.getElementById('strength');
-        const strengthValue = document.getElementById('strengthValue');
 
         function showStatus(message, type = 'info') {
             const statusDiv = document.getElementById('status');
@@ -1122,43 +888,6 @@
         function updateProcessButton() {
             processBtn.disabled = !(remover.modelLoaded && originalImage);
         }
-
-        // Toggle settings panel
-        toggleSettings.addEventListener('click', () => {
-            if (settingsPanel.style.display === 'none' || settingsPanel.style.display === '') {
-                settingsPanel.style.display = 'block';
-            } else {
-                settingsPanel.style.display = 'none';
-            }
-        });
-
-        // Apply settings changes
-        tileSizeInput.addEventListener('change', () => {
-            const value = parseInt(tileSizeInput.value);
-            if (value >= 64 && value <= 1024) {
-                remover.tileSize = value;
-            }
-        });
-
-        overlapInput.addEventListener('change', () => {
-            const value = parseInt(overlapInput.value);
-            if (value >= 0 && value <= 32) {
-                remover.overlap = value;
-            }
-        });
-
-        inputSizeInput.addEventListener('change', () => {
-            const value = parseInt(inputSizeInput.value);
-            if (value >= 64 && value <= 1024) {
-                remover.inputSize = value;
-            }
-        });
-
-        strengthInput.addEventListener('input', () => {
-            const value = parseInt(strengthInput.value);
-            strengthValue.textContent = value;
-            remover.strength = value / 10; // Convert 1-10 to 0.1-1.0
-        });
 
         // Upload handlers
         uploadArea.addEventListener('click', () => fileInput.click());
