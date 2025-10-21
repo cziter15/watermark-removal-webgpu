@@ -6,7 +6,6 @@
     <title>ONNX Watermark Remover</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.20.0/ort.min.js"></script>
     <style>
-        /* Keep all existing styles */
         :root {
             --primary-color: #6366f1;
             --secondary-color: #8b5cf6;
@@ -272,6 +271,61 @@
             border-left: 4px solid var(--warning-color);
         }
         
+        .settings-panel {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .settings-panel h3 {
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+        
+        .setting-item {
+            margin-bottom: 15px;
+        }
+        
+        .setting-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .setting-item input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+        
+        .setting-item input[type="range"] {
+            padding: 5px 0;
+        }
+        
+        .setting-item span {
+            display: inline-block;
+            margin-left: 10px;
+            color: var(--text-primary);
+        }
+        
+        .toggle-settings {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            font-weight: 500;
+        }
+        
         .execution-info {
             background-color: rgba(96, 165, 250, 0.1);
             border-left: 4px solid var(--info-color);
@@ -348,6 +402,17 @@
             color: var(--text-secondary);
         }
         
+        .retry-section {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .retry-section p {
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
         /* Responsive improvements */
         @media (max-width: 768px) {
             .container {
@@ -375,6 +440,10 @@
                 padding: 10px 20px;
                 font-size: 14px;
                 margin: 5px;
+            }
+            
+            .settings-panel {
+                padding: 10px;
             }
         }
         
@@ -430,6 +499,24 @@
             </ol>
         </div>
         
+        <button class="toggle-settings" id="toggleSettings">⚙️ Advanced Settings</button>
+        
+        <div class="settings-panel" id="settingsPanel">
+            <h3>Processing Settings</h3>
+            <div class="setting-item">
+                <label for="tileSize">Tile Size (for large images):</label>
+                <input type="number" id="tileSize" value="512" min="64" max="1024" step="64">
+            </div>
+            <div class="setting-item">
+                <label for="overlap">Tile Overlap (pixels):</label>
+                <input type="number" id="overlap" value="32" min="0" max="64">
+            </div>
+            <div class="setting-item">
+                <label for="inputSize">Model Input Size:</label>
+                <input type="number" id="inputSize" value="256" min="64" max="512" step="64">
+            </div>
+        </div>
+        
         <div id="modelStatus" class="model-status loading">
             <span class="loading"></span>
             <span>Loading model...</span>
@@ -452,7 +539,11 @@
         <div style="text-align: center;">
             <button class="btn" id="processBtn" disabled>Remove Watermark</button>
             <button class="btn" id="downloadBtn" disabled>Download Result</button>
-            <button class="btn" id="retryBtn" style="display: none;">Retry Model Loading</button>
+        </div>
+        
+        <div class="retry-section" id="retrySection" style="display: none;">
+            <p>Failed to load the model. This could be due to network issues or model file problems.</p>
+            <button class="btn" id="retryBtn">Retry Model Loading</button>
         </div>
         
         <div class="image-container" id="imageContainer" style="display: none;">
@@ -620,15 +711,24 @@
             constructor() {
                 this.session = null;
                 this.modelLoaded = false;
-                this.inputSize = 256; // Fixed model input size to match Python code
+                this.inputSize = 256; // Model's expected input size
+                this.tileSize = 512; // Process in tiles for large images
+                this.overlap = 32; // Overlap between tiles for seamless blending
                 this.modelPath = MODEL_URL;
                 this.modelDataPath = MODEL_DATA_URL;
                 this.executionProvider = null;
+                this.retryCount = 0;
+                this.maxRetries = 3;
             }
 
-            async loadModel(modelPath, modelDataPath) {
+            async loadModel(modelPath, modelDataPath, isRetry = false) {
                 try {
-                    updateModelStatus('loading', `Loading model...`);
+                    if (!isRetry) {
+                        this.retryCount = 0;
+                        updateModelStatus('loading', `Loading model...`);
+                    } else {
+                        updateModelStatus('loading', `Retrying model load (attempt ${this.retryCount}/${this.maxRetries})...`);
+                    }
                     
                     // Fetch the model file
                     const modelResponse = await fetch(modelPath);
@@ -637,12 +737,18 @@
                     }
                     const modelBuffer = await modelResponse.arrayBuffer();
                     
+                    // Wait a moment after getting the model
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
                     // Try to fetch external data file if it exists
                     let externalDataBuffer = null;
+                    let externalDataLoaded = false;
+                    
                     try {
                         const dataResponse = await fetch(modelDataPath);
                         if (dataResponse.ok) {
                             externalDataBuffer = await dataResponse.arrayBuffer();
+                            externalDataLoaded = true;
                             console.log('External data file loaded successfully');
                         } else {
                             console.warn(`External data file not found: ${dataResponse.statusText}`);
@@ -660,7 +766,7 @@
                     };
                     
                     // If we have external data, add it to the options
-                    if (externalDataBuffer) {
+                    if (externalDataLoaded && externalDataBuffer) {
                         // Use the array format for external data
                         sessionOptions.externalData = [
                             {
@@ -671,40 +777,89 @@
                     }
                     
                     // Load the model
+                    let session = null;
                     try {
                         if (webgpuResult.supported) {
                             // Try WebGPU first (browser equivalent of CUDA)
                             console.log('Attempting to load model with WebGPU...');
-                            this.session = await ort.InferenceSession.create(modelBuffer, {
+                            session = await ort.InferenceSession.create(modelBuffer, {
                                 ...sessionOptions,
                                 executionProviders: ['webgpu']
                             });
                             this.executionProvider = 'webgpu';
-                            updateModelStatus('ready', '✓ Model loaded with WebGPU acceleration (best performance)');
                         } else {
                             throw new Error('WebGPU not available');
                         }
                     } catch (e) {
                         console.log('WebGPU not available, using WASM backend', e);
-                        this.session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
+                        session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
                         this.executionProvider = 'wasm';
-                        updateModelStatus('ready', '✓ Model loaded with WASM backend');
                     }
                     
-                    // Get input shape information
-                    const inputNames = this.session.inputNames;
-                    console.log('Model inputs:', inputNames);
-                    console.log('Model outputs:', this.session.outputNames);
+                    // Wait a moment after creating the session
+                    await new Promise(resolve => setTimeout(resolve, 500));
                     
+                    // Get input shape information
+                    const inputNames = session.inputNames;
+                    console.log('Model inputs:', inputNames);
+                    console.log('Model outputs:', session.outputNames);
+                    
+                    this.session = session;
                     this.modelLoaded = true;
                     this.modelPath = modelPath;
                     this.modelDataPath = modelDataPath;
+                    
+                    if (this.executionProvider === 'webgpu') {
+                        updateModelStatus('ready', '✓ Model loaded with WebGPU acceleration (best performance)');
+                    } else {
+                        updateModelStatus('ready', '✓ Model loaded with WASM backend');
+                    }
+                    
                     return true;
                 } catch (error) {
-                    updateModelStatus('error', `✗ Error loading model: ${error.message}`);
                     console.error('Model loading error:', error);
-                    showStatus(`Failed to load model. Please check your internet connection.`, 'error');
-                    document.getElementById('retryBtn').style.display = 'inline-block';
+                    
+                    // Check if this is an external data error
+                    if (error.message.includes('external data') || error.message.includes('Deserialize tensor')) {
+                        // Try loading without external data
+                        try {
+                            console.log('Attempting to load model without external data...');
+                            updateModelStatus('loading', 'Trying alternative loading method...');
+                            
+                            const webgpuResult = await checkWebGPUSupport();
+                            const sessionOptions = {
+                                executionProviders: ['wasm']
+                            };
+                            
+                            let session = null;
+                            if (webgpuResult.supported) {
+                                session = await ort.InferenceSession.create(modelBuffer, {
+                                    ...sessionOptions,
+                                    executionProviders: ['webgpu']
+                                });
+                                this.executionProvider = 'webgpu';
+                            } else {
+                                session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
+                                this.executionProvider = 'wasm';
+                            }
+                            
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                            
+                            this.session = session;
+                            this.modelLoaded = true;
+                            this.modelPath = modelPath;
+                            this.modelDataPath = modelDataPath;
+                            
+                            updateModelStatus('ready', '✓ Model loaded without external data');
+                            return true;
+                        } catch (e2) {
+                            console.error('Alternative loading failed:', e2);
+                        }
+                    }
+                    
+                    updateModelStatus('error', `✗ Error loading model: ${error.message}`);
+                    showStatus(`Failed to load model. ${error.message}`, 'error');
+                    document.getElementById('retrySection').style.display = 'block';
                     return false;
                 }
             }
@@ -725,7 +880,19 @@
                 // Show progress bar
                 showProgress(0, 'Preparing image...');
 
-                // Process the image as a whole (no tiling like in Python code)
+                // For large images, process in tiles to maintain quality
+                if (originalWidth > this.tileSize || originalHeight > this.tileSize) {
+                    showStatus(`Processing large image (${originalWidth}x${originalHeight}) in tiles...`, 'info');
+                    return await this.processTiled(image);
+                } else {
+                    return await this.processSingle(image);
+                }
+            }
+
+            async processSingle(image) {
+                const originalWidth = image.width;
+                const originalHeight = image.height;
+
                 showProgress(25, 'Preprocessing image...');
                 await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -776,13 +943,171 @@
                 const tempCtx = tempCanvas.getContext('2d');
                 tempCtx.putImageData(outputImageData, 0, 0);
                 
-                // Scale back to original size with high quality (like LANCZOS in Python)
+                // Scale back to original size with high quality
                 outputCtx.imageSmoothingEnabled = true;
                 outputCtx.imageSmoothingQuality = 'high';
                 outputCtx.drawImage(tempCanvas, 0, 0, originalWidth, originalHeight);
                 
                 showProgress(100, 'Complete!');
                 
+                return outputCanvas;
+            }
+
+            async processTiled(image) {
+                const originalWidth = image.width;
+                const originalHeight = image.height;
+
+                // Create output canvas
+                const outputCanvas = document.createElement('canvas');
+                outputCanvas.width = originalWidth;
+                outputCanvas.height = originalHeight;
+                const outputCtx = outputCanvas.getContext('2d');
+
+                // Create weight maps for blending
+                const weightCanvas = document.createElement('canvas');
+                weightCanvas.width = originalWidth;
+                weightCanvas.height = originalHeight;
+                const weightCtx = weightCanvas.getContext('2d');
+                const weightData = weightCtx.createImageData(originalWidth, originalHeight);
+                
+                // Initialize weight data to zeros
+                for (let i = 0; i < weightData.data.length; i += 4) {
+                    weightData.data[i] = 0;     // R
+                    weightData.data[i + 1] = 0; // G
+                    weightData.data[i + 2] = 0; // B
+                    weightData.data[i + 3] = 255; // A
+                }
+                
+                const step = this.tileSize - this.overlap;
+                let tileCount = 0;
+                let tilesProcessed = 0;
+
+                // Count total tiles
+                for (let y = 0; y < originalHeight; y += step) {
+                    for (let x = 0; x < originalWidth; x += step) {
+                        tileCount++;
+                    }
+                }
+
+                // Process each tile
+                for (let y = 0; y < originalHeight; y += step) {
+                    for (let x = 0; x < originalWidth; x += step) {
+                        // Add small delay to keep UI responsive
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                        
+                        const tileWidth = Math.min(this.tileSize, originalWidth - x);
+                        const tileHeight = Math.min(this.tileSize, originalHeight - y);
+
+                        // Extract and process tile
+                        const tileCanvas = document.createElement('canvas');
+                        tileCanvas.width = this.inputSize;
+                        tileCanvas.height = this.inputSize;
+                        const tileCtx = tileCanvas.getContext('2d');
+                        
+                        // Draw image tile with high quality scaling
+                        tileCtx.imageSmoothingEnabled = true;
+                        tileCtx.imageSmoothingQuality = 'high';
+                        tileCtx.drawImage(image, x, y, tileWidth, tileHeight, 0, 0, this.inputSize, this.inputSize);
+                        
+                        // Process tile
+                        const tileImageData = tileCtx.getImageData(0, 0, this.inputSize, this.inputSize);
+                        const inputTensor = this.imageDataToTensor(tileImageData);
+                        
+                        const feeds = {};
+                        feeds[this.session.inputNames[0]] = inputTensor;
+                        const results = await this.session.run(feeds);
+                        
+                        const outputName = this.session.outputNames[0];
+                        const outputTensor = results[outputName];
+                        const outputImageData = this.tensorToImageData(outputTensor);
+                        
+                        // Create temporary canvas for the processed tile
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = this.inputSize;
+                        tempCanvas.height = this.inputSize;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.putImageData(outputImageData, 0, 0);
+                        
+                        // Scale the processed tile back to original tile dimensions
+                        const scaledTileCanvas = document.createElement('canvas');
+                        scaledTileCanvas.width = tileWidth;
+                        scaledTileCanvas.height = tileHeight;
+                        const scaledTileCtx = scaledTileCanvas.getContext('2d');
+                        scaledTileCtx.imageSmoothingEnabled = true;
+                        scaledTileCtx.imageSmoothingQuality = 'high';
+                        scaledTileCtx.drawImage(tempCanvas, 0, 0, this.inputSize, this.inputSize, 0, 0, tileWidth, tileHeight);
+                        
+                        // Get the processed tile data
+                        const processedTileData = scaledTileCtx.getImageData(0, 0, tileWidth, tileHeight);
+                        
+                        // Create weight map for this tile
+                        const tileWeightCanvas = document.createElement('canvas');
+                        tileWeightCanvas.width = tileWidth;
+                        tileWeightCanvas.height = tileHeight;
+                        const tileWeightCtx = tileWeightCanvas.getContext('2d');
+                        const tileWeightData = tileWeightCtx.createImageData(tileWidth, tileHeight);
+                        
+                        // Calculate weights based on distance from edges
+                        for (let ty = 0; ty < tileHeight; ty++) {
+                            for (let tx = 0; tx < tileWidth; tx++) {
+                                const idx = (ty * tileWidth + tx) * 4;
+                                
+                                // Calculate distance from edges
+                                let distX = Math.min(tx, tileWidth - tx - 1);
+                                let distY = Math.min(ty, tileHeight - ty - 1);
+                                
+                                // If we're at the edge of the image, use full weight
+                                if (x === 0 || x + tileWidth === originalWidth) {
+                                    distX = this.overlap;
+                                }
+                                if (y === 0 || y + tileHeight === originalHeight) {
+                                    distY = this.overlap;
+                                }
+                                
+                                // Calculate weight (1 at center, 0 at edges)
+                                const weightX = Math.min(1, distX / this.overlap);
+                                const weightY = Math.min(1, distY / this.overlap);
+                                const weight = weightX * weightY;
+                                
+                                tileWeightData.data[idx] = weight * 255;
+                                tileWeightData.data[idx + 1] = weight * 255;
+                                tileWeightData.data[idx + 2] = weight * 255;
+                                tileWeightData.data[idx + 3] = 255;
+                            }
+                        }
+                        
+                        // Blend the tile with the output canvas
+                        const outputData = outputCtx.getImageData(x, y, tileWidth, tileHeight);
+                        
+                        for (let i = 0; i < outputData.data.length; i += 4) {
+                            const weight = tileWeightData.data[i] / 255;
+                            const currentWeight = weightData.data[(y * originalWidth + x) * 4 + (i / 4) % tileWidth + Math.floor((i / 4) / tileWidth) * originalWidth] / 255;
+                            
+                            if (currentWeight === 0) {
+                                // First tile to contribute to this pixel
+                                outputData.data[i] = processedTileData.data[i];
+                                outputData.data[i + 1] = processedTileData.data[i + 1];
+                                outputData.data[i + 2] = processedTileData.data[i + 2];
+                                weightData.data[(y * originalWidth + x) * 4 + (i / 4) % tileWidth + Math.floor((i / 4) / tileWidth) * originalWidth] = weight * 255;
+                            } else {
+                                // Blend with existing data
+                                const blendFactor = weight / (currentWeight + weight);
+                                outputData.data[i] = outputData.data[i] * (1 - blendFactor) + processedTileData.data[i] * blendFactor;
+                                outputData.data[i + 1] = outputData.data[i + 1] * (1 - blendFactor) + processedTileData.data[i + 1] * blendFactor;
+                                outputData.data[i + 2] = outputData.data[i + 2] * (1 - blendFactor) + processedTileData.data[i + 2] * blendFactor;
+                                weightData.data[(y * originalWidth + x) * 4 + (i / 4) % tileWidth + Math.floor((i / 4) / tileWidth) * originalWidth] = (currentWeight + weight) * 255;
+                            }
+                        }
+                        
+                        // Put the blended data back
+                        outputCtx.putImageData(outputData, x, y);
+                        
+                        tilesProcessed++;
+                        const progress = Math.round((tilesProcessed / tileCount) * 100);
+                        showProgress(progress, `Processing tile ${tilesProcessed}/${tileCount} (${this.executionProvider.toUpperCase()})...`);
+                    }
+                }
+
                 return outputCanvas;
             }
 
@@ -849,6 +1174,12 @@
         const progressContainer = document.getElementById('progressContainer');
         const progressBar = document.getElementById('progressBar');
         const progressText = document.getElementById('progressText');
+        const toggleSettings = document.getElementById('toggleSettings');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const tileSizeInput = document.getElementById('tileSize');
+        const overlapInput = document.getElementById('overlap');
+        const inputSizeInput = document.getElementById('inputSize');
+        const retrySection = document.getElementById('retrySection');
 
         function showStatus(message, type = 'info') {
             const statusDiv = document.getElementById('status');
@@ -888,6 +1219,37 @@
         function updateProcessButton() {
             processBtn.disabled = !(remover.modelLoaded && originalImage);
         }
+
+        // Toggle settings panel
+        toggleSettings.addEventListener('click', () => {
+            if (settingsPanel.style.display === 'none' || settingsPanel.style.display === '') {
+                settingsPanel.style.display = 'block';
+            } else {
+                settingsPanel.style.display = 'none';
+            }
+        });
+
+        // Apply settings changes
+        tileSizeInput.addEventListener('change', () => {
+            const value = parseInt(tileSizeInput.value);
+            if (value >= 64 && value <= 1024) {
+                remover.tileSize = value;
+            }
+        });
+
+        overlapInput.addEventListener('change', () => {
+            const value = parseInt(overlapInput.value);
+            if (value >= 0 && value <= 64) {
+                remover.overlap = value;
+            }
+        });
+
+        inputSizeInput.addEventListener('change', () => {
+            const value = parseInt(inputSizeInput.value);
+            if (value >= 64 && value <= 512) {
+                remover.inputSize = value;
+            }
+        });
 
         // Upload handlers
         uploadArea.addEventListener('click', () => fileInput.click());
@@ -1011,16 +1373,22 @@
             retryBtn.disabled = true;
             retryBtn.innerHTML = 'Retrying<span class="loading"></span>';
             
-            const success = await remover.loadModel(remover.modelPath, remover.modelDataPath);
+            remover.retryCount++;
+            const success = await remover.loadModel(remover.modelPath, remover.modelDataPath, true);
+            
             if (success) {
                 showStatus('Model loaded successfully! You can now process images.', 'success');
-                retryBtn.style.display = 'none';
+                retrySection.style.display = 'none';
                 updateProcessButton();
                 setTimeout(hideStatus, 2000);
+            } else if (remover.retryCount >= remover.maxRetries) {
+                showStatus('Maximum retry attempts reached. Please check your model files and internet connection.', 'error');
+                retryBtn.innerHTML = 'Retry Model Loading';
+                retryBtn.disabled = false;
+            } else {
+                retryBtn.innerHTML = 'Retry Model Loading';
+                retryBtn.disabled = false;
             }
-            
-            retryBtn.disabled = false;
-            retryBtn.innerHTML = 'Retry Model Loading';
         });
 
         // Load model on page load
