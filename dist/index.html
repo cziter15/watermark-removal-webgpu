@@ -789,18 +789,44 @@
                     debugLog(`Model inputs: ${JSON.stringify(inputNames)}`);
                     debugLog(`Model outputs: ${JSON.stringify(outputNames)}`);
                     
-                    // Check input tensor info
-                    if (inputNames.length > 0) {
-                        const inputTensor = session.inputNames[0];
-                        const inputInfo = session.inputMetadata[inputTensor];
-                        debugLog(`Input tensor info: ${JSON.stringify(inputInfo)}`);
+                    // Check input tensor info - use safer approach
+                    if (inputNames && inputNames.length > 0) {
+                        const inputName = inputNames[0];
+                        debugLog(`Using input tensor name: ${inputName}`);
+                        
+                        // Try to get input metadata safely
+                        try {
+                            if (session.inputMeta && session.inputMeta[inputName]) {
+                                const inputInfo = session.inputMeta[inputName];
+                                debugLog(`Input tensor info: ${JSON.stringify(inputInfo)}`);
+                            } else {
+                                debugLog("Input metadata not available, continuing without it");
+                            }
+                        } catch (e) {
+                            debugLog(`Error accessing input metadata: ${e.message}`);
+                        }
+                    } else {
+                        debugLog("Warning: No input names found");
                     }
                     
-                    // Check output tensor info
-                    if (outputNames.length > 0) {
-                        const outputTensor = session.outputNames[0];
-                        const outputInfo = session.outputMetadata[outputTensor];
-                        debugLog(`Output tensor info: ${JSON.stringify(outputInfo)}`);
+                    // Check output tensor info - use safer approach
+                    if (outputNames && outputNames.length > 0) {
+                        const outputName = outputNames[0];
+                        debugLog(`Using output tensor name: ${outputName}`);
+                        
+                        // Try to get output metadata safely
+                        try {
+                            if (session.outputMeta && session.outputMeta[outputName]) {
+                                const outputInfo = session.outputMeta[outputName];
+                                debugLog(`Output tensor info: ${JSON.stringify(outputInfo)}`);
+                            } else {
+                                debugLog("Output metadata not available, continuing without it");
+                            }
+                        } catch (e) {
+                            debugLog(`Error accessing output metadata: ${e.message}`);
+                        }
+                    } else {
+                        debugLog("Warning: No output names found");
                     }
                     
                     // Determine which execution provider was used
@@ -832,6 +858,12 @@
                             };
                             
                             const session = await ort.InferenceSession.create(modelBuffer, sessionOptions);
+                            
+                            // Get input shape information
+                            const inputNames = session.inputNames;
+                            const outputNames = session.outputNames;
+                            debugLog(`Model inputs (no external data): ${JSON.stringify(inputNames)}`);
+                            debugLog(`Model outputs (no external data): ${JSON.stringify(outputNames)}`);
                             
                             // Determine which execution provider was used
                             if (session.handler) {
@@ -908,13 +940,14 @@
                 
                 // Run inference
                 const feeds = {};
-                feeds[this.session.inputNames[0]] = inputTensor;
+                const inputName = this.session.inputNames[0]; // Use the first input name
+                feeds[inputName] = inputTensor;
                 const results = await this.session.run(feeds);
                 
                 if (progressCallback) progressCallback(75, 'Postprocessing...');
                 
                 // Get output tensor
-                const outputName = this.session.outputNames[0];
+                const outputName = this.session.outputNames[0]; // Use the first output name
                 const outputTensor = results[outputName];
                 debugLog(`Output tensor shape: [${outputTensor.dims.join(', ')}]`);
                 
@@ -1105,11 +1138,12 @@
                 debugLog(`Tile input tensor shape: [${inputTensor.dims.join(', ')}]`);
                 
                 const feeds = {};
-                feeds[this.session.inputNames[0]] = inputTensor;
+                const inputName = this.session.inputNames[0]; // Use the first input name
+                feeds[inputName] = inputTensor;
                 const results = await this.session.run(feeds);
                 
                 // Get output tensor
-                const outputName = this.session.outputNames[0];
+                const outputName = this.session.outputNames[0]; // Use the first output name
                 const outputTensor = results[outputName];
                 debugLog(`Tile output tensor shape: [${outputTensor.dims.join(', ')}]`);
                 
