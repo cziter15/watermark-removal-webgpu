@@ -738,7 +738,7 @@
                     const modelBuffer = await modelResponse.arrayBuffer();
                     
                     // Wait a moment after getting the model
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise(resolve => setTimeout(resolve, 5000));
                     
                     // Try to fetch external data file if it exists
                     let externalDataBuffer = null;
