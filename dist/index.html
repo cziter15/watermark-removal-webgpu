@@ -7,17 +7,17 @@
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.0/dist/ort.all.min.js"></script>
     <style>
         :root {
-            --primary-color: #6366f1;
-            --secondary-color: #8b5cf6;
-            --background-color: #0f172a;
-            --surface-color: #1e293b;
-            --card-color: #334155;
-            --text-primary: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --accent-color: #4ade80;
-            --error-color: #f87171;
-            --warning-color: #fbbf24;
-            --info-color: #60a5fa;
+            --primary-color: #00d4ff;
+            --secondary-color: #00ffff;
+            --background-color: #000000;
+            --surface-color: #0d1117;
+            --card-color: #161b22;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent-color: #00d4ff;
+            --error-color: #f85149;
+            --warning-color: #f0b90b;
+            --info-color: #58a6ff;
         }
         
         * {
@@ -132,16 +132,16 @@
             cursor: pointer;
             transition: all 0.3s ease;
             margin-bottom: 30px;
-            background-color: rgba(99, 102, 241, 0.1);
+            background-color: rgba(0, 212, 255, 0.05);
         }
         
         .upload-area:hover {
             border-color: var(--secondary-color);
-            background-color: rgba(139, 92, 246, 0.1);
+            background-color: rgba(0, 255, 255, 0.1);
         }
         
         .upload-area.drag-over {
-            background-color: rgba(139, 92, 246, 0.2);
+            background-color: rgba(0, 255, 255, 0.15);
             border-color: var(--secondary-color);
         }
         
@@ -169,7 +169,7 @@
         
         .btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
         }
         
         .btn:disabled {
@@ -277,22 +277,22 @@
         }
         
         .status.pending {
-            background-color: rgba(251, 191, 36, 0.2);
+            background-color: rgba(240, 185, 11, 0.2);
             color: var(--warning-color);
         }
         
         .status.processing {
-            background-color: rgba(96, 165, 250, 0.2);
+            background-color: rgba(88, 166, 255, 0.2);
             color: var(--info-color);
         }
         
         .status.completed {
-            background-color: rgba(74, 222, 128, 0.2);
+            background-color: rgba(0, 212, 255, 0.2);
             color: var(--accent-color);
         }
         
         .status.error {
-            background-color: rgba(248, 113, 113, 0.2);
+            background-color: rgba(248, 81, 73, 0.2);
             color: var(--error-color);
         }
         
@@ -377,7 +377,7 @@
         
         /* Execution Info */
         .execution-info {
-            background-color: rgba(96, 165, 250, 0.1);
+            background-color: rgba(88, 166, 255, 0.1);
             border-left: 4px solid var(--info-color);
             padding: 15px;
             border-radius: 0 10px 10px 0;
@@ -415,7 +415,7 @@
         }
         
         .provider-badge.cpu {
-            background-color: #64748b;
+            background-color: #8b949e;
             color: white;
         }
         
@@ -429,7 +429,7 @@
         
         /* Error Message */
         .error-message {
-            background-color: rgba(248, 113, 113, 0.2);
+            background-color: rgba(248, 81, 73, 0.2);
             border-left: 4px solid var(--error-color);
             padding: 15px;
             border-radius: 0 10px 10px 0;
@@ -562,7 +562,7 @@
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📁</div>
                 <p>Click to upload or drag & drop images</p>
-                <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">Supports JPG, PNG</p>
+                <p style="font-size: 12px; color: #8b949e; margin-top: 5px;">Supports JPG, PNG</p>
                 <input type="file" id="fileInput" accept="image/*" multiple>
             </div>
             
@@ -652,7 +652,7 @@
             }
             statusHTML += '<span class="provider-badge cpu">CPU</span>';
             if (webgpuResult.supported) {
-                statusHTML += '<p style="margin-top: 8px; color: #4ade80; font-weight: bold;">✓ WebGPU is available - this will provide the best performance!</p>';
+                statusHTML += '<p style="margin-top: 8px; color: #00d4ff; font-weight: bold;">✓ WebGPU is available - this will provide the best performance!</p>';
                 if (webgpuResult.details.adapter) {
                     const adapter = webgpuResult.details.adapter;
                     let gpuInfo = '';
@@ -660,13 +660,13 @@
                     if (adapter.device) gpuInfo += `Device: ${adapter.device} `;
                     if (adapter.description) gpuInfo += `Description: ${adapter.description}`;
                     if (gpuInfo) {
-                        statusHTML += `<p style="font-size: 12px; color: #cbd5e1;">GPU: ${gpuInfo}</p>`;
+                        statusHTML += `<p style="font-size: 12px; color: #8b949e;">GPU: ${gpuInfo}</p>`;
                     }
                 }
             } else {
-                statusHTML += '<p style="margin-top: 8px; color: #fbbf24; font-weight: bold;">⚠ WebGPU not available - falling back to WASM/CPU</p>';
+                statusHTML += '<p style="margin-top: 8px; color: #f0b90b; font-weight: bold;">⚠ WebGPU not available - falling back to WASM/CPU</p>';
                 if (webgpuResult.error) {
-                    statusHTML += `<p style="font-size: 12px; color: #f87171;">Reason: ${webgpuResult.error}</p>`;
+                    statusHTML += `<p style="font-size: 12px; color: #f85149;">Reason: ${webgpuResult.error}</p>`;
                 }
             }
             providerStatus.innerHTML = statusHTML;
